@@ -1,25 +1,26 @@
-/**
- * The following features are still outstanding: popup delay, animation as a
- * function, placement as a function, inside, support for more triggers than
- * just mouse enter/leave, html popovers, and selector delegatation.
- */
+
 msos.provide("ng.bootstrap.ui.popover");
 msos.require("ng.bootstrap.ui.tooltip");
 
-ng.bootstrap.ui.popover.version = new msos.set_version(15, 7, 7);
+ng.bootstrap.ui.popover.version = new msos.set_version(16, 4, 5);
 
+
+// Load Angular-UI-Bootstrap module specific CSS
+ng.bootstrap.ui.popover.css = new msos.loader();
+ng.bootstrap.ui.popover.css.load('ng_bootstrap_css_ui_popover_css', msos.resource_url('ng', 'bootstrap/css/ui/popover.css'));
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.popover -> ng.bootstrap.ui.popover
-// template/popover/popover.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover.html')
+// uib/template/popover/popover.html            -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover.html')
+// uib/template/popover/popover-template.html   -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/template.html')
+// uib/template/popover/popover-html.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/html.html')
 angular.module('ng.bootstrap.ui.popover', ['ng.bootstrap.ui.tooltip'])
 
-.directive('popoverTemplatePopup', function() {
+.directive('uibPopoverTemplatePopup', function() {
     return {
-        restrict: 'EA',
         replace: true,
         scope: {
-            title: '@',
+            uibTitle: '@',
             contentExp: '&',
             placement: '@',
             popupClass: '@',
@@ -27,22 +28,42 @@ angular.module('ng.bootstrap.ui.popover', ['ng.bootstrap.ui.tooltip'])
             isOpen: '&',
             originScope: '&'
         },
-        templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/popover-template.html')
+        templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/template.html')
     };
 })
 
-.directive('popoverTemplate', ['$tooltip', function($tooltip) {
-    return $tooltip('popoverTemplate', 'popover', 'click', {
+.directive('uibPopoverTemplate', ['$uibTooltip', function($uibTooltip) {
+    return $uibTooltip('uibPopoverTemplate', 'popover', 'click', {
         useContentExp: true
     });
 }])
 
-.directive('popoverPopup', function() {
+.directive('uibPopoverHtmlPopup', function() {
     return {
-        restrict: 'EA',
         replace: true,
         scope: {
-            title: '@',
+            contentExp: '&',
+            uibTitle: '@',
+            placement: '@',
+            popupClass: '@',
+            animation: '&',
+            isOpen: '&'
+        },
+        templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/html.html')
+    };
+})
+
+.directive('uibPopoverHtml', ['$uibTooltip', function($uibTooltip) {
+    return $uibTooltip('uibPopoverHtml', 'popover', 'click', {
+        useContentExp: true
+    });
+}])
+
+.directive('uibPopoverPopup', function() {
+    return {
+        replace: true,
+        scope: {
+            uibTitle: '@',
             content: '@',
             placement: '@',
             popupClass: '@',
@@ -53,6 +74,6 @@ angular.module('ng.bootstrap.ui.popover', ['ng.bootstrap.ui.tooltip'])
     };
 })
 
-.directive('popover', ['$tooltip', function($tooltip) {
-    return $tooltip('popover', 'popover', 'click');
+.directive('uibPopover', ['$uibTooltip', function($uibTooltip) {
+    return $uibTooltip('uibPopover', 'popover', 'click');
 }]);

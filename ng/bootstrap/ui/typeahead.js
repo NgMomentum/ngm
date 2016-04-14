@@ -1,27 +1,23 @@
 
 msos.provide("ng.bootstrap.ui.typeahead");
 
-ng.bootstrap.ui.typeahead.version = new msos.set_version(15, 7, 7);
+ng.bootstrap.ui.typeahead.version = new msos.set_version(16, 4, 8);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.typeahead -> ng.bootstrap.ui.typeahead
-// template/typeahead/typeahead-popup.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead-popup.html'),
-// template/typeahead/typeahead-match.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead-match.html')
-angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.position', 'ng.bootstrap.ui.bindHtml'])
-
+// uib/template/typeahead/typeahead-popup.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead.html'),
+// uib/template/typeahead/typeahead-match.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead/match.html')
+angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.bootstrap.ui.position'])
 /**
  * A helper service that can parse typeahead's syntax (string provided by users)
  * Extracted to a separate service for ease of unit testing
  */
-.factory('typeaheadParser', ['$parse', function($parse) {
-
+.factory('uibTypeaheadParser', ['$parse', function($parse) {
     //                      00000111000000000000022200000000000000003333333333333330000000000044000
     var TYPEAHEAD_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+([\s\S]+?)$/;
-
     return {
         parse: function(input) {
-
             var match = input.match(TYPEAHEAD_REGEXP);
             if (!match) {
                 throw new Error(
@@ -39,390 +35,685 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.position', 'ng.boo
     };
 }])
 
-.directive('typeahead', ['$compile', '$parse', '$q', '$timeout', '$document', '$position', 'typeaheadParser',
-    function($compile, $parse, $q, $timeout, $document, $position, typeaheadParser) {
-
+.controller('UibTypeaheadController', ['$scope', '$element', '$attrs', '$compile', '$parse', '$q', '$timeout', '$document', '$window', '$rootScope', '$$debounce', '$uibPosition', 'uibTypeaheadParser',
+    function(originalScope, element, attrs, $compile, $parse, $q, $timeout, $document, $window, $rootScope, $$debounce, $position, typeaheadParser) {
         var HOT_KEYS = [9, 13, 27, 38, 40];
+        var eventDebounceTime = 200;
+        var modelCtrl, ngModelOptions;
+        //SUPPORTED ATTRIBUTES (OPTIONS)
 
-        return {
-            require: 'ngModel',
-            link: function(originalScope, element, attrs, modelCtrl) {
+        //minimal no of characters that needs to be entered before typeahead kicks-in
+        var minLength = originalScope.$eval(attrs.typeaheadMinLength);
+        if (!minLength && minLength !== 0) {
+            minLength = 1;
+        }
 
-                //SUPPORTED ATTRIBUTES (OPTIONS)
+        originalScope.$watch(attrs.typeaheadMinLength, function(newVal) {
+            minLength = !newVal && newVal !== 0 ? 1 : newVal;
+        });
 
-                //minimal no of characters that needs to be entered before typeahead kicks-in
-                var minSearch = originalScope.$eval(attrs.typeaheadMinLength) || 1;
+        //minimal wait time after last character typed before typeahead kicks-in
+        var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
 
-                //minimal wait time after last character typed before typeahead kicks-in
-                var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
+        //should it restrict model values to the ones selected from the popup only?
+        var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
+        originalScope.$watch(attrs.typeaheadEditable, function(newVal) {
+            isEditable = newVal !== false;
+        });
 
-                //should it restrict model values to the ones selected from the popup only?
-                var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
+        //binding to a variable that indicates if matches are being retrieved asynchronously
+        var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
 
-                //binding to a variable that indicates if matches are being retrieved asynchronously
-                var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
+        //a callback executed when a match is selected
+        var onSelectCallback = $parse(attrs.typeaheadOnSelect);
 
-                //a callback executed when a match is selected
-                var onSelectCallback = $parse(attrs.typeaheadOnSelect);
+        //should it select highlighted popup value when losing focus?
+        var isSelectOnBlur = angular.isDefined(attrs.typeaheadSelectOnBlur) ? originalScope.$eval(attrs.typeaheadSelectOnBlur) : false;
 
-                var inputFormatter = attrs.typeaheadInputFormatter ? $parse(attrs.typeaheadInputFormatter) : undefined;
+        //binding to a variable that indicates if there were no results after the query is completed
+        var isNoResultsSetter = $parse(attrs.typeaheadNoResults).assign || angular.noop;
 
-                var appendToBody = attrs.typeaheadAppendToBody ? originalScope.$eval(attrs.typeaheadAppendToBody) : false;
+        var inputFormatter = attrs.typeaheadInputFormatter ? $parse(attrs.typeaheadInputFormatter) : undefined;
 
-                var focusFirst = originalScope.$eval(attrs.typeaheadFocusFirst) !== false;
+        var appendToBody = attrs.typeaheadAppendToBody ? originalScope.$eval(attrs.typeaheadAppendToBody) : false;
 
-                //INTERNAL VARIABLES
+        var appendTo = attrs.typeaheadAppendTo ?
+            originalScope.$eval(attrs.typeaheadAppendTo) : null;
 
-                //model setter executed upon match selection
-                var $setModelValue = $parse(attrs.ngModel).assign;
+        var focusFirst = originalScope.$eval(attrs.typeaheadFocusFirst) !== false;
 
-                //expressions used by typeahead
-                var parserResult = typeaheadParser.parse(attrs.typeahead);
+        //If input matches an item of the list exactly, select it automatically
+        var selectOnExact = attrs.typeaheadSelectOnExact ? originalScope.$eval(attrs.typeaheadSelectOnExact) : false;
 
-                var hasFocus;
+        //binding to a variable that indicates if dropdown is open
+        var isOpenSetter = $parse(attrs.typeaheadIsOpen).assign || angular.noop;
 
-                //create a child scope for the typeahead directive so we are not polluting original scope
-                //with typeahead-specific data (matches, query etc.)
-                var scope = originalScope.$new();
-                originalScope.$on('$destroy', function() {
-                    scope.$destroy();
+        var showHint = originalScope.$eval(attrs.typeaheadShowHint) || false;
+
+        //INTERNAL VARIABLES
+
+        //model setter executed upon match selection
+        var parsedModel = $parse(attrs.ngModel);
+        var invokeModelSetter = $parse(attrs.ngModel + '($$$p)');
+        var $setModelValue = function(scope, newValue) {
+            if (angular.isFunction(parsedModel(originalScope)) &&
+                ngModelOptions && ngModelOptions.$options && ngModelOptions.$options.getterSetter) {
+                return invokeModelSetter(scope, {
+                    $$$p: newValue
                 });
+            }
 
-                // WAI-ARIA
-                var popupId = 'typeahead-' + scope.$id + '-' + Math.floor(Math.random() * 10000);
-                element.attr({
-                    'aria-autocomplete': 'list',
-                    'aria-expanded': false,
-                    'aria-owns': popupId
-                });
+            return parsedModel.assign(scope, newValue);
+        };
 
-                //pop-up element used to display matches
-                var popUpEl = angular.element('<div typeahead-popup></div>');
-                popUpEl.attr({
-                    id: popupId,
-                    matches: 'matches',
-                    active: 'activeIdx',
-                    select: 'select(activeIdx)',
-                    query: 'query',
-                    position: 'position'
-                });
-                //custom item template
-                if (angular.isDefined(attrs.typeaheadTemplateUrl)) {
-                    popUpEl.attr('template-url', attrs.typeaheadTemplateUrl);
-                }
+        //expressions used by typeahead
+        var parserResult = typeaheadParser.parse(attrs.uibTypeahead);
 
-                var resetMatches = function() {
-                    scope.matches = [];
-                    scope.activeIdx = -1;
-                    element.attr('aria-expanded', false);
+        var hasFocus;
+
+        //Used to avoid bug in iOS webview where iOS keyboard does not fire
+        //mousedown & mouseup events
+        //Issue #3699
+        var selected;
+
+        //create a child scope for the typeahead directive so we are not polluting original scope
+        //with typeahead-specific data (matches, query etc.)
+        var scope = originalScope.$new();
+        var offDestroy = originalScope.$on('$destroy', function() {
+            scope.$destroy();
+        });
+        scope.$on('$destroy', offDestroy);
+
+        // WAI-ARIA
+        var popupId = 'typeahead-' + scope.$id + '-' + Math.floor(Math.random() * 10000);
+        element.attr({
+            'aria-autocomplete': 'list',
+            'aria-expanded': false,
+            'aria-owns': popupId
+        });
+
+        var inputsContainer, hintInputElem;
+        //add read-only input to show hint
+        if (showHint) {
+            inputsContainer = angular.element('<div></div>');
+            inputsContainer.css('position', 'relative');
+            element.after(inputsContainer);
+            hintInputElem = element.clone();
+            hintInputElem.attr('placeholder', '');
+            hintInputElem.attr('tabindex', '-1');
+            hintInputElem.val('');
+            hintInputElem.css({
+                'position': 'absolute',
+                'top': '0px',
+                'left': '0px',
+                'border-color': 'transparent',
+                'box-shadow': 'none',
+                'opacity': 1,
+                'background': 'none 0% 0% / auto repeat scroll padding-box border-box rgb(255, 255, 255)',
+                'color': '#999'
+            });
+            element.css({
+                'position': 'relative',
+                'vertical-align': 'top',
+                'background-color': 'transparent'
+            });
+            inputsContainer.append(hintInputElem);
+            hintInputElem.after(element);
+        }
+
+        //pop-up element used to display matches
+        var popUpEl = angular.element('<div uib-typeahead-popup></div>');
+        popUpEl.attr({
+            id: popupId,
+            matches: 'matches',
+            active: 'activeIdx',
+            select: 'select(activeIdx, evt)',
+            'move-in-progress': 'moveInProgress',
+            query: 'query',
+            position: 'position',
+            'assign-is-open': 'assignIsOpen(isOpen)',
+            debounce: 'debounceUpdate'
+        });
+        //custom item template
+        if (angular.isDefined(attrs.typeaheadTemplateUrl)) {
+            popUpEl.attr('template-url', attrs.typeaheadTemplateUrl);
+        }
+
+        if (angular.isDefined(attrs.typeaheadPopupTemplateUrl)) {
+            popUpEl.attr('popup-template-url', attrs.typeaheadPopupTemplateUrl);
+        }
+
+        var resetHint = function() {
+            if (showHint) {
+                hintInputElem.val('');
+            }
+        };
+
+        var resetMatches = function() {
+            scope.matches = [];
+            scope.activeIdx = -1;
+            element.attr('aria-expanded', false);
+            resetHint();
+        };
+
+        var getMatchId = function(index) {
+            return popupId + '-option-' + index;
+        };
+
+        // Indicate that the specified match is the active (pre-selected) item in the list owned by this typeahead.
+        // This attribute is added or removed automatically when the `activeIdx` changes.
+        scope.$watch('activeIdx', function(index) {
+            if (index < 0) {
+                element.removeAttr('aria-activedescendant');
+            } else {
+                element.attr('aria-activedescendant', getMatchId(index));
+            }
+        });
+
+        var inputIsExactMatch = function(inputValue, index) {
+            if (scope.matches.length > index && inputValue) {
+                return inputValue.toUpperCase() === scope.matches[index].label.toUpperCase();
+            }
+
+            return false;
+        };
+
+        var getMatchesAsync = function(inputValue, evt) {
+            var locals = {
+                    $viewValue: inputValue
                 };
 
-                var getMatchId = function(index) {
-                    return popupId + '-option-' + index;
-                };
+            // Don't bother in noop
+            if (isLoadingSetter !== angular.noop) {
+                isLoadingSetter(originalScope, true);
+            }
+            if (isNoResultsSetter !== angular.noop) {
+                isNoResultsSetter(originalScope, false);
+            }
 
-                // Indicate that the specified match is the active (pre-selected) item in the list owned by this typeahead.
-                // This attribute is added or removed automatically when the `activeIdx` changes.
-                scope.$watch('activeIdx', function(index) {
-                    if (index < 0) {
-                        element.removeAttr('aria-activedescendant');
-                    } else {
-                        element.attr('aria-activedescendant', getMatchId(index));
-                    }
-                });
+            $q.when($q.defer('ng_bootstrap_ui_typeahead_getmatches_when'), parserResult.source(originalScope, locals)).then(function(matches) {
+                //it might happen that several async queries were in progress if a user were typing fast
+                //but we are interested only in responses that correspond to the current view value
+                var onCurrentRequest = inputValue === modelCtrl.$viewValue;
+                if (onCurrentRequest && hasFocus) {
+                    if (matches && matches.length > 0) {
+                        scope.activeIdx = focusFirst ? 0 : -1;
+                        if (isNoResultsSetter !== angular.noop) {
+                            isNoResultsSetter(originalScope, false);
+                        }
+                        scope.matches.length = 0;
 
-                var getMatchesAsync = function(inputValue) {
+                        //transform labels
+                        for (var i = 0; i < matches.length; i++) {
+                            locals[parserResult.itemName] = matches[i];
+                            scope.matches.push({
+                                id: getMatchId(i),
+                                label: parserResult.viewMapper(scope, locals),
+                                model: matches[i]
+                            });
+                        }
 
-                    var locals = {
-                        $viewValue: inputValue
-                    };
-                    isLoadingSetter(originalScope, true);
-                    $q.when($q.defer('getMatchesAsync'), parserResult.source(originalScope, locals)).then(function(matches) {
+                        scope.query = inputValue;
+                        //position pop-up with matches - we need to re-calculate its position each time we are opening a window
+                        //with matches as a pop-up might be absolute-positioned and position of an input might have changed on a page
+                        //due to other elements being rendered
+                        recalculatePosition();
 
-                        //it might happen that several async queries were in progress if a user were typing fast
-                        //but we are interested only in responses that correspond to the current view value
-                        var onCurrentRequest = (inputValue === modelCtrl.$viewValue);
-                        if (onCurrentRequest && hasFocus) {
-                            if (matches && matches.length > 0) {
+                        element.attr('aria-expanded', true);
 
-                                scope.activeIdx = focusFirst ? 0 : -1;
-                                scope.matches.length = 0;
-
-                                //transform labels
-                                for (var i = 0; i < matches.length; i++) {
-                                    locals[parserResult.itemName] = matches[i];
-                                    scope.matches.push({
-                                        id: getMatchId(i),
-                                        label: parserResult.viewMapper(scope, locals),
-                                        model: matches[i]
-                                    });
-                                }
-
-                                scope.query = inputValue;
-                                //position pop-up with matches - we need to re-calculate its position each time we are opening a window
-                                //with matches as a pop-up might be absolute-positioned and position of an input might have changed on a page
-                                //due to other elements being rendered
-                                scope.position = appendToBody ? $position.offset(element) : $position.position(element);
-                                scope.position.top = scope.position.top + element.prop('offsetHeight');
-
-                                element.attr('aria-expanded', true);
+                        //Select the single remaining option if user input matches
+                        if (selectOnExact && scope.matches.length === 1 && inputIsExactMatch(inputValue, 0)) {
+                            if (scope.debounceUpdate && (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate))) {
+                                $$debounce(function() {
+                                    scope.select(0, evt);
+                                }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
                             } else {
-                                resetMatches();
+                                scope.select(0, evt);
                             }
                         }
-                        if (onCurrentRequest) {
-                            isLoadingSetter(originalScope, false);
-                        }
-                    }, function() {
-                        resetMatches();
-                        isLoadingSetter(originalScope, false);
-                    });
-                };
 
+                        if (showHint) {
+                            var firstLabel = scope.matches[0].label;
+                            if (angular.isString(inputValue) &&
+                                inputValue.length > 0 &&
+                                firstLabel.slice(0, inputValue.length).toUpperCase() === inputValue.toUpperCase()) {
+                                hintInputElem.val(inputValue + firstLabel.slice(inputValue.length));
+                            } else {
+                                hintInputElem.val('');
+                            }
+                        }
+                    } else {
+                        resetMatches();
+                        if (isNoResultsSetter !== angular.noop) {
+                            isNoResultsSetter(originalScope, true);
+                        }
+                    }
+                }
+                if (onCurrentRequest && (isLoadingSetter !== angular.noop)) {
+                    isLoadingSetter(originalScope, false);
+                }
+            }, function() {
                 resetMatches();
+                if (isLoadingSetter !== angular.noop) {
+                    isLoadingSetter(originalScope, false);
+                }
+                if (isNoResultsSetter !== angular.noop) {
+                    isNoResultsSetter(originalScope, true);
+                }
+            });
+        };
 
-                //we need to propagate user's query so we can higlight matches
-                scope.query = undefined;
+        // bind events only if appendToBody params exist - performance feature
+        if (appendToBody) {
+            angular.element($window).on('resize', fireRecalculating);
+            $document.find('body').on('scroll', fireRecalculating);
+        }
 
-                //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
-                var timeoutPromise;
+        // Declare the debounced function outside recalculating for
+        // proper debouncing
+        var debouncedRecalculate = $$debounce(function() {
+            // if popup is visible
+            if (scope.matches.length) {
+                recalculatePosition();
+            }
 
-                var scheduleSearchWithTimeout = function(inputValue) {
-                    timeoutPromise = $timeout(function() {
-                        getMatchesAsync(inputValue);
-                    }, waitTime);
-                };
+            scope.moveInProgress = false;
+        }, eventDebounceTime);
 
-                var cancelPreviousTimeout = function() {
-                    if (timeoutPromise) {
-                        $timeout.cancel(timeoutPromise);
-                    }
-                };
+        // Default progress type
+        scope.moveInProgress = false;
 
-                //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
-                //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
-                modelCtrl.$parsers.unshift(function(inputValue) {
+        function fireRecalculating() {
+            if (!scope.moveInProgress) {
+                scope.moveInProgress = true;
+                scope.$digest();
+            }
 
-                    hasFocus = true;
+            debouncedRecalculate();
+        }
 
-                    if (inputValue && inputValue.length >= minSearch) {
-                        if (waitTime > 0) {
-                            cancelPreviousTimeout();
-                            scheduleSearchWithTimeout(inputValue);
-                        } else {
-                            getMatchesAsync(inputValue);
-                        }
-                    } else {
-                        isLoadingSetter(originalScope, false);
-                        cancelPreviousTimeout();
-                        resetMatches();
-                    }
+        // recalculate actual position and set new values to scope
+        // after digest loop is popup in right position
+        function recalculatePosition() {
+            scope.position = appendToBody ? $position.offset(element) : $position.position(element);
+            scope.position.top += element.prop('offsetHeight');
+        }
 
-                    if (isEditable) {
-                        return inputValue;
-                    } else {
-                        if (!inputValue) {
-                            // Reset in case user had typed something previously.
-                            modelCtrl.$setValidity('editable', true);
-                            return inputValue;
-                        } else {
-                            modelCtrl.$setValidity('editable', false);
-                            return undefined;
-                        }
-                    }
-                });
+        //we need to propagate user's query so we can higlight matches
+        scope.query = undefined;
 
-                modelCtrl.$formatters.push(function(modelValue) {
+        //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
+        var timeoutPromise;
 
-                    var candidateViewValue, emptyViewValue;
-                    var locals = {};
+        var scheduleSearchWithTimeout = function(inputValue) {
+            timeoutPromise = $timeout(function() {
+                getMatchesAsync(inputValue);
+            }, waitTime);
+        };
 
-                    // The validity may be set to false via $parsers (see above) if
-                    // the model is restricted to selected values. If the model
-                    // is set manually it is considered to be valid.
-                    if (!isEditable) {
-                        modelCtrl.$setValidity('editable', true);
-                    }
+        var cancelPreviousTimeout = function() {
+            if (timeoutPromise) {
+                $timeout.cancel(timeoutPromise);
+            }
+        };
 
-                    if (inputFormatter) {
+        resetMatches();
 
-                        locals.$model = modelValue;
-                        return inputFormatter(originalScope, locals);
+        scope.assignIsOpen = function(isOpen) {
+            if (isOpenSetter !== angular.noop) {
+                isOpenSetter(originalScope, isOpen);
+            }
+        };
 
-                    } else {
+        scope.select = function(activeIdx, evt) {
+            //called from within the $digest() cycle
+            var locals = {};
+            var model, item;
 
-                        //it might happen that we don't have enough info to properly render input value
-                        //we need to check for this situation and simply return model value if we can't apply custom formatting
-                        locals[parserResult.itemName] = modelValue;
-                        candidateViewValue = parserResult.viewMapper(originalScope, locals);
-                        locals[parserResult.itemName] = undefined;
-                        emptyViewValue = parserResult.viewMapper(originalScope, locals);
+            selected = true;
+            locals[parserResult.itemName] = item = scope.matches[activeIdx].model;
+            model = parserResult.modelMapper(originalScope, locals);
+            $setModelValue(originalScope, model);
+            modelCtrl.$setValidity('editable', true);
+            modelCtrl.$setValidity('parse', true);
 
-                        return candidateViewValue !== emptyViewValue ? candidateViewValue : modelValue;
-                    }
-                });
-
-                scope.select = function(activeIdx) {
-                    //called from within the $digest() cycle
-                    var locals = {};
-                    var model, item;
-
-                    locals[parserResult.itemName] = item = scope.matches[activeIdx].model;
-                    model = parserResult.modelMapper(originalScope, locals);
-                    $setModelValue(originalScope, model);
-                    modelCtrl.$setValidity('editable', true);
-                    modelCtrl.$setValidity('parse', true);
-
-                    onSelectCallback(originalScope, {
+            if (onSelectCallback !== angular.noop) {
+                onSelectCallback(
+                    originalScope, {
                         $item: item,
                         $model: model,
-                        $label: parserResult.viewMapper(originalScope, locals)
+                        $label: parserResult.viewMapper(originalScope, locals),     // Experimental, watch this creating values that stick around even with noop.
+                        $event: evt
+                    }
+                );
+            }
+
+            resetMatches();
+
+            //return focus to the input element if a match was selected via a mouse click event
+            // use timeout to avoid $rootScope:inprog error
+            if (scope.$eval(attrs.typeaheadFocusOnSelect) !== false) {
+                $timeout(function() {
+                    element[0].focus();
+                }, 0, false);
+            }
+        };
+
+        //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
+        element.on('keydown', function(evt) {
+            //typeahead is open and an "interesting" key was pressed
+            if (scope.matches.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
+                return;
+            }
+
+            /**
+             * if there's nothing selected (i.e. focusFirst) and enter or tab is hit
+             * or
+             * shift + tab is pressed to bring focus to the previous element
+             * then clear the results
+             */
+            if (scope.activeIdx === -1 && (evt.which === 9 || evt.which === 13) || evt.which === 9 && !!evt.shiftKey) {
+                resetMatches();
+                scope.$digest();
+                return;
+            }
+
+            evt.preventDefault();
+            var target;
+            switch (evt.which) {
+                case 9:
+                case 13:
+                    scope.$apply(function() {
+                        if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
+                            $$debounce(function() {
+                                scope.select(scope.activeIdx, evt);
+                            }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
+                        } else {
+                            scope.select(scope.activeIdx, evt);
+                        }
                     });
+                    break;
+                case 27:
+                    evt.stopPropagation();
 
                     resetMatches();
+                    originalScope.$digest();
+                    break;
+                case 38:
+                    scope.activeIdx = (scope.activeIdx > 0 ? scope.activeIdx : scope.matches.length) - 1;
+                    scope.$digest();
+                    target = popUpEl.find('li')[scope.activeIdx];
+                    target.parentNode.scrollTop = target.offsetTop;
+                    break;
+                case 40:
+                    scope.activeIdx = (scope.activeIdx + 1) % scope.matches.length;
+                    scope.$digest();
+                    target = popUpEl.find('li')[scope.activeIdx];
+                    target.parentNode.scrollTop = target.offsetTop;
+                    break;
+            }
+        });
 
-                    //return focus to the input element if a match was selected via a mouse click event
-                    // use timeout to avoid $rootScope:inprog error
-                    $timeout(function() {
-                        element[0].focus();
-                    }, 0, false);
-                };
+        element.bind('focus', function(evt) {
+            hasFocus = true;
+            if (minLength === 0 && !modelCtrl.$viewValue) {
+                $timeout(function() {
+                    getMatchesAsync(modelCtrl.$viewValue, evt);
+                }, 0);
+            }
+        });
 
-                //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
-                element.bind('keydown', function(evt) {
-
-                    //typeahead is open and an "interesting" key was pressed
-                    if (scope.matches.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
-                        return;
-                    }
-
-                    // if there's nothing selected (i.e. focusFirst) and enter is hit, don't do anything
-                    if (scope.activeIdx == -1 && (evt.which === 13 || evt.which === 9)) {
-                        return;
-                    }
-
-                    evt.preventDefault();
-
-                    if (evt.which === 40) {
-                        scope.activeIdx = (scope.activeIdx + 1) % scope.matches.length;
-                        scope.$digest();
-
-                    } else if (evt.which === 38) {
-                        scope.activeIdx = (scope.activeIdx > 0 ? scope.activeIdx : scope.matches.length) - 1;
-                        scope.$digest();
-
-                    } else if (evt.which === 13 || evt.which === 9) {
-                        scope.$apply(function() {
-                            scope.select(scope.activeIdx);
-                        });
-
-                    } else if (evt.which === 27) {
-                        evt.stopPropagation();
-
-                        resetMatches();
-                        scope.$digest();
+        element.bind('blur', function(evt) {
+            if (isSelectOnBlur && scope.matches.length && scope.activeIdx !== -1 && !selected) {
+                selected = true;
+                scope.$apply(function() {
+                    if (scope.debounceUpdate && angular.isObject(scope.debounceUpdate) && angular.isNumber(scope.debounceUpdate.blur)) {
+                        $$debounce(function() {
+                            scope.select(scope.activeIdx, evt);
+                        }, scope.debounceUpdate.blur);
+                    } else {
+                        scope.select(scope.activeIdx, evt);
                     }
                 });
+            }
+            if (!isEditable && modelCtrl.$error.editable) {
+                modelCtrl.$setViewValue();
+                // Reset validity as we are clearing
+                modelCtrl.$setValidity('editable', true);
+                modelCtrl.$setValidity('parse', true);
+                element.val('');
+            }
+            hasFocus = false;
+            selected = false;
+        });
 
-                element.bind('blur', function(evt) {
-                    hasFocus = false;
-                });
-
-                // Keep reference to click handler to unbind it.
-                var dismissClickHandler = function(evt) {
-                    if (element[0] !== evt.target) {
-                        resetMatches();
-                        scope.$digest();
-                    }
-                };
-
-                $document.bind('click', dismissClickHandler);
-
-                originalScope.$on('$destroy', function() {
-                    $document.unbind('click', dismissClickHandler);
-                    if (appendToBody) {
-                        $popup.remove();
-                    }
-                    // Prevent jQuery cache memory leak
-                    popUpEl.remove();
-                });
-
-                var $popup = $compile(popUpEl)(scope);
-
-                if (appendToBody) {
-                    $document.find('body').append($popup);
-                } else {
-                    element.after($popup);
+        // Keep reference to click handler to unbind it.
+        var dismissClickHandler = function(evt) {
+            // Issue #3973
+            // Firefox treats right click as a click on document
+            if (element[0] !== evt.target && evt.which !== 3 && scope.matches.length !== 0) {
+                resetMatches();
+                if (!$rootScope.$$phase) {
+                    originalScope.$digest();
                 }
             }
         };
 
+        $document.on('click', dismissClickHandler);
+
+        originalScope.$on('$destroy', function() {
+            $document.off('click', dismissClickHandler);
+            if (appendToBody || appendTo) {
+                $popup.remove();
+            }
+
+            if (appendToBody) {
+                angular.element($window).off('resize', fireRecalculating);
+                $document.find('body').off('scroll', fireRecalculating);
+            }
+            // Prevent jQuery cache memory leak
+            popUpEl.remove();
+
+            if (showHint) {
+                inputsContainer.remove();
+            }
+        });
+
+        var $popup = $compile(popUpEl)(scope);
+
+        if (appendToBody) {
+            $document.find('body').append($popup);
+        } else if (appendTo) {
+            angular.element(appendTo).eq(0).append($popup);
+        } else {
+            element.after($popup);
+        }
+
+        this.init = function(_modelCtrl, _ngModelOptions) {
+            modelCtrl = _modelCtrl;
+            ngModelOptions = _ngModelOptions;
+
+            var parse_debounce;
+
+            if (modelCtrl.$options
+             && modelCtrl.$options.debounce) {
+
+                parse_debounce = $parse(modelCtrl.$options.debounce);
+
+                scope.debounceUpdate = parse_debounce !== angular.noop ? parse_debounce(originalScope) : undefined;
+            }
+
+            //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
+            //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
+            modelCtrl.$parsers.unshift(function(inputValue) {
+                hasFocus = true;
+
+                if (minLength === 0 || inputValue && inputValue.length >= minLength) {
+                    if (waitTime > 0) {
+                        cancelPreviousTimeout();
+                        scheduleSearchWithTimeout(inputValue);
+                    } else {
+                        getMatchesAsync(inputValue);
+                    }
+                } else {
+                    if (isLoadingSetter !== angular.noop) {
+                        isLoadingSetter(originalScope, false);
+                    }
+                    cancelPreviousTimeout();
+                    resetMatches();
+                }
+
+                if (isEditable) {
+                    return inputValue;
+                }
+
+                if (!inputValue) {
+                    // Reset in case user had typed something previously.
+                    modelCtrl.$setValidity('editable', true);
+                    return null;
+                }
+
+                modelCtrl.$setValidity('editable', false);
+                return undefined;
+            });
+
+            modelCtrl.$formatters.push(function(modelValue) {
+                var candidateViewValue, emptyViewValue;
+                var locals = {};
+
+                // The validity may be set to false via $parsers (see above) if
+                // the model is restricted to selected values. If the model
+                // is set manually it is considered to be valid.
+                if (!isEditable) {
+                    modelCtrl.$setValidity('editable', true);
+                }
+
+                if (inputFormatter) {
+                    locals.$model = modelValue;
+                    return inputFormatter(originalScope, locals);
+                }
+
+                //it might happen that we don't have enough info to properly render input value
+                //we need to check for this situation and simply return model value if we can't apply custom formatting
+                locals[parserResult.itemName] = modelValue;
+                candidateViewValue = parserResult.viewMapper(originalScope, locals);
+                locals[parserResult.itemName] = undefined;
+                emptyViewValue = parserResult.viewMapper(originalScope, locals);
+
+                return candidateViewValue !== emptyViewValue ? candidateViewValue : modelValue;
+            });
+        };
     }
 ])
 
-.directive('typeaheadPopup', function() {
+.directive('uibTypeahead', function() {
     return {
-        restrict: 'EA',
+        controller: 'UibTypeaheadController',
+        require: ['ngModel', '^?ngModelOptions', 'uibTypeahead'],
+        link: function(originalScope, element, attrs, ctrls) {
+            ctrls[2].init(ctrls[0], ctrls[1]);
+        }
+    };
+})
+
+.directive('uibTypeaheadPopup', ['$$debounce', function($$debounce) {
+    return {
         scope: {
             matches: '=',
             query: '=',
             active: '=',
-            position: '=',
-            select: '&'
+            position: '&',
+            moveInProgress: '=',
+            select: '&',
+            assignIsOpen: '&',
+            debounce: '&'
         },
         replace: true,
-        templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead-popup.html'),
+        templateUrl: function(element, attrs) {
+            return attrs.popupTemplateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead.html');
+        },
         link: function(scope, element, attrs) {
-
             scope.templateUrl = attrs.templateUrl;
 
             scope.isOpen = function() {
-                return scope.matches.length > 0;
+                var isDropdownOpen = scope.matches.length > 0;
+                scope.assignIsOpen({
+                    isOpen: isDropdownOpen
+                });
+                return isDropdownOpen;
             };
 
             scope.isActive = function(matchIdx) {
-                return scope.active == matchIdx;
+                return scope.active === matchIdx;
             };
 
             scope.selectActive = function(matchIdx) {
                 scope.active = matchIdx;
             };
 
-            scope.selectMatch = function(activeIdx) {
-                scope.select({
-                    activeIdx: activeIdx
-                });
+            scope.selectMatch = function(activeIdx, evt) {
+                var debounce = scope.debounce();
+                if (angular.isNumber(debounce) || angular.isObject(debounce)) {
+                    $$debounce(function() {
+                        scope.select({
+                            activeIdx: activeIdx,
+                            evt: evt
+                        });
+                    }, angular.isNumber(debounce) ? debounce : debounce['default']);
+                } else {
+                    scope.select({
+                        activeIdx: activeIdx,
+                        evt: evt
+                    });
+                }
             };
         }
     };
-})
+}])
 
-.directive('typeaheadMatch', ['$templateRequest', '$compile', '$parse', function($templateRequest, $compile, $parse) {
+.directive('uibTypeaheadMatch', ['$templateRequest', '$compile', '$parse', function($templateRequest, $compile, $parse) {
     return {
-        restrict: 'EA',
         scope: {
             index: '=',
             match: '=',
             query: '='
         },
         link: function(scope, element, attrs) {
-            var tplUrl = $parse(attrs.templateUrl)(scope.$parent) || msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead-match.html');
+            var tplUrl = $parse(attrs.templateUrl)(scope.$parent) || msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead/match.html');
             $templateRequest(tplUrl).then(function(tplContent) {
-                $compile(tplContent.trim())(scope, function(clonedElement) {
-                    element.replaceWith(clonedElement);
-                });
+                var tplEl = angular.element(tplContent.trim());
+                element.replaceWith(tplEl);
+                $compile(tplEl)(scope);
             });
         }
     };
 }])
 
-.filter('typeaheadHighlight', function() {
+.filter('uibTypeaheadHighlight', ['$sce', '$injector', function ($sce, $injector) {
+    var isSanitizePresent = $injector.has('$sanitize');
+
+    if (!isSanitizePresent) {
+        msos.console.warn('ng.bootstrap.ui.typeahead - filter -> unsafe: please add ngSanitize to app required modules.');
+    }
 
     function escapeRegexp(queryToEscape) {
+        // Regex: capture the whole query string and replace it with the string that will be used to match
+        // the results, for example if the capture is "a" the result will be \a
         return queryToEscape.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
     }
 
+    function containsHtml(matchItem) {
+        return /<.*>/g.test(matchItem);
+    }
+
     return function(matchItem, query) {
-        return query ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') : matchItem;
+
+        matchItem = query ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') : matchItem;
+
+        // Use $sce.trustAsHtml if ngSanitize not required
+        if (!isSanitizePresent) { matchItem = $sce.trustAsHtml(matchItem); }
+
+        return matchItem;
     };
-});
+}]);
+

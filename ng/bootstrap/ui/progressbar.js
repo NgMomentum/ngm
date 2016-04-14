@@ -1,38 +1,58 @@
 
 msos.provide("ng.bootstrap.ui.progressbar");
 
-ng.bootstrap.ui.progressbar.version = new msos.set_version(15, 7, 7);
+ng.bootstrap.ui.progressbar.version = new msos.set_version(16, 3, 21);
+
+// Load Angular-UI-Bootstrap module specific CSS
+ng.bootstrap.ui.progressbar.css = new msos.loader();
+ng.bootstrap.ui.progressbar.css.load('ng_bootstrap_css_ui_progress_css', msos.resource_url('ng', 'bootstrap/css/ui/progress.css'));
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.progressbar -> ng.bootstrap.ui.progressbar
-// template/progressbar/progress.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/progress.html'),
-// template/progressbar/bar.html            -> msos.resource_url('ng', 'bootstrap/ui/tmpl/bar.html'),
-// template/progressbar/progressbar.html'   -> msos.resource_url('ng', 'bootstrap/ui/tmpl/progressbar.html')
+// uib/template/progressbar/progress.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/progress.html'),
+// uib/template/progressbar/bar.html            -> msos.resource_url('ng', 'bootstrap/ui/tmpl/bar.html'),
+// uib/template/progressbar/progressbar.html'   -> msos.resource_url('ng', 'bootstrap/ui/tmpl/progressbar.html')
 angular.module('ng.bootstrap.ui.progressbar', [])
 
-.constant('progressConfig', {
-  animate: true,
-  max: 100
+.constant('uibProgressConfig', {
+    animate: true,
+    max: 100
 })
 
-.controller('ProgressController', ['$scope', '$attrs', 'progressConfig', function($scope, $attrs, progressConfig) {
+.controller('UibProgressController', ['$scope', '$attrs', 'uibProgressConfig', function($scope, $attrs, progressConfig) {
     var self = this,
         animate = angular.isDefined($attrs.animate) ? $scope.$parent.$eval($attrs.animate) : progressConfig.animate;
 
     this.bars = [];
-    $scope.max = angular.isDefined($scope.max) ? $scope.max : progressConfig.max;
+    $scope.max = getMaxOrDefault();
 
-    this.addBar = function(bar, element) {
-        if ( !animate ) {
-            element.css({'transition': 'none'});
+    this.addBar = function(bar, element, attrs) {
+        if (!animate) {
+            element.css({
+                'transition': 'none'
+            });
         }
 
         this.bars.push(bar);
 
-        bar.$watch('value', function( value ) {
-            bar.percent = +(100 * value / $scope.max).toFixed(2);
+        bar.max = getMaxOrDefault();
+        bar.title = attrs && angular.isDefined(attrs.title) ? attrs.title : 'progressbar';
+
+        bar.$watch('value', function(value) {
+            bar.recalculatePercentage();
         });
+
+        bar.recalculatePercentage = function() {
+            var totalPercentage = self.bars.reduce(function(total, bar) {
+                bar.percent = +(100 * bar.value / bar.max).toFixed(2);
+                return total + bar.percent;
+            }, 0);
+
+            if (totalPercentage > 100) {
+                bar.percent -= totalPercentage - 100;
+            }
+        };
 
         bar.$on('$destroy', function() {
             element = null;
@@ -42,53 +62,68 @@ angular.module('ng.bootstrap.ui.progressbar', [])
 
     this.removeBar = function(bar) {
         this.bars.splice(this.bars.indexOf(bar), 1);
+        this.bars.forEach(function(bar) {
+            bar.recalculatePercentage();
+        });
     };
+
+    //$attrs.$observe('maxParam', function(maxParam) {
+    $scope.$watch('maxParam', function(maxParam) {
+        self.bars.forEach(function(bar) {
+            bar.max = getMaxOrDefault();
+            bar.recalculatePercentage();
+        });
+    });
+
+    function getMaxOrDefault() {
+        return angular.isDefined($scope.maxParam) ? $scope.maxParam : progressConfig.max;
+    }
 }])
 
-.directive('progress', function() {
+.directive('uibProgress', function() {
     return {
-        restrict: 'EA',
         replace: true,
         transclude: true,
-        controller: 'ProgressController',
-        require: 'progress',
-        scope: {},
+        controller: 'UibProgressController',
+        require: 'uibProgress',
+        scope: {
+            maxParam: '=?max'
+        },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/progress.html')
     };
 })
 
-.directive('bar', function() {
+.directive('uibBar', function() {
     return {
-        restrict: 'EA',
         replace: true,
         transclude: true,
-        require: '^progress',
+        require: '^uibProgress',
         scope: {
             value: '=',
-            max: '=?',
             type: '@'
         },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/bar.html'),
         link: function(scope, element, attrs, progressCtrl) {
-            progressCtrl.addBar(scope, element);
+            progressCtrl.addBar(scope, element, attrs);
         }
     };
 })
 
-.directive('progressbar', function() {
+.directive('uibProgressbar', function() {
     return {
-        restrict: 'EA',
         replace: true,
         transclude: true,
-        controller: 'ProgressController',
+        controller: 'UibProgressController',
         scope: {
             value: '=',
-            max: '=?',
+            maxParam: '=?max',
             type: '@'
         },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/progressbar.html'),
         link: function(scope, element, attrs, progressCtrl) {
-            progressCtrl.addBar(scope, angular.element(element.children()[0]));
+            progressCtrl.addBar(scope, angular.element(element.children()[0]), {
+                title: attrs.title
+            });
         }
     };
 });
