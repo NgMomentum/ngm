@@ -196,16 +196,23 @@
     }
 
     function prepareAnimationOptions(options) {
+
         options = options || {};
+
         if (!options.$$prepared) {
             var domOperation = options.domOperation || noop;
+
             options.domOperation = function () {
                 options.$$domOperationFired = true;
                 domOperation();
                 domOperation = noop;
+                options.$$isnoop = true;
             };
+
+            options.$$isnoop = domOperation === noop ? true : false;
             options.$$prepared = true;
         }
+
         return options;
     }
 
@@ -663,7 +670,11 @@
                 var rafWaitQueue = [];
 
                 function waitUntilQuiet(callback) {
-                    rafWaitQueue.push(callback);
+
+                    if (callback !== noop) {
+                        rafWaitQueue.push(callback);
+                    }
+                    
                     $$rAFScheduler.waitUntilQuiet(function () {
                         gcsLookup.flush();
                         gcsStaggerLookup.flush();
@@ -695,8 +706,6 @@
                     return timings;
                 }
 
-                msos.console.debug(temp_ap + ' -> done!');
-
                 return function init(element, initialOptions) {
                     // all of the animation functions should create
                     // a copy of the options data, however, if a
@@ -715,6 +724,7 @@
                     if (!node ||
                         !node.parentNode ||
                         !$$animateQueue.enabled()) {
+                        msos.console.debug(temp_ap + ' - init -> done, no node, etc.');
                         return closeAndReturnNoopAnimator();
                     }
 
@@ -734,6 +744,7 @@
                     var events = [];
 
                     if (options.duration === 0 || (!Modernizr.cssanimations && !Modernizr.csstransitions)) {
+                        msos.console.debug(temp_ap + ' - init -> done, no animations/transitions');
                         return closeAndReturnNoopAnimator();
                     }
 
@@ -784,6 +795,7 @@
                     if (!containsKeyframeAnimation &&
                         !hasToStyles &&
                         !preparationClasses) {
+                        msos.console.debug(temp_ap + ' - init -> done, no styles/classes.');
                         return closeAndReturnNoopAnimator();
                     }
 
@@ -882,6 +894,7 @@
                     }
 
                     if (maxDuration === 0 && !flags.recalculateTimingStyles) {
+                        msos.console.debug(temp_ap + ' - init -> done, duration = 0.');
                         return closeAndReturnNoopAnimator();
                     }
 
@@ -1256,6 +1269,7 @@
                         }
                     }
                 };
+                msos.console.debug(temp_ap + ' -> done!');
             }
         ];
     }];
@@ -1557,6 +1571,7 @@
                     }
 
                     options = prepareAnimationOptions(options);
+
                     if (!classes) {
                         classes = element.attr('class') || '';
                         if (options.addClass) {
@@ -1596,7 +1611,7 @@
                     if (!before && !after) return;
 
                     function applyOptions() {
-                        options.domOperation();
+                        if (!options.$$isnoop) options.domOperation();
                         applyAnimationClasses(element, options);
                     }
 
@@ -2400,7 +2415,7 @@
                             // if the event changed from something like enter to leave then we do
                             // it, otherwise if it's the same then the end result will be the same too
                             if (animationCancelled || (isStructural && animationDetails.event !== event)) {
-                                options.domOperation();
+                                if (!options.$$isnoop) options.domOperation();
                                 runner.end();
                             }
 
@@ -2458,14 +2473,16 @@
                                 cleanupEventListeners(phase, element);
                             }
                         });
-                        runner.progress(event, phase, data);
+                        if (runner.progress !== noop) {
+                            runner.progress(event, phase, data);
+                        }
                     }
 
                     function close(reject) { // jshint ignore:line
                         clearGeneratedClasses(element, options);
                         applyAnimationClasses(element, options);
                         applyAnimationStyles(element, options);
-                        options.domOperation();
+                        if (!options.$$isnoop) options.domOperation();
                         runner.complete(!reject);
                     }
                 }
@@ -2719,7 +2736,9 @@
 
                 // TODO(matsko): document the signature in a better way
                 return function (element, event, options) {
+
                     options = prepareAnimationOptions(options);
+
                     var isStructural = ['enter', 'move', 'leave'].indexOf(event) >= 0;
 
                     // there is no animation at the current moment, however
@@ -3010,7 +3029,7 @@
 
                         applyAnimationClasses(element, options);
                         applyAnimationStyles(element, options);
-                        options.domOperation();
+                        if (!options.$$isnoop) options.domOperation();
 
                         if (tempClasses) {
                             $$jqLite.removeClass(element, tempClasses);

@@ -11268,7 +11268,7 @@ msos.console.time('ng');
                         parsed_expr;
 
                     // Quick short-circuit (ie: $parse(expr) returns noop)
-                    if (expr === undefined || expr === null) { return undefined; }
+                    if (expr === undefined || expr === null || expr === '') { return undefined; }
 
                     if (verbose) {
                         msos_debug(temp_rsp + temp_ev + 'start, for: ' + type_of + (type_of === 'string' ? '\n     expression: ' + expr : ''));
