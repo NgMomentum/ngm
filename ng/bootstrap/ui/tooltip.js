@@ -463,10 +463,8 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
 
                                 observers.push(
                                     attrs.$observe(prefix + 'Placement', function(val) {
-                                        if (ttScope.isOpen) { hide(); }
+//                                        if (ttScope.isOpen) { hide(); }
                                         ttScope.placement = val ? val : options.placement;
-                                        var placement = $position.parsePlacement(ttScope.placement);
-                                        lastPlacement = placement[1] ? placement[0] + '-' + placement[1] : placement[0];
                                         if (ttScope.isOpen) {
                                             positionTooltip();
                                         }

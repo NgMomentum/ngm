@@ -58,9 +58,9 @@ if (msos.config.debug_script) {
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v300_msos.uc.js'),
 		msos.resource_url('ng', 'v153_msos.uc.js'),
-		msos.resource_url('ng', 'animate/v148_msos.uc.js'),
+		msos.resource_url('ng', 'animate/v155_msos.uc.js'),
 		msos.resource_url('ng', 'ui/router/v0218_msos.uc.js'),
-		msos.resource_url('ng', 'bootstrap/v131_msos.uc.js'),
+		msos.resource_url('ng', 'bootstrap/v132_msos.uc.js'),
 		msos.resource_url('app', 'site.js'),					// Common installation specific setup code (which needs jQuery, underscore.js, etc.)
 		msos.resource_url('msos', 'core.uc.js')
 	];
@@ -71,9 +71,9 @@ if (msos.config.debug_script) {
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v300_msos.min.js'),
 		msos.resource_url('ng', 'v153_msos.min.js'),
-		msos.resource_url('ng', 'animate/v148_msos.min.js'),
+		msos.resource_url('ng', 'animate/v155_msos.min.js'),
 		msos.resource_url('ng', 'ui/router/v0218_msos.min.js'),
-		msos.resource_url('ng', 'bootstrap/v131_msos.min.js'),
+		msos.resource_url('ng', 'bootstrap/v132_msos.min.js'),
 		msos.resource_url('app', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
 	];

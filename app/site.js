@@ -35,7 +35,9 @@
 	_: false
 */
 
-msos.site = {};
+msos.site = {
+	msie: document.documentMode
+};
 
 msos.console.info('site -> start, (/ngm/app/site.js file).');
 msos.console.time('site');
@@ -61,6 +63,19 @@ msos.site.google_analytics = function () {
 		msos.console.warn('msos.site.google_analytics -> please update msos.config.google.analytics_domain in config.js!');
       }
 };
+
+
+// http://getbootstrap.com/getting-started/#support-ie10-width
+if (msos.site.msie >= 9 && navigator.userAgent.match(/IEMobile\/10\.0/)) {
+
+	msViewportStyle = document.createElement('style');
+
+	msViewportStyle.appendChild(
+		document.createTextNode('@-ms-viewport{width:auto!important}')
+	);
+
+	document.head.appendChild(msViewportStyle);
+}
 
 
 // --------------------------

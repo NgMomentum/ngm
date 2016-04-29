@@ -290,10 +290,18 @@ angular.module('ng.bootstrap.ui.modal', ['ng.bootstrap.ui.stackedMap', 'ng.boots
             }
 
             removeAfterAnimate(modalWindow.modalDomEl, modalWindow.modalScope, function() {
-                var modalBodyClass = modalWindow.openedClass || OPENED_MODAL_CLASS;
+                var modalBodyClass = modalWindow.openedClass || OPENED_MODAL_CLASS,
+                    areAnyOpen;
+
                 openedClasses.remove(modalBodyClass, modalInstance);
-                appendToElement.toggleClass(modalBodyClass, openedClasses.hasKey(modalBodyClass));
-                if (scrollbarPadding && scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
+                areAnyOpen = openedClasses.hasKey(modalBodyClass);
+
+                appendToElement.toggleClass(modalBodyClass, areAnyOpen);
+
+                if (!areAnyOpen
+                 && scrollbarPadding
+                 && scrollbarPadding.heightOverflow
+                 && scrollbarPadding.scrollbarWidth) {
                     if (scrollbarPadding.originalRight) {
                         appendToElement.css({
                             paddingRight: scrollbarPadding.originalRight + 'px'
@@ -471,6 +479,10 @@ angular.module('ng.bootstrap.ui.modal', ['ng.bootstrap.ui.stackedMap', 'ng.boots
                 }
                 $compile(backdropDomEl)(backdropScope);
                 $animate.enter(backdropDomEl, appendToElement);
+                scrollbarPadding = $uibPosition.scrollbarPadding(appendToElement);
+                if (scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
+                    appendToElement.css({paddingRight: scrollbarPadding.right + 'px'});
+                }
             }
 
             // Set the top modal index based on the index of the previous top modal
@@ -488,12 +500,6 @@ angular.module('ng.bootstrap.ui.modal', ['ng.bootstrap.ui.stackedMap', 'ng.boots
                 angularDomEl.attr('modal-animation', 'true');
             }
 
-            scrollbarPadding = $uibPosition.scrollbarPadding(appendToElement);
-            if (scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
-                appendToElement.css({
-                    paddingRight: scrollbarPadding.right + 'px'
-                });
-            }
             appendToElement.addClass(modalBodyClass);
             $animate.enter($compile(angularDomEl)(modal.scope), appendToElement);
 
