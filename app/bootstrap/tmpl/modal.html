@@ -1,0 +1,63 @@
+<section id="modal">
+    <div data-ng-ignore class="page-header">
+        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
+        <h1>Modal
+            <small>(
+                <a target="_blank" href="https://github.com/angular-ui/bootstrap/tree/master/src/modal">ng.bootstrap.ui.modal</a>)</small>
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-md-6 show-grid">
+            <div ng-controller="app.bootstrap.controllers.modal.ctrl">
+                <button type="button" class="btn btn-default" ng-click="open()">Open me!</button>
+                <button type="button" class="btn btn-default" ng-click="open('lg')">Large modal</button>
+                <button type="button" class="btn btn-default" ng-click="open('sm')">Small modal</button>
+                <button type="button" class="btn btn-default" ng-click="toggleAnimation()">Toggle Animation ({{ animationsEnabled }})</button>
+                <div ng-show="selected">Selection from a modal: {{ selected }}</div>
+            </div>
+        </div>
+        <div data-ng-ignore class="col-md-6">
+            <p><code>$modal</code> is a service to quickly create AngularJS-powered modal windows. Creating custom modals is straightforward: create a partial view, its controller and reference them when using the service.</p>
+
+            <p>The <code>$modal</code> service has only one method: <code>open(options)</code> where available options are like follows:</p>
+
+            <ul>
+                <li><code>templateUrl</code> - a path to a template representing modal's content</li>
+                <li><code>template</code> - inline template representing the modal's content</li>
+                <li><code>scope</code> - a scope instance to be used for the modal's content (actually the <code>$modal</code> service is going to create a child scope of a provided scope). Defaults to <code>$rootScope</code></li>
+                <li><code>controller</code> - a controller for a modal instance - it can initialize scope used by modal. Accepts the "controller-as" syntax in the form 'SomeCtrl as myctrl'; can be injected with <code>$modalInstance</code></li>
+                <li><code>controllerAs</code> - an alternative to the controller-as syntax, matching the API of directive definitions. Requires the <code>controller</code> option to be provided as well</li>
+                <li><code>resolve</code> - members that will be resolved and passed to the controller as locals; it is equivalent of the <code>resolve</code> property for AngularJS routes</li>
+                <li><code>animation</code> - set to false to disable animations on new modal/backdrop. Does not toggle animations for modals/backdrops that are already displayed.</li>
+                <li><code>backdrop</code> - controls presence of a backdrop. Allowed values: true (default), false (no backdrop), <code>'static'</code> - backdrop is present but modal window is not closed when clicking outside of the modal window.</li>
+                <li><code>keyboard</code> - indicates whether the dialog should be closable by hitting the ESC key, defaults to true</li>
+                <li><code>backdropClass</code> - additional CSS class(es) to be added to a modal backdrop template</li>
+                <li><code>windowClass</code> - additional CSS class(es) to be added to a modal window template</li>
+                <li><code>windowTemplateUrl</code> - a path to a template overriding modal's window template</li>
+                <li><code>size</code> - optional suffix of modal window class. The value used is appended to the <code>modal-</code> class, i.e. a value of <code>sm</code> gives <code>modal-sm</code></li>
+            </ul>
+
+            <p>The <code>open</code> method returns a modal instance, an object with the following properties:</p>
+
+            <ul>
+                <li><code>close(result)</code> - a method that can be used to close a modal, passing a result</li>
+                <li><code>dismiss(reason)</code> - a method that can be used to dismiss a modal, passing a reason</li>
+                <li><code>result</code> - a promise that is resolved when a modal is closed and rejected when a modal is dismissed</li>
+                <li><code>opened</code> - a promise that is resolved when a modal gets opened after downloading content's template and resolving all variables</li>
+                <li>'rendered' - a promise that is resolved when a modal is rendered. </li>
+            </ul>
+
+            <p>In addition the scope associated with modal's content is augmented with 2 methods:</p>
+
+            <ul>
+                <li><code>$close(result)</code></li>
+                <li><code>$dismiss(reason)</code></li>
+            </ul>
+
+            <p>Those methods make it easy to close a modal window without a need to create a dedicated controller.</p>
+
+            <p>Finally, a <code>modal.closing</code> event is broadcast to the modal scope before the modal closes. If the listener calls preventDefault on the event, then the modal will remain open. The $close and $dismiss methods return true if the event was allowed. The event itself includes a parameter for the result/reason and a boolean parameter that indicates whether the modal is being closed (true) or dismissed.</p>
+        </div>
+    </div>
+    <hr>
+</section>

@@ -1,0 +1,40 @@
+
+
+<section data-ng-ignore id="welcome">
+    <div class="page-header">
+        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
+        <h1>Welcome to AngularJs Bootstrap-UI via MobileSiteOS</h1>
+    </div>
+
+    <p>
+        This demo highlights the use of MobileSiteOS as the mechanism to load individual Bootstrap-UI modules versus
+        using the full version of the AngularJS Bootstrap-UI framework. It also demonstrates the possibility of
+        loading many individual page "content" sections via the same single page application, often called "lazy-loading"
+        of code and content.
+    </p>
+    <p>
+        Using MobileSiteOS also allows the ease of loading JavaScript, HTML and CSS as modules. Most important, MSOS
+        modules call their own dependencies. You don't have to keep track of dependency chains. Complex dependency
+        managment is handled seemlessly in the background, unlike other module loading scripts.
+    </p>
+
+    <h2>MSOS Version of AngularJS</h2>
+    
+    <p>
+        For the most part, the MSOS version of AngularJS is an experimental attempt to "improve" on the standard AngularJS
+        coding for use with MobileSiteOS. Since MobileSiteOS uses UnderscoreJS, Modernizr and jQuery as hard dependencies,
+        our version of AngularJS does too. That is, previous AngularJS code which was duplicated by UnderscoreJS, Modernizr
+        and/or jQuery, was removed from AngularJS. So no jQLite stuff, and as much unused code was removed as possible.
+        For example, MobileSiteOS can't utilize AngularJS's self bootstrapping code due to MSOS module loading verification
+        and execution timing. So bootstrapping must be done manually at the end of MSOS code processing.
+    </p>
+
+    <p>
+        The "angular_module" object was added for tracking AngularJS modules as they are loaded, and is used by our
+        "ng.util.postloader" module. The MSOS version of AngularJS has also been cleaned up a bit to try and remove some
+        of the more "ambiguous" style of coding that was used. This was done mostly as an exercise into seeing exactly how
+        AngularJS goes about doing what it does. The intent is to clarify, and not change the basic operations other than
+        for improvements.
+    </p>
+
+</section>

@@ -2375,16 +2375,7 @@
 
     function $ViewScrollProvider() {
 
-        var useAnchorScroll = false;
-
-        this.useAnchorScroll = function () {
-            useAnchorScroll = true;
-        };
-
-        this.$get = ['$anchorScroll', '$timeout', function ($anchorScroll, $timeout) {
-            if (useAnchorScroll) {
-                return $anchorScroll;
-            }
+        this.$get = ['$timeout', function ($timeout) {
 
             return function ($element) {
                 return $timeout(function () {

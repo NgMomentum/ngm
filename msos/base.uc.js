@@ -3921,10 +3921,14 @@ msos.run_function_array = function (name) {
 
 		msos.console.debug(temp_fa + 'index: ' + m);
 
-		try {
+		if (msos.config.debug) {
+			try {
+				msos[name][m]();
+			} catch (e) {
+				msos.console.error(temp_fa + 'for: ' + name, e);
+			}
+		} else {
 			msos[name][m]();
-		} catch (e) {
-			msos.console.error(temp_fa + 'for: ' + name, e);
 		}
 	}
 
