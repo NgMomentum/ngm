@@ -788,7 +788,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             return $scope.disabled ||
                 this.minDate && this.compare(date, this.minDate) < 0 ||
                 this.maxDate && this.compare(date, this.maxDate) > 0 ||
-                $scope.dateDisabled && $scope.dateDisabled({
+                $scope.dateDisabled && ($scope.dateDisabled !== angular.noop) && $scope.dateDisabled({
                     date: date,
                     mode: $scope.datepickerMode
                 });
