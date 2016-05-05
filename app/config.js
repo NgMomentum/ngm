@@ -57,7 +57,7 @@ if (msos.config.debug_script) {
 	// Debug full scripts (line no's mean something)
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v300_msos.uc.js'),
-		msos.resource_url('ng', 'v153_msos.uc.js'),
+		msos.resource_url('ng', 'v155_msos.uc.js'),
 		msos.resource_url('ng', 'animate/v155_msos.uc.js'),
 		msos.resource_url('ng', 'ui/router/v0218_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v132_msos.uc.js'),
@@ -70,7 +70,7 @@ if (msos.config.debug_script) {
 	// Standard site provided (including ext. bundles) scripts
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v300_msos.min.js'),
-		msos.resource_url('ng', 'v153_msos.min.js'),
+		msos.resource_url('ng', 'v155_msos.min.js'),
 		msos.resource_url('ng', 'animate/v155_msos.min.js'),
 		msos.resource_url('ng', 'ui/router/v0218_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v132_msos.min.js'),
