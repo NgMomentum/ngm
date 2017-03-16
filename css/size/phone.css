@@ -92,11 +92,11 @@ section {
 }
 #branding {
   width: 316px;
-  font-size: x-large;
-  top: 0;
+  font-size: large;
+  top: -20px;
   left: 0;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
 }
 #slogan {
   width: 316px;
