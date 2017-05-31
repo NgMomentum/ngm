@@ -1,8 +1,4 @@
 
-.list-group {
-  padding-left: 0;
-  margin-bottom: 20px;
-}
 .list-group-item.active > .badge {
   color: #337ab7;
   background-color: #fff;
@@ -12,6 +8,11 @@
 }
 .list-group-item > .badge + .badge {
   margin-right: 5px;
+}
+
+.list-group {
+  padding-left: 0;
+  margin-bottom: 20px;
 }
 .list-group-item {
   position: relative;
