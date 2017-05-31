@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    ad.js
-//			Copyright©2008-2013 - OpenSiteMobile
+//			Copyright©2008-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -19,7 +19,7 @@
 
 msos.provide("msos.google.ad");
 
-msos.google.ad.version = new msos.set_version(14, 6, 6);
+msos.google.ad.version = new msos.set_version(16, 10, 27);
 
 
 // Set Google AdSense variable immediately
@@ -45,11 +45,7 @@ msos.google.ad.run = function () {
     msos.console.debug(ad_txt + ' -> start.');
 
     google_script = new msos.loader();
-    google_script.load(
-        'adsbygoogle_js',
-        '//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
-        'js'
-    );
+    google_script.load('//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', 'js');
 
     google_check = function () {
         var temp_gc = ' - google_check -> ',

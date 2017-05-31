@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    ajax.js
-//			Copyright©2010-2013 - OpenSiteMobile
+//			Copyright©2010-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -19,12 +19,12 @@
 msos.provide("msos.ajax");
 msos.require("msos.popdiv");
 
-msos.ajax.version = new msos.set_version(14, 3, 14);
+msos.ajax.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our pop_ajax.css stylesheet
 msos.ajax.css = new msos.loader();
-msos.ajax.css.load('pop_ajax_css', msos.resource_url('css', 'pop_ajax.css'));
+msos.ajax.css.load(msos.resource_url('css', 'pop_ajax.css'));
 
 // Don't translate #ajax_header text (use msos.i18n)
 msos.config.google.no_translate.by_id.push('#ajax_header');

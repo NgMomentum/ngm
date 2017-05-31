@@ -14,11 +14,11 @@
 
 msos.provide("jquery.footable.core");
 
-jquery.footable.core.version = new msos.set_version(14, 3, 12);
+jquery.footable.core.version = new msos.set_version(16, 10, 27);
 
 
 jquery.footable.core.css = new msos.loader();
-jquery.footable.core.css.load('jquery_css_footable_core_css', msos.resource_url('jquery', 'css/footable/core.css'));
+jquery.footable.core.css.load(msos.resource_url('jquery', 'css/footable/core.css'));
 
 // Below is standard FooTable code
 (function ($, w, undefined) {

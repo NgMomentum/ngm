@@ -11,7 +11,7 @@
 
 msos.provide("msos.mbp.ios");
 
-msos.mbp.ios.version = new msos.set_version(13, 12, 3);
+msos.mbp.ios.version = new msos.set_version(16, 10, 27);
 
 
 (function (document) {
@@ -36,12 +36,51 @@ msos.mbp.ios.version = new msos.set_version(13, 12, 3);
         }
     };
 
+    /**
+     * Autogrow
+     * http://googlecode.blogspot.com/2009/07/gmail-for-mobile-html5-series.html
+     */
+    msos.mbp.ios.autogrow = function( element, lh) {
+        function handler(e) {
+            var newHeight = this.scrollHeight;
+            var currentHeight = this.clientHeight;
+            if (newHeight > currentHeight) {
+                this.style.height = newHeight + 3 * textLineHeight + 'px';
+            }
+        }
+
+        var setLineHeight = (lh) ? lh : 12;
+        var textLineHeight = element.currentStyle ? element.currentStyle.lineHeight : getComputedStyle(element, null).lineHeight;
+
+        textLineHeight = (textLineHeight.indexOf('px') == -1) ? setLineHeight : parseInt(textLineHeight, 10);
+
+        element.style.overflow = 'hidden';
+        element.addEventListener ? element.addEventListener('input', handler, false) : element.attachEvent('onpropertychange', handler);
+    };
+
+    /**
+     * Enable CSS active pseudo styles in Mobile Safari
+     * http://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/
+     */
+    msos.mbp.ios.enableActive = function () {
+        document.addEventListener('touchstart', function () {}, false);
+    };
+
+    /**
+     * Prevent default scrolling on document window
+     */
+    msos.mbp.ios.preventScrolling = function () {
+        document.addEventListener('touchmove', function (e) {
+            if (e.target.type === 'range') { return; }
+            e.preventDefault();
+        }, false);
+    };
+
 	/**
      * Prevent iOS from zooming onfocus
      * https://github.com/h5bp/mobile-boilerplate/pull/108
      * Adapted from original jQuery code here: http://nerd.vasilis.nl/prevent-ios-from-zooming-onfocus/
      */
-
     msos.mbp.ios.preventZoom = function () {
         if (msos.mbp.ios.viewportmeta && navigator.platform.match(/iPad|iPhone|iPod/i)) {
             var contentString = 'width=device-width,initial-scale=1,maximum-scale=';
@@ -104,62 +143,6 @@ msos.mbp.ios.version = new msos.set_version(13, 12, 3);
     };
 
 }(document));
-
-
-/*! A fix for the iOS orientationchange zoom bug.
- Script by @scottjehl, rebound by @wilto.
- MIT License.
-*/
-(function (w) {
-	"use strict";
-
-	// This fix addresses an iOS bug, so return early if the UA claims it's something else.
-	var ua = navigator.userAgent,
-		doc = w.document;
-
-	if (!(/iPhone|iPad|iPod/.test(navigator.platform) && /OS [1-5]_[0-9_]* like Mac OS X/i.test(ua) && ua.indexOf("AppleWebKit") !== -1)) {
-		return;
-	}
-
-    if (!doc.querySelector) { return; }
-
-    var meta = doc.querySelector("meta[name=viewport]"),
-        initialContent = meta && meta.getAttribute("content"),
-        disabledZoom = initialContent + ",maximum-scale=1",
-        enabledZoom =  initialContent + ",maximum-scale=10",
-        enabled = true,
-		x, y, z, aig;
-
-    if (!meta) { return; }
-
-    function restoreZoom() {
-        meta.setAttribute("content", enabledZoom);
-        enabled = true;
-    }
-
-    function disableZoom() {
-        meta.setAttribute("content", disabledZoom);
-        enabled = false;
-    }
-
-    function checkTilt(e) {
-		aig = e.accelerationIncludingGravity;
-		x = Math.abs(aig.x);
-		y = Math.abs(aig.y);
-		z = Math.abs(aig.z);
-
-		// If portrait orientation and in one of the danger zones
-        if ((!w.orientation || w.orientation === 180) && (x > 7 || ((z > 6 && y < 8 || z < 8 && y > 6) && x > 5))) {
-			if (enabled) { disableZoom(); }
-        } else if (!enabled) {
-			restoreZoom();
-		}
-    }
-
-	w.addEventListener("orientationchange",	restoreZoom,	false);
-	w.addEventListener("devicemotion",		checkTilt,		false);
-
-}(this));
 
 
 // Add these late (no hurry)

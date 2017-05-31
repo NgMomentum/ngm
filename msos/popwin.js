@@ -20,7 +20,7 @@ msos.provide("msos.popwin");
 msos.require("msos.common");
 msos.require("msos.i18n.common");
 
-msos.popwin.version = new msos.set_version(14, 3, 26);
+msos.popwin.version = new msos.set_version(16, 9, 13);
 
 
 msos.popwin.css_url = msos.resource_url('css', 'popwin.css');
@@ -118,7 +118,8 @@ msos.popwin.msos_std = function (win_type, win_name, page_title, page_desc, page
 
 		// Add event to close popup on parent window focus and closure
 		if (win_type !== 'debug') { jQuery(window).focus(clse_popup_func); }
-		jQuery(window).unload(clse_popup_func);
+	
+		window.onbeforeunload = clse_popup_func;
 
 		if        (win_type === 'image') {
 			pop_content_id = 'popup_image';

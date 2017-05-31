@@ -6,12 +6,12 @@
 
 msos.provide("msos.sdmenu");
 
-msos.sdmenu.version = new msos.set_version(13, 6, 14);
+msos.sdmenu.version = new msos.set_version(16, 10, 27);
 
 // Start by loading our sdmenu specific stylesheet
 msos.sdmenu.css = new msos.loader();
-msos.sdmenu.css.load('sdmenu_css',		msos.resource_url('css', 'sdmenu.css'));
-msos.sdmenu.css.load('sdmenu_msos_css',	msos.resource_url('css', 'sdmenu_msos.css'));
+msos.sdmenu.css.load(msos.resource_url('css', 'sdmenu.css'));
+msos.sdmenu.css.load(msos.resource_url('css', 'sdmenu_msos.css'));
 
 
 msos.sdmenu.generate = function (id) {

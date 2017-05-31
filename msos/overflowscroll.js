@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    overflowscroll.js
-//			Copyright©2011-2013 - OpenSiteMobile
+//			Copyright©2011-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -21,11 +21,11 @@ msos.provide("msos.overflowscroll");
 msos.require("msos.tools.overflowscroll");
 msos.require("msos.common");
 
-msos.overflowscroll.version = new msos.set_version(13, 11, 6);
+msos.overflowscroll.version = new msos.set_version(16, 10, 27);
 
 // Start by loading the overflowscroll.css stylesheet
 msos.overflowscroll.css = new msos.loader();
-msos.overflowscroll.css.load('overflowscroll_css', msos.resource_url('css', 'overflowscroll.css'));
+msos.overflowscroll.css.load(msos.resource_url('css', 'overflowscroll.css'));
 
 msos.overflowscroll.check_tag_name = function ($elm) {
     "use strict";

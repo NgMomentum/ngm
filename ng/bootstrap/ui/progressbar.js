@@ -1,11 +1,11 @@
 
 msos.provide("ng.bootstrap.ui.progressbar");
 
-ng.bootstrap.ui.progressbar.version = new msos.set_version(16, 3, 21);
+ng.bootstrap.ui.progressbar.version = new msos.set_version(17, 5, 31);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.progressbar.css = new msos.loader();
-ng.bootstrap.ui.progressbar.css.load('ng_bootstrap_css_ui_progress_css', msos.resource_url('ng', 'bootstrap/css/ui/progress.css'));
+ng.bootstrap.ui.progressbar.css.load(msos.resource_url('ng', 'bootstrap/css/ui/progress.css'));
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)

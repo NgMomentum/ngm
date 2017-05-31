@@ -2,12 +2,12 @@
 msos.provide("ng.bootstrap.ui.popover");
 msos.require("ng.bootstrap.ui.tooltip");
 
-ng.bootstrap.ui.popover.version = new msos.set_version(16, 4, 5);
+ng.bootstrap.ui.popover.version = new msos.set_version(17, 5, 31);
 
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.popover.css = new msos.loader();
-ng.bootstrap.ui.popover.css.load('ng_bootstrap_css_ui_popover_css', msos.resource_url('ng', 'bootstrap/css/ui/popover.css'));
+ng.bootstrap.ui.popover.css.load(msos.resource_url('ng', 'bootstrap/css/ui/popover.css'));
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.popover -> ng.bootstrap.ui.popover

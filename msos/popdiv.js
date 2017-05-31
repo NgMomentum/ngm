@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    popdiv.js
-//			Copyright©2008-2013 - OpenSiteMobile
+//			Copyright©2008-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -21,7 +21,7 @@ msos.provide("msos.popdiv");
 msos.require("msos.i18n.popdiv");
 msos.require("msos.common");
 
-msos.popdiv.version = new msos.set_version(14, 5, 17);
+msos.popdiv.version = new msos.set_version(17, 5, 8);
 
 
 msos.popdiv.count = 0;
@@ -46,9 +46,7 @@ msos.popdiv.create_tool = function (pop_name, pop_size_ext, pop_size_url, pop_co
         lrg_but = document.createElement("button"),
         size_onclick = null,
         center = document.createElement("span"),
-        cent_txt = document.createTextNode(':: :: :: :: ::'),
-        on_mouse_over = null,
-        on_mouse_out = null;
+        cent_txt = document.createTextNode(':: :: :: :: ::');
 
     // Make sure container div has an id
     if (!pop_container.id) {
@@ -229,7 +227,7 @@ msos.popdiv.create_tool = function (pop_name, pop_size_ext, pop_size_url, pop_co
         pop_size += pop_size_ext;
         pop_css = pop_size_url + '/' + pop_size + '.css';
 
-        popup_obj.pop_dynamic.load(pop_size, pop_css);
+        popup_obj.pop_dynamic.load(pop_css);
 
         msos.console.debug(temp_tool + sty_txt + 'done for size: ' + pop_size);
     };

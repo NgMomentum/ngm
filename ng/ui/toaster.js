@@ -16,12 +16,12 @@
 msos.provide("ng.ui.toaster");
 msos.require("ng.util.animate");
 
-ng.ui.toaster.version = new msos.set_version(14, 7, 31);
+ng.ui.toaster.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our carousel.css stylesheet
 ng.ui.toaster.css = new msos.loader();
-ng.ui.toaster.css.load('ng_ui_css_toaster',   msos.resource_url('ng', 'ui/css/toaster.css'));
+ng.ui.toaster.css.load(msos.resource_url('ng', 'ui/css/toaster.css'));
 
 // Below is the standard toaster code, except toaster -> ng.ui.toaster
 angular.module('ng.ui.toaster', ['ng.util.animate'])

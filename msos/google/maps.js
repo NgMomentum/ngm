@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    maps.js
-//			Copyright©2010-2013 - OpenSiteMobile
+//			Copyright©2010-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -14,7 +14,6 @@
 /*global
     msos: false,
     jQuery: false,
-    google: false,
     Modernizr: false
 */
 
@@ -24,10 +23,10 @@ if (!Modernizr.geolocation) {
     msos.require("msos.html5.geolocation");     // Hopefully never used now...
 }
 
-msos.google.maps.version = new msos.set_version(15, 11, 10);
+msos.google.maps.version = new msos.set_version(17, 5, 4);
 
 msos.google.maps.places = msos.google.maps.places || false;
-msos.google.maps.url_google_api = 'http://maps.google.com/maps/api/js?callback=google_maps_api_ready' + (msos.google.maps.places ? '&libraries=places' : '');
+msos.google.maps.url_google_api = 'https://maps.googleapis.com/maps/api/js?key=' + msos.config.google.maps_api_key + '&callback=google_maps_api_ready' + (msos.google.maps.places ? '&libraries=places' : '');
 msos.google.maps.loaded = false;
 msos.google.maps.ran = false;
 msos.google.maps.run_onload = [];
@@ -91,7 +90,7 @@ msos.google.maps.gen_places_info_window = function (place) {
         fullurl = place.website;
         website = msos.google.maps.hostname_regx.exec(place.website);
 
-        if (website == null) { 
+        if (website === null || website === '') { 
             website = 'http://' + place.website + '/';
             fullurl = website;
         }
@@ -216,8 +215,7 @@ msos.google.maps.run = function () {
     } else {
 
         // If msos.marker.label was loaded, generate "MarkerWithLabel"
-        if (msos.marker
-         && msos.marker.label) {
+        if (msos.marker && msos.marker.label) {
             msos.marker.label.initialize();
         }
     
@@ -242,11 +240,7 @@ msos.google.maps.initiate = function () {
         return;
     }
     // Load Google Checkout API with our loader for better debugging
-    map_loader.load(
-        'google_maps_api',
-        msos.google.maps.url_google_api,
-        'js'
-    );
+    map_loader.load(msos.google.maps.url_google_api, 'js');
 
     msos.console.debug(temp_mi + 'done!');
 };

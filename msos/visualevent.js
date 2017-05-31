@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    visualevent.js
-//			Copyright©2013 - OpenSiteMobile
+//			Copyright©2013-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -21,7 +21,7 @@ msos.provide("msos.visualevent");
 msos.require("syntaxhighlighter.brushes.jscript");
 msos.require("bootstrap.table");
 
-msos.visualevent.version = new msos.set_version(13, 11, 6);
+msos.visualevent.version = new msos.set_version(16, 10, 27);
 
 msos.config.google.no_translate.by_id.push(['#Event_Display', '#Event_Lightbox', '#Event_Label']);
 
@@ -37,10 +37,10 @@ msos.visualevent.loader = function () {
 	if (msos.config.debug_script) { ve_uri = 'v2.uc.js'; }
 
 	// Load the CSS
-	ve_load_obj.load('visualevent_css',	msos.resource_url('css', 'visualevent.css'),	'css');
+	ve_load_obj.load(msos.resource_url('css', 'visualevent.css'),	'css');
 
 	// Load the script
-	ve_load_obj.load('visualevent_js',	msos.resource_url('visualevent', ve_uri),		'js');
+	ve_load_obj.load(msos.resource_url('visualevent', ve_uri),		'js');
 
     msos.console.debug(temp_vl + 'done!');
 };

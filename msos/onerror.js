@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    onerror.js
-//			Copyright©2011-2013 - OpenSiteMobile
+//			Copyright©2011-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -13,13 +13,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
+    jQuery: false
 */
 
 msos.provide("msos.onerror");
 msos.require("msos.i18n.common");
 
-msos.onerror.version = new msos.set_version(13, 12, 3);
+msos.onerror.version = new msos.set_version(17, 4, 7);
 
 
 msos.onerror.generate = function () {
@@ -29,7 +29,7 @@ msos.onerror.generate = function () {
             url: msos.config.onerror_uri,
             website: document.domain
         },
-        on_success = function (data, status, xhr) {
+        on_success = function (data, status) {
             msos.console.info('msos.onerror.generate -> sent, status: ' + status);
         };
 
@@ -54,8 +54,7 @@ msos.onerror.generate = function () {
 	
 		msos.notify.error(msg, msos.i18n.common.bundle.error);
 
-        if (window.opener
-         && window.opener.msos) {
+        if (window.opener && window.opener.msos) {
             window.opener.msos.console.error('child window.onerror -> ' + window.name + ': ' + msg);
         }
 

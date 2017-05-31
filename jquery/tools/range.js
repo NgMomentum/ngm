@@ -20,11 +20,11 @@
 msos.provide("jquery.tools.range");
 msos.require("msos.common");
 
-jquery.tools.range.version = new msos.set_version(14, 3, 5);
+jquery.tools.range.version = new msos.set_version(16, 10, 27);
 
 
 jquery.tools.range.css = new msos.loader();
-jquery.tools.range.css.load('jquery_css_tools_range_css', msos.resource_url('jquery', 'css/tools/range.css'));
+jquery.tools.range.css.load(msos.resource_url('jquery', 'css/tools/range.css'));
 
 jquery.tools.range.conf = {
 	min: 0,

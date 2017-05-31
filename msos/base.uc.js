@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					base.js
-//			Copyright©2012-2015 - OpenSiteMobile
+//			Copyright©2012-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensitemobile.com
@@ -14,6 +14,12 @@
 	Use as the installation base for all your MobileSiteOS web apps.
 
 	This file includes: Underscore.js, Modernizr.js, Purl.js, Verge.js, Basil.js
+*/
+
+/*global
+    msos: true,
+    Modernizr: true,
+    _: true
 */
 
 if (console && console.info) { console.info('msos/base -> start.'); }
@@ -56,8 +62,9 @@ var msos = {
     // *** Do NOT edit the key/value pairs below ***
 	// *******************************************
 
-    base_site_url: '//' + document.domain,
-	base_script_url: '',
+    base_site_url: document.domain ? '//' + document.domain : '',
+	base_script_url: document.currentScript && document.currentScript.src ? document.currentScript.src : '',
+	base_msos_folder: '',
 	base_config_url: '',
 	base_images_url: '',
 
@@ -101,6 +108,7 @@ var msos = {
 	onorientationchange_functions: [],
     onresize_functions: [],
 
+	pending_file_loads: [],
     record_times: {},
 
     registered_files: {
@@ -124,6 +132,26 @@ var msos = {
     require_queue: 0
 };
 
+(function () {
+	"use strict";
+
+	var reg_msos = new RegExp('mobilesiteos'),
+		reg_ngm = new RegExp('ngm');
+
+	msos.base_script_url = msos.base_script_url.slice(0, msos.base_script_url.lastIndexOf('/') + 1) || '';
+
+	if (!msos.base_site_url)	{ throw new Error('msos.base_site_url must be set manually.'); }
+	if (!msos.base_script_url)	{ throw new Error('msos.base_script_url must be set manually.'); }
+
+	if (reg_msos.test(msos.base_script_url)) { msos.base_msos_folder = 'mobilesiteos'; }
+	if ( reg_ngm.test(msos.base_script_url)) { msos.base_msos_folder = 'ngm'; }
+
+	if (!msos.base_msos_folder)	{ throw new Error('msos.base_msos_folder must be set manually.');}
+
+	if (console && console.info) {
+		console.info('msos/base -> settings,\n     msos.base_site_url: ' + msos.base_site_url + ',\n     msos.base_script_url: ' + msos.base_script_url + ',\n     msos.base_msos_folder: ' + msos.base_msos_folder);
+	}
+}());
 
 // *******************************************
 // Base Configuration Settings
@@ -159,7 +187,10 @@ msos.config = {
         direction: '',
         editable: false,
         mobile: false,
-        touch: false
+        touch: false,
+		nativeoverflow: false,
+		fastclick: false,
+		scalable: false
     },
 
     // jQuery.ajax, 'cache' required scripts/templates (static files), false for testing
@@ -238,11 +269,12 @@ msos.config = {
 
 	google: {
 		no_translate: {},
-		hide_tooltip: {}
+		hide_tooltip: {},
+		maps_api_key: ''
 	},
 
 	// Set full url in config.js file
-	hellojs_redirect: '/mobilesiteos/hello/redirect.html',
+	hellojs_redirect: '/' + msos.base_msos_folder + '/hello/redirect.html',
 
     // See 'msos.i18n' and the 'MSOS Available Language Matrix' for ref.
     i18n: {
@@ -280,10 +312,15 @@ msos.config = {
         return (typeof el.ongesturestart === 'function' ? true : false);
     }()),
 
-	onerror_uri: 'http://' + window.location.hostname + '/onerror.html',
+	onerror_uri: msos.base_site_url + '/' + msos.base_msos_folder + '/onerror.html',
 
 	orientation: (typeof window.orientation === 'number' ? true : false),
     orientation_change: ('onorientationchange' in window ? true : false),
+
+	overflow_scrolling: {
+		webkitoverflowscrolling: ('WebkitOverflowScrolling' in document.documentElement.style ? true : false),
+		msoverflowstyle: ('msOverflowStyle' in document.documentElement.style ? true : false)
+	},
 
 	page_uri: window.location.href,
 
@@ -332,6 +369,7 @@ msos.config = {
     touch: {
         ontouchstart: ('ontouchstart' in window ? true : false),
         ontouchend: ('ontouchend' in document ? true : false),
+		ontouchmove: ('ontouchmove' in document ? true : false),
         object: (typeof window.Touch === "object" ? true : false),
         event: (window.TouchEvent !== undefined ? true : false),
         create: ('createTouch' in document ? true : false),
@@ -361,6 +399,7 @@ msos.config = {
  */
 
 (function (_global) {
+	"use strict";
 
     var tag2attr = {
             a       : 'href',
@@ -385,26 +424,26 @@ msos.config = {
 
         isint = /^[0-9]+$/;
 
-    function parseUri( url, strictMode ) {
+    function parseUri(url, strictMode) {
         var str = decodeURI( url ),
-        res   = parser[ strictMode || false ? 'strict' : 'loose' ].exec( str ),
+        res = parser[ strictMode || false ? 'strict' : 'loose' ].exec( str ),
         uri = { attr : {}, param : {}, seg : {} },
-        i   = 14;
+        i = 14;
 
-        while ( i-- ) {
+        while (i--) {
             uri.attr[ key[i] ] = res[i] || '';
         }
 
         // build query and fragment parameters
-        uri.param['query'] = parseString(uri.attr['query']);
-        uri.param['fragment'] = parseString(uri.attr['fragment']);
+        uri.param.query = parseString(uri.attr.query);
+        uri.param.fragment = parseString(uri.attr.fragment);
 
         // split path and fragement into segments
-        uri.seg['path'] = uri.attr.path.replace(/^\/+|\/+$/g,'').split('/');
-        uri.seg['fragment'] = uri.attr.fragment.replace(/^\/+|\/+$/g,'').split('/');
+        uri.seg.path = uri.attr.path.replace(/^\/+|\/+$/g,'').split('/');
+        uri.seg.fragment = uri.attr.fragment.replace(/^\/+|\/+$/g,'').split('/');
 
         // compile a 'base' domain attribute
-        uri.attr['base'] = uri.attr.host ? (uri.attr.protocol ?  uri.attr.protocol+'://'+uri.attr.host : uri.attr.host) + (uri.attr.port ? ':'+uri.attr.port : '') : '';
+        uri.attr.base = uri.attr.host ? (uri.attr.protocol ?  uri.attr.protocol+'://'+uri.attr.host : uri.attr.host) + (uri.attr.port ? ':'+uri.attr.port : '') : '';
 
         return uri;
     }
@@ -416,9 +455,20 @@ msos.config = {
     }
 
     function promote(parent, key) {
-        if (parent[key].length === 0) return parent[key] = {};
-        var t = {};
-        for (var i in parent[key]) t[i] = parent[key][i];
+        if (parent[key].length === 0) {
+			parent[key] = {};
+			return parent[key];
+		}
+
+        var t = {},
+			i;
+
+        for (i in parent[key]) {
+			if (parent[key].hasOwnProperty(i)) {
+				t[i] = parent[key][i];
+			}
+		}
+
         parent[key] = t;
         return t;
     }
@@ -463,8 +513,14 @@ msos.config = {
             parse(parts, parent, 'base', val);
         } else {
             if (!isint.test(key) && isArray(parent.base)) {
-                var t = {};
-                for (var k in parent.base) t[k] = parent.base[k];
+                var t = {},
+					k;
+
+                for (k in parent.base) {
+					if (parent.base.hasOwnProperty(k)) {
+						t[k] = parent.base[k];
+					}
+				}
                 parent.base = t;
             }
             if (key !== '') {
@@ -653,17 +709,14 @@ msos.console = (function () {
 			'profileEnd', 'show', 'table', 'time', 'timeEnd', 'timeline',
 			'timelineEnd', 'timeStamp', 'trace', 'warn'
 		],
-		method = methods.pop();
+		method = methods.pop(),
+		console_method_func = function (key) { return function () { console.warn('msos.console -> method: ' + key + ' is na!'); };};
 
 	// Normalize across browsers
     if (!console_win.memory) { console_win.memory = {}; }
 
     while (method) {
-		if (!console_win[method]) {
-			console_win[method] = function (key) {
-				return function () { console.warn('msos.console -> method: ' + key + ' is na!'); }
-			}(method);
-		}
+		if (!console_win[method]) { console_win[method] = console_method_func(method); }
 		method = methods.pop();
 	}
 
@@ -671,9 +724,7 @@ msos.console = (function () {
     function formatError(arg) {
 		if (arg instanceof Error) {
 			if (arg.stack) {
-				arg = (arg.message && arg.stack.indexOf(arg.message) === -1)
-					? 'Error: ' + arg.message + '\n' + arg.stack
-					: arg.stack;
+				arg = (arg.message && arg.stack.indexOf(arg.message) === -1) ? 'Error: ' + arg.message + '\n' + arg.stack : arg.stack;
 			} else if (arg.sourceURL) {
 				arg = arg.message + '\n' + arg.sourceURL + ':' + arg.line;
 			}
@@ -681,70 +732,69 @@ msos.console = (function () {
 		return arg;
     }
 
-	while (idx >= 0) {
+	function build_console(method) {
 
-		(function (method) {
+		console_obj[method] = function () {
 
-			console_obj[method] = function () {
+			// Always show errors and warnings
+			if (!(method === 'error' || method === 'warn') && !msos.config.debug) {
+				return;
+			}
 
-				// Always show errors and warnings
-				if (!(method === 'error' || method === 'warn') && !msos.config.debug) {
+			var cfg = msos.config,
+				filter = cfg.query.debug_filter || '',
+				i = 0,
+				args = aps.apply(arguments),
+				name = args[0] && typeof args[0] === 'string' ? args[0].replace(/\W/g, '_') : 'missing name or input',
+				console_org = console_win[method] || console_win.log,
+				log_output = [],
+				out_args = [],
+				message;
+
+			if (method === 'debug' && cfg.verbose && filter && /^[0-9a-zA-Z.]+$/.test(filter)) {
+				filter = new RegExp('^' + filter.replace('.', "\."));
+				if (!name.match(filter)) {
+					msos.console.warn('msos.console -> no match for debug filter: ' + filter);
 					return;
 				}
+			}
 
-				var cfg = msos.config,
-					filter = cfg.query.debug_filter || '',
-					i = 0,
-					args = aps.apply(arguments),
-					name = args[0] ? args[0].replace(/\W/g, '_') : 'missing_args',
-					console_org = console_win[method] || console_win.log,
-					log_output = [],
-					out_args = [],
-					message;
+			if (method === 'time' || method === 'timeEnd') {
+				msos.record_times[name + '_' + method] = (new Date()).getTime();
+			}
 
-				if (method === 'debug' && cfg.verbose && filter && /^[0-9a-zA-Z.]+$/.test(filter)) {
-					filter = new RegExp('^' + filter.replace('.', "\."));
-					if (!name.match(filter)) {
-						msos.console.warn('msos.console -> no match for debug filter: ' + filter);
-						return;
-					}
-				}
+			// if msos console output, add this
+			if (cfg.console) {
+
+				log_output = [method].concat(args);
 
 				if (method === 'time' || method === 'timeEnd') {
-					msos.record_times[name + '_' + method] = (new Date()).getTime();
+					log_output.push(msos.record_times[name + '_' + method]);
 				}
 
-				// if msos console output, add this
-				if (cfg.console) {
+				console_obj.queue.push(log_output);
+			}
 
-					log_output = [method].concat(args);
-
-					if (method === 'time' || method === 'timeEnd') {
-						log_output.push(msos.record_times[name + '_' + method]);
+			// if window console, add it
+			if (console_win) {
+				if (console_org.apply) {
+					for (i = 0; i < args.length; i += 1) {
+						out_args.push(formatError(args[i]));
 					}
+					// Do this for normal browsers
+					console_org.apply(console_win, out_args);
 
-					console_obj.queue.push(log_output);
+				} else {
+					// Do this for IE9
+					message = args.join(' ');
+					console_org(message);
 				}
+			}
+		};
+	}
 
-				// if window console, add it
-				if (console_win) {
-					if (console_org.apply) {
-						for (i = 0; i < args.length; i += 1) {
-							out_args.push(formatError(args[i]));
-						}
-						// Do this for normal browsers
-						console_org.apply(console_win, out_args);
-
-					} else {
-						// Do this for IE9
-						message = args.join(' ');
-						console_org(message);
-					}
-				}
-			};
-
-		}(msos.log_methods[idx]));
-
+	while (idx >= 0) {
+		build_console(msos.log_methods[idx]);
 		idx -= 1;
 	}
 
@@ -868,9 +918,6 @@ msos.site_specific = function (settings) {
         };
     };
 
-    // A mostly-internal function to generate callbacks that can be applied
-    // to each element in a collection, returning the desired result — either
-    // identity, an arbitrary callback, a property matcher, or a property accessor.
     var cb = function (value, context, argCount) {
         if (value == null) return _.identity;
         if (_.isFunction(value)) return optimizeCb(value, context, argCount);
@@ -904,7 +951,7 @@ msos.site_specific = function (settings) {
         if (!_.isObject(prototype)) return {};
         if (nativeCreate) return nativeCreate(prototype);
         Ctor.prototype = prototype;
-        var result = new Ctor;
+        var result = new Ctor();
         Ctor.prototype = null;
         return result;
     };
@@ -1134,8 +1181,6 @@ msos.site_specific = function (settings) {
         return result;
     };
 
-    // Shuffle a collection, using the modern version of the
-    // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
     _.shuffle = function (obj) {
         var set = isArrayLike(obj) ? obj : _.values(obj);
         var length = set.length;
@@ -3797,7 +3842,7 @@ if (msos.config.verbose) {
 // *******************************************
 
 // Sort 'size_wide' object into consistent 'size_array' for resizeable displays
-Object.keys(msos.config.size_wide).map(
+_.keys(msos.config.size_wide).map(
 		function (k) {
 			return [k, msos.config.size_wide[k]];
 		}
@@ -3919,9 +3964,10 @@ msos.run_function_array = function (name) {
 
 	for (m = 0; m < msos[name].length; m += 1) {
 
-		msos.console.debug(temp_fa + 'index: ' + m);
-
 		if (msos.config.debug) {
+
+			msos.console.debug(temp_fa + 'index: ' + m + ', for: ' + name);
+
 			try {
 				msos[name][m]();
 			} catch (e) {
@@ -3937,36 +3983,6 @@ msos.run_function_array = function (name) {
 
 	msos.console.debug(temp_fa + ' done: ' + name);
 };
-
-
-// --------------------------
-// Get Script url Location
-// --------------------------
-msos.get_js_base = function () {
-    "use strict";
-
-    var temp_gsl = 'msos.get_js_base -> ',
-		scripts_array,
-		current_script,
-		script_url;
-
-	msos.console.debug(temp_gsl + 'start.');
-
-    scripts_array = document.getElementsByTagName('script');
-    current_script = scripts_array[scripts_array.length - 1]; // last available script is this one when called
-    script_url = current_script.src;
-    script_url = script_url.slice(0, script_url.lastIndexOf('/') + 1) || '';
-
-	// No reason to continue
-    if (!script_url) { throw new Error(temp_gsl + 'failed!'); }
-
-	msos.console.debug(temp_gsl + 'done, uri: ' + script_url);
-	return script_url;
-};
-
-// Run immediately to get the current 'base.js' location
-msos.base_script_url = msos.get_js_base();
-
 
 // --------------------------
 // Apply Resource (relative) Locations
@@ -4160,10 +4176,7 @@ msos.browser_touch = function () {
 
     if ("ontouchstart" in test_div) {
 		touch_avail += 1;
-    } else {
-		test_div.setAttribute("ontouchstart", 'return;');
-		touch_avail += (typeof test_div.ontouchstart === 'function') ? 1 : -1;
-      }
+    }
 
     test_div = null;
 
@@ -4180,7 +4193,6 @@ msos.browser_mobile = function () {
     "use strict";
 
     var temp_mbl = 'msos.browser_mobile -> ',
-		device = '',
 		scrn_px = 0,
 		flag = [];
 
@@ -4199,16 +4211,16 @@ msos.browser_mobile = function () {
     if (msos.config.pixel_ratio > 1)	{ flag.push('pixel_ratio'); }
 	if (Modernizr.devicemotion)			{ flag.push('device_motion'); }
 	if (Modernizr.deviceorientation)	{ flag.push('device_orientation'); }
+	if (Modernizr.overflowscrolling)	{ flag.push('overflow_scrolling'); }
 
-    if (flag.length > 2) {
+    if (flag.length > 3) {
 		msos.config.browser.mobile = true;
 		msos.config.mobile = true;
     }
 
     msos.console.debug(temp_mbl + 'browser is ' + (msos.config.browser.mobile ? 'mobile' : 'not mobile') + (flag.length > 0 ? ', flag(s): ' + flag.join(', ') : ''));
     
-    if (msos.config.query.mobile === true
-     || msos.config.query.mobile === false) {
+    if (msos.config.query.mobile === true || msos.config.query.mobile === false) {
 		if (msos.config.browser.mobile !== msos.config.query.mobile) {
 			msos.console.debug(temp_mbl + 'force mobile setting: ' + msos.config.query.mobile);
 		}
@@ -4304,6 +4316,76 @@ msos.browser_preloading = function () {
 	script_elm = null;
 };
 
+msos.browser_native_overflow = function () {
+	"use strict";
+
+	var conf = msos.config;
+
+	conf.browser.nativeoverflow = Modernizr.overflowscrolling || conf.overflow_scrolling.webkitoverflowscrolling || conf.overflow_scrolling.msoverflowstyle;
+};
+
+// Borrowed from "FastClick.notNeeded"
+msos.browser_has_fastclick = function () {
+	"use strict";
+
+	var chromeVersion = +(/Chrome\/([0-9]+)/.exec(navigator.userAgent) || [0,0])[1],
+		firefoxVersion = +(/Firefox\/([0-9]+)/.exec(navigator.userAgent) || [0,0])[1],
+		isblackberry10 = navigator.userAgent.indexOf('BB10') > 0,
+		blackberryVersion,
+		output = false;
+
+	// Devices that don't support touch don't need FastClick
+	if (window.ontouchstart === undefined) {
+
+		output = true;
+
+	} else if (chromeVersion) {
+
+		// Chrome on Android with user-scalable="no" doesn't need FastClick (issue #89)
+		if (navigator.userAgent.indexOf('Android') > 0) {
+			if (msos.config.browser.scalable) {
+				output = true;
+			}
+		} else {
+			output = true;
+		}
+
+	} else if (isblackberry10) {
+
+		blackberryVersion = navigator.userAgent.match(/Version\/([0-9]*)\.([0-9]*)/);
+
+		// BlackBerry 10.3+ does not require Fastclick library.
+		// https://github.com/ftlabs/fastclick/issues/251
+		if (blackberryVersion[1] >= 10 && blackberryVersion[2] >= 3) {
+			if (msos.config.browser.scalable) {
+				output = true;
+			}
+		}
+
+	} else if (firefoxVersion >= 27) {
+
+		if (msos.config.browser.scalable) {
+			output = true;
+		}
+
+	} else if (document.body.style.touchAction === 'none' || document.body.style.touchAction === 'manipulation') {
+		// IE10, 11 with -ms-touch-action: none or manipulation, which disables double-tap-to-zoom
+		output = true;
+	}
+
+	msos.config.browser.fastclick = output;
+};
+
+msos.browser_is_scalable = function () {
+	"use strict";
+
+	var metaViewport = document.querySelector('meta[name=viewport]');
+
+	if ((metaViewport && metaViewport.content.indexOf('user-scalable=no') !== -1) || (document.documentElement.scrollWidth <= window.outerWidth)) {
+		msos.config.browser.scalable = true;
+	}
+};
+
 msos.get_head = function (win) {
     "use strict";
 
@@ -4369,15 +4451,16 @@ msos.loader = function (win) {
 	this.add_resource_onload = [];
 
     // Load the resource
-    this.load = function (name, url, type, attribs) {
-		var base = url.split('?')[0],
+    this.load = function (url, type, attribs) {
+		var name = msos.generate_url_name(url),
+			base = url.split('?')[0],
 			ext = base.substr(base.lastIndexOf('.') + 1),
 			pattern = /^js|css|ico$/,
 			lo = ' - load -> ',
 			load_resource_func = null;
 
 		if (msos.config.verbose) {
-			msos.console.debug(temp_mod + lo + 'start.');
+			msos.console.debug(temp_mod + lo + 'start, name: ' + name);
 		}
 
 		// Check for attribs object
@@ -4386,8 +4469,9 @@ msos.loader = function (win) {
 		// If file type passed in use it, otherwise determine from url
 		if (!type) { type = ext || 'na'; }
 
-		if (!pattern.test(type)) {
-			msos.console.error(temp_mod + lo + 'missing or invalid: ' + type);
+		if (!pattern.test(type) || !name) {
+
+			msos.console.error(temp_mod + lo + 'missing or invalid input for url: ' + url + ', type: ' + type);
 			return;
 		}
 
@@ -4397,10 +4481,12 @@ msos.loader = function (win) {
 
 		} else {
 
-			load_resource_func = function () { ld_obj.resource(name, url, type, attribs); };
+			load_resource_func = function () {
+				ld_obj.resource(name, url, type, attribs);
+				msos.pending_file_loads.push(name);
+			};
 
-			if (attribs.defer
-			 && attribs.defer === 'defer') {
+			if (attribs.defer && attribs.defer === 'defer') {
 
 				if (msos.config.script_preload.ordered) {
 
@@ -4448,8 +4534,7 @@ msos.loader = function (win) {
 		msos.console.debug(temp_mod + ld + 'start.');
 
 		// Important: See the popwin.js for 'win.msos.registered_files' clearing
-		if (win.msos.registered_files[file_type]
-		 && win.msos.registered_files[file_type][file_name]) {
+		if (win.msos.registered_files[file_type] && win.msos.registered_files[file_type][file_name]) {
 			flag_loaded = true;
 		}
 
@@ -4484,7 +4569,7 @@ msos.loader = function (win) {
 			ats = '';
 
 		if (msos.config.verbose) {
-			msos.console.debug(temp_mod + icn + 'start.');
+			msos.console.debug(temp_mod + icn + 'start, name: ' + name + ', type: ' + type);
 		}
 
 		// Force new copies (for testing)
@@ -4494,11 +4579,11 @@ msos.loader = function (win) {
 
 		// Define our typical node attributes by type (for convenience)
 		if			(type === 'js' ) {
-			node_attrs = { id: name, type: 'text/javascript', src: url, charset: 'utf-8' };
+			node_attrs = { id: name, src: url };
 		} else if	(type === 'css') {
-			node_attrs = { id: name, type: 'text/css',		rel: 'stylesheet',		href: url,	media: 'all' };
+			node_attrs = { id: name, rel: 'stylesheet', href: url, media: 'all' };
 		} else if	(type === 'ico') {
-			node_attrs = { id: name, type: 'image/x-icon',	rel: 'shortcut icon',	href: url };
+			node_attrs = { id: name, type: 'image/x-icon', rel: 'shortcut icon', href: url };
 		  }
 
 		if (attribs !== undefined && typeof attribs === 'object') {
@@ -4531,6 +4616,7 @@ msos.loader = function (win) {
 		if (msos.config.verbose) {
 			msos.console.debug(temp_mod + icn + 'done!');
 		}
+
 		return node;
     };
 
@@ -4539,15 +4625,25 @@ msos.loader = function (win) {
 			ls = ' - resource -> ',
 			on_resource_load = function () {
 				var i = 0,
+					pending_idx,
+					pending_file = msos.pending_file_loads,
 					shifted;
 
 				if (this.msos_load_state !== 'loaded' && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete' || this.readyState === 'uninitialized')) {
 
-					if (msos.config.verbose) {
-						msos.console.debug(temp_mod + ls + 'loaded, name: ' + this.id);
-					}
-
 					this.msos_load_state = 'loaded';
+
+					// This should always return an index...
+					pending_idx = _.indexOf(pending_file, this.id);
+
+					if (pending_idx >= 0) {
+						pending_file.splice(pending_idx, 1);
+						if (msos.config.verbose) {
+							msos.console.debug(temp_mod + ls + 'loaded, name: ' + this.id + ', pending file count:', pending_file.length);
+						}
+					} else {
+						msos.console.error(temp_mod + ls + 'unknown pending file, name: ' + this.id, pending_file);
+					}
 
 					for (i = 0; i < ld_obj.add_resource_onload.length; i += 1) {
 						ld_obj.add_resource_onload[i]();
@@ -4615,6 +4711,9 @@ msos.set_environment = function () {
     msos.browser_touch();
     msos.browser_mobile();
 	msos.browser_preloading();
+	msos.browser_native_overflow();
+	msos.browser_is_scalable();
+	msos.browser_has_fastclick();
 
 	if (msos.config.verbose) {
 		msos.console.debug(set_txt + 'done, browser env: ', msos.config.browser);
@@ -4710,7 +4809,6 @@ msos.css_loader = function (url_array, win) {
 
 	var temp_cl = 'msos.css_loader -> ',
 		loader_obj = null,
-		css_name = '',
 		css_url = '',
 		i = 0;
 
@@ -4721,8 +4819,7 @@ msos.css_loader = function (url_array, win) {
 
 	for (i = 0; i < url_array.length; i += 1) {
 		css_url = url_array[i];
-		css_name = msos.generate_url_name(css_url);
-		loader_obj.load(css_name, css_url, 'css');
+		loader_obj.load(css_url, 'css');
 	}
 
 	msos.console.debug(temp_cl + 'done!');
@@ -4736,7 +4833,6 @@ msos.script_loader = function (url_array) {
 
 	var temp_esl = 'msos.script_loader -> ',
 		loader_obj = null,
-		script_name = '',
 		script_url = '',
 		i = 0;
 
@@ -4747,8 +4843,7 @@ msos.script_loader = function (url_array) {
 
 	for (i = 0; i < url_array.length; i += 1) {
 		script_url = url_array[i];
-		script_name = msos.generate_url_name(script_url);
-		loader_obj.load(script_name, script_url, 'js', { defer: 'defer' });
+		loader_obj.load(script_url, 'js', { defer: 'defer' });
 	}
 
 	msos.console.debug(temp_esl + 'done!');
@@ -4763,5 +4858,5 @@ msos.set_locale();
 msos.get_display_size();
 
 
-msos.console.info('msos/base -> done!');
+if (console && console.info) { console.info('msos/base -> done!'); }
 msos.console.timeEnd('base');

@@ -1,11 +1,11 @@
 
 msos.provide("ng.bootstrap.ui.alert");
 
-ng.bootstrap.ui.alert.version = new msos.set_version(16, 3, 21);
+ng.bootstrap.ui.alert.version = new msos.set_version(17, 5, 31);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.alert.css = new msos.loader();
-ng.bootstrap.ui.alert.css.load('ng_bootstrap_css_ui_alert_css', msos.resource_url('ng', 'bootstrap/css/ui/alert.css'));
+ng.bootstrap.ui.alert.css.load(msos.resource_url('ng', 'bootstrap/css/ui/alert.css'));
 
 
 // Below is the standard plugin, except for templateUrl location and naming (MSOS style)

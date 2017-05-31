@@ -13,12 +13,12 @@
 
 msos.provide("jquery.tools.masonry");
 
-jquery.tools.masonry.version = new msos.set_version(13, 6, 14);
+jquery.tools.masonry.version = new msos.set_version(17, 4, 7);
 
 
 if (Modernizr.csstransitions) { // Otherwise don't bother, jQuery will be used
   jquery.tools.masonry.css = new msos.loader();
-  jquery.tools.masonry.css.load('jquery_css_tools_masonry_trans_css', msos.resource_url('jquery', 'css/tools/masonry_transitions.css'));
+  jquery.tools.masonry.css.load(msos.resource_url('jquery', 'css/tools/masonry_transitions.css'));
 }
 
 jquery.tools.masonry.column_width = function (containerWidth) {

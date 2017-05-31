@@ -1,11 +1,11 @@
 
 msos.provide("ng.bootstrap.ui.modal");
 
-ng.bootstrap.ui.modal.version = new msos.set_version(16, 4, 12);
+ng.bootstrap.ui.modal.version = new msos.set_version(17, 5, 31);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.modal.css = new msos.loader();
-ng.bootstrap.ui.modal.css.load('ng_bootstrap_css_ui_modal_css', msos.resource_url('ng', 'bootstrap/css/ui/modal.css'));
+ng.bootstrap.ui.modal.css.load(msos.resource_url('ng', 'bootstrap/css/ui/modal.css'));
 
 
 // Below is the standard plugin, except for templateUrl location and naming (MSOS style)

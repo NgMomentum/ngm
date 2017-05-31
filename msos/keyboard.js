@@ -26,12 +26,12 @@ msos.require("msos.input.select");
 msos.require("msos.selection");
 msos.require("msos.popdiv");
 
-msos.keyboard.version = new msos.set_version(14, 3, 18);
+msos.keyboard.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our keyboard stylesheet
 msos.keyboard.css = new msos.loader();
-msos.keyboard.css.load('pop_keyboard_css', msos.resource_url('css', 'pop_keyboard.css'));
+msos.keyboard.css.load(msos.resource_url('css', 'pop_keyboard.css'));
 
 // Use msos.i18n and not Google Web Translate
 msos.config.google.no_translate.by_id.push('#keyboard_container');

@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    size.js
-//			Copyright©2012-2015 - OpenSiteMobile
+//			Copyright©2012-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -20,7 +20,7 @@
 msos.provide("msos.size");
 msos.require("msos.i18n.common");
 
-msos.size.version = new msos.set_version(15, 10, 7);
+msos.size.version = new msos.set_version(16, 10, 27);
 
 msos.size.page_ready = function () {
 	"use strict";
@@ -85,7 +85,7 @@ msos.size.set_display = function () {
 	);
 
 	// Load sizing stylesheet
-    loader_obj.load(msos.config.size, msos.resource_url(msos.config.size_folder, 'size/' + msos.config.size + '.css'));
+    loader_obj.load(msos.resource_url(msos.config.size_folder, 'size/' + msos.config.size + '.css'));
 
 	msos.console.debug(temp_rd + 'done: ' + msos.config.size);
 };

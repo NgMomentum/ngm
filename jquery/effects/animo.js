@@ -1,12 +1,12 @@
 
 msos.provide("jquery.effects.animo");
 
-jquery.effects.animo.version = new msos.set_version(13, 12, 18);
+jquery.effects.animo.version = new msos.set_version(16, 10, 27);
 
 
 jquery.effects.animo.css = new msos.loader();
-jquery.effects.animo.css.load('jquery_css_effects_animate_css', msos.resource_url('jquery', 'css/effects/animate.css'));
-jquery.effects.animo.css.load('jquery_css_effects_animo_css',   msos.resource_url('jquery', 'css/effects/animo.css'));
+jquery.effects.animo.css.load(msos.resource_url('jquery', 'css/effects/animate.css'));
+jquery.effects.animo.css.load(msos.resource_url('jquery', 'css/effects/animo.css'));
 
 // Below is std. animo.js code (plus "use strict" and beautified)
 ;

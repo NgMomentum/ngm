@@ -1,11 +1,11 @@
 
 msos.provide("ng.bootstrap.ui.accordion");
 
-ng.bootstrap.ui.accordion.version = new msos.set_version(16, 3, 29);
+ng.bootstrap.ui.accordion.version = new msos.set_version(17, 5, 31);
 
 // Load Angular-UI-Bootstrap module specific CSS (accordion requires panel.css)
 ng.bootstrap.ui.accordion.css = new msos.loader();
-ng.bootstrap.ui.accordion.css.load('ng_bootstrap_css_ui_panel_css', msos.resource_url('ng', 'bootstrap/css/ui/panel.css'));
+ng.bootstrap.ui.accordion.css.load(msos.resource_url('ng', 'bootstrap/css/ui/panel.css'));
 
 // Below is the standard plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.accordion -> ng.bootstrap.ui.accordion

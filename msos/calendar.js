@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    calendar.js
-//			Copyright©2010-2013 - OpenSiteMobile
+//			Copyright©2010-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -24,12 +24,12 @@ msos.require("msos.date");
 msos.require("msos.date.locale");
 msos.require("msos.popdiv");
 
-msos.calendar.version = new msos.set_version(14, 3, 25);
+msos.calendar.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our calendar specific stylesheet
 msos.calendar.css = new msos.loader();
-msos.calendar.css.load('pop_calendar_css', msos.resource_url('css', 'pop_calendar.css'));
+msos.calendar.css.load(msos.resource_url('css', 'pop_calendar.css'));
 
 // Use msos.i18n and not Google Web Translate
 msos.config.google.no_translate.by_id.push('#calendar_container');

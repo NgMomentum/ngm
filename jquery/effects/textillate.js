@@ -9,11 +9,11 @@
 msos.provide("jquery.effects.textillate");
 msos.require("jquery.tools.lettering");
 
-jquery.effects.textillate.version = new msos.set_version(13, 12, 18);
+jquery.effects.textillate.version = new msos.set_version(16, 10, 27);
 
 
 jquery.effects.textillate.css = new msos.loader();
-jquery.effects.textillate.css.load('jquery_css_effects_animate_css', msos.resource_url('jquery', 'css/effects/animate.css'));
+jquery.effects.textillate.css.load(msos.resource_url('jquery', 'css/effects/animate.css'));
 
 // Below is std. textillate.js code
 (function ($) {

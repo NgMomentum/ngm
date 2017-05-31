@@ -20,13 +20,13 @@
 // msos: start
 msos.provide("jquery.ui.menu");
 
-jquery.ui.menu.version = new msos.set_version(14, 2, 22);
+jquery.ui.menu.version = new msos.set_version(16, 10, 27);
 
 
 jquery.ui.menu.css = new msos.loader();
-jquery.ui.menu.css.load('jquery_css_ui_core_css',	msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.menu.css.load('jquery_css_ui_menu_css',	msos.resource_url('jquery', 'css/ui/menu.css'));
-jquery.ui.menu.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.menu.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.menu.css.load(msos.resource_url('jquery', 'css/ui/menu.css'));
+jquery.ui.menu.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

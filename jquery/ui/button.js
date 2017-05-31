@@ -23,9 +23,9 @@ jquery.ui.button.version = new msos.set_version(14, 2, 22);
 
 
 jquery.ui.button.css = new msos.loader();
-jquery.ui.button.css.load('jquery_css_ui_core_css',		msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.button.css.load('jquery_css_ui_button_css',	msos.resource_url('jquery', 'css/ui/button.css'));
-jquery.ui.button.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.button.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.button.css.load(msos.resource_url('jquery', 'css/ui/button.css'));
+jquery.ui.button.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 
