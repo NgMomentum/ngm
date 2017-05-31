@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				syntaxhighlighter.js
-//			Copyright©2013 - OpenSiteMobile
+//			Copyright©2013-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -18,15 +18,15 @@
 
 msos.provide("msos.syntaxhighlighter");
 
-msos.syntaxhighlighter.version = new msos.set_version(14, 3, 31);
+msos.syntaxhighlighter.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our SyntaxHighLighter stylesheets
 msos.syntaxhighlighter.css = new msos.loader();
 
 // Get it started by loading the CSS
-msos.syntaxhighlighter.css.load('syntaxhighlighter_css_core',		msos.resource_url('syntaxhighlighter', 'css/core.css'),		'css');
-msos.syntaxhighlighter.css.load('syntaxhighlighter_css_default',	msos.resource_url('syntaxhighlighter', 'css/default.css'),	'css');
+msos.syntaxhighlighter.css.load(msos.resource_url('syntaxhighlighter', 'css/core.css'),		'css');
+msos.syntaxhighlighter.css.load(msos.resource_url('syntaxhighlighter', 'css/default.css'),	'css');
 
 msos.syntaxhighlighter.is_loaded = false;
 
@@ -48,7 +48,7 @@ msos.syntaxhighlighter.loader = function () {
         msos.console.debug(temp_sl + 'xregexp loaded!');
 
         if (msos.config.debug_script) { sh_uri = 'v3083.uc.js'; }
-        sh_load_js.load('syntaxhighlighter_js', msos.resource_url('syntaxhighlighter', sh_uri), 'js');
+        sh_load_js.load(msos.resource_url('syntaxhighlighter', sh_uri), 'js');
     };
 
     xp_load_js.add_resource_onload.push(xp_load_js_onload);
@@ -86,7 +86,7 @@ msos.syntaxhighlighter.loader = function () {
 
 	// Load the XRegExp.js script
     if (msos.config.debug_script) { xp_uri = 'v300.uc.js'; }
-	xp_load_js.load('xregexp_js', msos.resource_url('xregexp', xp_uri), 'js');
+	xp_load_js.load(msos.resource_url('xregexp', xp_uri), 'js');
 
     msos.console.debug(temp_sl + 'done!');
 };

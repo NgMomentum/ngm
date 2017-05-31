@@ -23,9 +23,9 @@ jquery.ui.accordion.version = new msos.set_version(14, 2, 22);
 
 
 jquery.ui.accordion.css = new msos.loader();
-jquery.ui.accordion.css.load('jquery_css_ui_core_css',		msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.accordion.css.load('jquery_css_ui_accordion_css',	msos.resource_url('jquery', 'css/ui/accordion.css'));
-jquery.ui.accordion.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.accordion.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.accordion.css.load(msos.resource_url('jquery', 'css/ui/accordion.css'));
+jquery.ui.accordion.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

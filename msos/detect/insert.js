@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    insert.js
-//			Copyright©2010-2013 - OpenSiteMobile
+//			Copyright©2010-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -18,12 +18,12 @@
 
 msos.provide("msos.detect.insert");
 
-msos.detect.insert.version = new msos.set_version(13, 6, 14);
+msos.detect.insert.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our pop_ajax.css stylesheet
 msos.detect.insert.css = new msos.loader();
-msos.detect.insert.css.load('detect_insert_css', msos.resource_url('css', 'detect_insert.css'));
+msos.detect.insert.css.load(msos.resource_url('css', 'detect_insert.css'));
 
 
 msos.detect.insert.assign = function (selector) {

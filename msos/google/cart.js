@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    cart.js
-//			Copyright©2008-2013 - OpenSiteMobile
+//			Copyright©2008-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -28,7 +28,7 @@
 
 msos.provide("msos.google.cart");
 
-msos.google.cart.version = new msos.set_version(13, 6, 14);
+msos.google.cart.version = new msos.set_version(16, 10, 27);
 
 msos.google.cart.base_url = 'https://checkout.google.com/seller/gsc/v2_2/cart.js?mid=';
 
@@ -154,7 +154,6 @@ msos.google.cart.initiate = function () {
 
     // Load Google Checkout API with our loader for better debugging
     cart_loader.load(
-        'googlecart-script',
         msos.google.cart.script_url,
         'js',
         msos.google.cart.script_attributes

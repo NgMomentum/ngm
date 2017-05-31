@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    translate.js
-//			Copyright©2013 - OpenSiteMobile
+//			Copyright©2013-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -21,7 +21,7 @@
 
 msos.provide("msos.google.translate");
 
-msos.google.translate.version = new msos.set_version(13, 12, 3);
+msos.google.translate.version = new msos.set_version(16, 10, 27);
 
 
 msos.google.translate.count = 0;
@@ -291,10 +291,10 @@ msos.google.translate.install = function () {
 		constr._puh =   'translate.google.com';
 
 		// Using our loader means we can debug
-		load_css.load('translateelement_css', constr._ps, 'css');
+		load_css.load(constr._ps, 'css');
 
 		load_script.add_resource_onload.push(trans_onload);
-		load_script.load('element_main_js', b + '/translate_static/js/element/main.js', 'js');
+		load_script.load(b + '/translate_static/js/element/main.js', 'js');
 
 	}());
 

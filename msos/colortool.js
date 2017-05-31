@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    colortool.js
-//			Copyright©2010-2013 - OpenSiteMobile
+//			Copyright©2010-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -27,12 +27,12 @@ msos.require("msos.input.text");
 
 msos.template("msos.colortool.widget");
 
-msos.colortool.version = new msos.set_version(14, 3, 16);
+msos.colortool.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our colortool specific stylesheet
 msos.colortool.css = new msos.loader();
-msos.colortool.css.load('pop_colortool_css', msos.resource_url('css', 'pop_colortool.css'));
+msos.colortool.css.load(msos.resource_url('css', 'pop_colortool.css'));
 
 // Use msos.i18n and not Google Web Translate
 msos.config.google.no_translate.by_id.push('#colortool_container');

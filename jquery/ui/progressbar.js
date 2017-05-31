@@ -19,13 +19,13 @@
 // msos: start
 msos.provide("jquery.ui.progressbar");
 
-jquery.ui.progressbar.version = new msos.set_version(14, 2, 23);
+jquery.ui.progressbar.version = new msos.set_version(16, 10, 27);
 
 
 jquery.ui.progressbar.css = new msos.loader();
-jquery.ui.progressbar.css.load('jquery_css_ui_core_css',		msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.progressbar.css.load('jquery_css_ui_progressbar_css',	msos.resource_url('jquery', 'css/ui/progressbar.css'));
-jquery.ui.progressbar.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.progressbar.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.progressbar.css.load(msos.resource_url('jquery', 'css/ui/progressbar.css'));
+jquery.ui.progressbar.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

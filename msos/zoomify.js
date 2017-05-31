@@ -12,12 +12,12 @@
 msos.provide("msos.zoomify");
 msos.require("msos.fitimgs");
 
-msos.zoomify.version = new msos.set_version(13, 11, 6);
+msos.zoomify.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our pop_ajax.css stylesheet
 msos.zoomify.css = new msos.loader();
-msos.zoomify.css.load('zoomify_css', msos.resource_url('css', 'zoomify.css'));
+msos.zoomify.css.load(msos.resource_url('css', 'zoomify.css'));
 
 msos.zoomify.onkeystroke = {};
 msos.zoomify.focused = '';

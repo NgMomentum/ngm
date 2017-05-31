@@ -44,13 +44,13 @@
 // msos: start
 msos.provide("jquery.ui.timepicker");
 
-jquery.ui.timepicker.version = new msos.set_version(14, 2, 23);
+jquery.ui.timepicker.version = new msos.set_version(16, 10, 27);
 
 
 jquery.ui.timepicker.css = new msos.loader();
-jquery.ui.timepicker.css.load('jquery_css_ui_core_css',			msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.timepicker.css.load('jquery_css_ui_timepicker_css',	msos.resource_url('jquery', 'css/ui/timepicker.css'));
-jquery.ui.timepicker.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.timepicker.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.timepicker.css.load(msos.resource_url('jquery', 'css/ui/timepicker.css'));
+jquery.ui.timepicker.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

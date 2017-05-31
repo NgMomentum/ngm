@@ -26,13 +26,13 @@ msos.provide("jquery.ui.dialog");
 msos.require("jquery.ui.button");
 msos.require("jquery.ui.resizable");
 
-jquery.ui.dialog.version = new msos.set_version(14, 2, 22);
+jquery.ui.dialog.version = new msos.set_version(16, 10, 27);
 
 
 jquery.ui.dialog.css = new msos.loader();
-jquery.ui.dialog.css.load('jquery_css_ui_core_css',		msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.dialog.css.load('jquery_css_ui_dialog_css',	msos.resource_url('jquery', 'css/ui/dialog.css'));
-jquery.ui.dialog.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.dialog.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.dialog.css.load(msos.resource_url('jquery', 'css/ui/dialog.css'));
+jquery.ui.dialog.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

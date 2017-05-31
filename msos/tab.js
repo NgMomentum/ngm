@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    tab.js
-//			Copyright©2008-2013 - OpenSiteMobile
+//			Copyright©2008-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -18,12 +18,12 @@
 
 msos.provide("msos.tab");
 
-msos.tab.version = new msos.set_version(15, 10, 7);
+msos.tab.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our tab specific stylesheet
 msos.tab.css = new msos.loader();
-msos.tab.css.load('tab_css', msos.resource_url('css', 'tab.css'));
+msos.tab.css.load(msos.resource_url('css', 'tab.css'));
 
 
 msos.tab.tool = function (tabs_div) {

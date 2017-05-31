@@ -19,13 +19,13 @@
 // msos: start
 msos.provide("jquery.ui.tabs");
 
-jquery.ui.tabs.version = new msos.set_version(14, 2, 23);
+jquery.ui.tabs.version = new msos.set_version(16, 10, 27);
 
 
 jquery.ui.tabs.css = new msos.loader();
-jquery.ui.tabs.css.load('jquery_css_ui_core_css', msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.tabs.css.load('jquery_css_ui_tabs_css', msos.resource_url('jquery', 'css/ui/tabs.css'));
-jquery.ui.tabs.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.tabs.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.tabs.css.load(msos.resource_url('jquery', 'css/ui/tabs.css'));
+jquery.ui.tabs.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

@@ -9,11 +9,11 @@
 
 msos.provide("jquery.tools.autocomplete");
 
-jquery.tools.autocomplete.version = new msos.set_version(13, 9, 8);
+jquery.tools.autocomplete.version = new msos.set_version(16, 10, 27);
 
 
 jquery.tools.autocomplete.css = new msos.loader();
-jquery.tools.autocomplete.css.load('jquery_css_tools_autocomplete_css', msos.resource_url('jquery', 'css/tools/autocomplete.css'));
+jquery.tools.autocomplete.css.load(msos.resource_url('jquery', 'css/tools/autocomplete.css'));
 
 (function ($, undef) {
 

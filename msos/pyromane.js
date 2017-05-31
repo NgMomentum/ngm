@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    pyromane.js
-//			Copyright©2010-2013 - OpenSiteMobile
+//			Copyright©2010-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -21,7 +21,7 @@ msos.provide("msos.pyromane");
 msos.require("msos.stickup");
 
 
-msos.pyromane.version = new msos.set_version(15, 10, 7);
+msos.pyromane.version = new msos.set_version(16, 10, 27);
 
 
 msos.pyromane.output_obj_store = {};
@@ -30,7 +30,7 @@ msos.pyromane.jquery_obj_log = null;
 
 // Start by loading our pyromane stylesheet
 msos.pyromane.css = new msos.loader();
-msos.pyromane.css.load('pyromane_css', msos.resource_url('css', 'pyromane.css'));
+msos.pyromane.css.load(msos.resource_url('css', 'pyromane.css'));
 
 
 // --------------------------

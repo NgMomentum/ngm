@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					debug.js
-//			Copyright©2008-2013 - OpenSiteMobile
+//			Copyright©2008-2016 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -19,12 +19,12 @@
 msos.provide("msos.debug");
 msos.require("msos.popdiv");
 
-msos.debug.version = new msos.set_version(15, 11, 3);
+msos.debug.version = new msos.set_version(16, 10, 27);
 
 
 // Start by loading our pop_debug.css stylesheet
 msos.debug.css = new msos.loader();
-msos.debug.css.load('pop_debug_css', msos.resource_url('css', 'pop_debug.css'));
+msos.debug.css.load(msos.resource_url('css', 'pop_debug.css'));
 
 // Hide Google Web Translate "original text" popup
 msos.config.google.no_translate.by_id.push('#debug_header');

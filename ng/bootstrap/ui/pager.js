@@ -2,11 +2,11 @@
 msos.provide("ng.bootstrap.ui.pager");
 msos.require("ng.bootstrap.ui.paging");
 
-ng.bootstrap.ui.pager.version = new msos.set_version(16, 3, 21);
+ng.bootstrap.ui.pager.version = new msos.set_version(17, 5, 31);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.pager.css = new msos.loader();
-ng.bootstrap.ui.pager.css.load('ng_bootstrap_css_ui_pager_css', msos.resource_url('ng', 'bootstrap/css/ui/pager.css'));
+ng.bootstrap.ui.pager.css.load(msos.resource_url('ng', 'bootstrap/css/ui/pager.css'));
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.pagination -> ng.bootstrap.ui.pagination

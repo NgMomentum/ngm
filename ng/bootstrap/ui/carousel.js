@@ -8,11 +8,11 @@
  */
 msos.provide("ng.bootstrap.ui.carousel");
 
-ng.bootstrap.ui.carousel.version = new msos.set_version(16, 4, 1);
+ng.bootstrap.ui.carousel.version = new msos.set_version(17, 5, 31);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.carousel.css = new msos.loader();
-ng.bootstrap.ui.carousel.css.load('ng_bootstrap_css_ui_carousel_css', msos.resource_url('ng', 'bootstrap/css/ui/carousel.css'));
+ng.bootstrap.ui.carousel.css.load(msos.resource_url('ng', 'bootstrap/css/ui/carousel.css'));
 
 
 // Below is the standard plugin, except for templateUrl location and naming (MSOS style)

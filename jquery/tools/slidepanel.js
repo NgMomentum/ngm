@@ -25,11 +25,11 @@
 
 msos.provide("jquery.tools.slidepanel");
 
-jquery.tools.slidepanel.version = new msos.set_version(15, 9, 10);
+jquery.tools.slidepanel.version = new msos.set_version(16, 10, 27);
 
 
 jquery.tools.slidepanel.css = new msos.loader();
-jquery.tools.slidepanel.css.load('jquery_css_tools_slidepanel_css', msos.resource_url('jquery', 'css/tools/slidepanel.css'));
+jquery.tools.slidepanel.css.load(msos.resource_url('jquery', 'css/tools/slidepanel.css'));
 
 jquery.tools.slidepanel.counter = 0;
 jquery.tools.slidepanel.close_others = [];

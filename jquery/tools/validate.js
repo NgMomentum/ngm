@@ -16,11 +16,11 @@
 // msos: start
 msos.provide("jquery.tools.validate");
 
-jquery.tools.validate.version = new msos.set_version(13, 6, 14);
+jquery.tools.validate.version = new msos.set_version(16, 10, 27);
 
 
 jquery.tools.validate.css = new msos.loader();
-jquery.tools.validate.css.load('jquery_css_tools_validate_css', msos.resource_url('jquery', 'css/tools/validate.css'));
+jquery.tools.validate.css.load(msos.resource_url('jquery', 'css/tools/validate.css'));
 // msos: end
 
 

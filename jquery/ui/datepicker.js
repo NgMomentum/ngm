@@ -18,13 +18,13 @@
 // msos: start
 msos.provide("jquery.ui.datepicker");
 
-jquery.ui.datepicker.version = new msos.set_version(14, 2, 22);
+jquery.ui.datepicker.version = new msos.set_version(17, 5, 20);
 
 
 jquery.ui.datepicker.css = new msos.loader();
-jquery.ui.datepicker.css.load('jquery_css_ui_core_css',			msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.datepicker.css.load('jquery_css_ui_datepicker_css',	msos.resource_url('jquery', 'css/ui/datepicker.css'));
-jquery.ui.datepicker.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.datepicker.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.datepicker.css.load(msos.resource_url('jquery', 'css/ui/datepicker.css'));
+jquery.ui.datepicker.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 
@@ -761,7 +761,7 @@ $.extend(Datepicker.prototype, {
 		if (!inst.inline) {
 			showAnim = $.datepicker._get(inst, "showAnim");
 			duration = $.datepicker._get(inst, "duration");
-			inst.dpDiv.zIndex($(input).zIndex()+1);
+			inst.dpDiv.css('zIndex', ($(input).css('zIndex')) + 1);
 			$.datepicker._datepickerShowing = true;
 
 			if ( $.effects && $.effects.effect[ showAnim ] ) {

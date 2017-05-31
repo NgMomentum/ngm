@@ -9,7 +9,7 @@ jquery.touch.scrollbar.version = new msos.set_version(13, 6, 14);
 
 // Start by loading our colortool specific stylesheet
 jquery.touch.scrollbar.css = new msos.loader();
-jquery.touch.scrollbar.css.load('jquery_css_touch_scrollbar_css', msos.resource_url('jquery', 'css/touch/scrollbar.css'));
+jquery.touch.scrollbar.css.load(msos.resource_url('jquery', 'css/touch/scrollbar.css'));
 
 ((function ($) {
 

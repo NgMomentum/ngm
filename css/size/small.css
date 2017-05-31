@@ -93,7 +93,7 @@ section {
 #branding {
   width: 634px;
   font-size: xx-large;
-  top: 0;
+  top: -30px;
   left: 0;
   height: 50px;
   line-height: 50px;

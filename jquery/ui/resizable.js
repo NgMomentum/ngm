@@ -20,13 +20,13 @@
 // msos: start
 msos.provide("jquery.ui.resizable");
 
-jquery.ui.resizable.version = new msos.set_version(14, 2, 22);
+jquery.ui.resizable.version = new msos.set_version(16, 10, 27);
 
 
 jquery.ui.resizable.css = new msos.loader();
-jquery.ui.resizable.css.load('jquery_css_ui_core_css',		msos.resource_url('jquery', 'css/ui/core.css'));
-jquery.ui.resizable.css.load('jquery_css_ui_resizable_css',	msos.resource_url('jquery', 'css/ui/resizable.css'));
-jquery.ui.resizable.css.load('jquery_css_ui_' + msos.config.jquery_ui_theme + '_theme_css', msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
+jquery.ui.resizable.css.load(msos.resource_url('jquery', 'css/ui/core.css'));
+jquery.ui.resizable.css.load(msos.resource_url('jquery', 'css/ui/resizable.css'));
+jquery.ui.resizable.css.load(msos.resource_url('jquery', 'css/ui/' + msos.config.jquery_ui_theme + '/theme.css'));
 // msos: end
 
 

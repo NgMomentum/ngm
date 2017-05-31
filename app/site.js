@@ -1,9 +1,9 @@
 // Copyright Notice:
 //					site.js
-//			Copyright©2012-2016 - OpenSiteMobile
+//			Copyright©2012-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensitemobile.com
+//			http://ngmomentum.com & http://opensitemobile.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -29,10 +29,7 @@
 */
 
 /*global
-	msos:false,
-	Modernizr:false,
-	jQuery: false,
-	_: false
+	msos:false
 */
 
 msos.site = {
@@ -150,9 +147,7 @@ msos.site.fastclick_na = function () {
 	}
 
 	// IE10, 11 with -ms-touch-action: none or manipulation, which disables double-tap-to-zoom
-	if (document.body.style.msTouchAction === 'none'	// IE10
-	 || document.body.style.touchAction === 'none'
-	 || document.body.style.touchAction === 'manipulation') {
+	if (document.body.style.msTouchAction === 'none' || document.body.style.touchAction === 'none' || document.body.style.touchAction === 'manipulation') {
 		return true;
 	}
 
@@ -185,11 +180,6 @@ msos.site.auto_init = function () {
 
 	// Add debugging output (popup)
 	if (cfg.debug_output)	{ req("msos.debug"); }
-
-    // Based on page elements and configuration -> run functions or add modules
-    if (cfg.run_ads
-	 && bdwidth > 150
-	 && jQuery('#rotate_marquee').length === 1)	{ req("msos.google.ad"); }
 
 	// Or based on configuration settings
 	if (cfg.run_analytics && bdwidth > 150)		{ msos.site.google_analytics(); }

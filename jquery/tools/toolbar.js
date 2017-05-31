@@ -16,11 +16,11 @@
 
 msos.provide("jquery.tools.toolbar");
 
-jquery.tools.toolbar.version = new msos.set_version(13, 8, 4);
+jquery.tools.toolbar.version = new msos.set_version(16, 10, 27);
 
 
 jquery.tools.toolbar.css = new msos.loader();
-jquery.tools.toolbar.css.load('jquery_css_tools_toolbar_css', msos.resource_url('jquery', 'css/tools/toolbar.css'));
+jquery.tools.toolbar.css.load(msos.resource_url('jquery', 'css/tools/toolbar.css'));
 
 // Standard plugin below here...
 if ( typeof Object.create !== 'function' ) {
