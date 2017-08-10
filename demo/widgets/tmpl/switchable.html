@@ -1,0 +1,35 @@
+
+<section>
+	<h2 data-ng-ignore style="text-align: center;">Switchable Grid using MobileSiteOS<br />Version of AngularJS</h2>
+
+	<p data-ng-ignore>
+		A simple demo of Switchable Grid by Kyle Hagler (https://github.com/kylehagler), but using our
+		MobileSiteOS version of AngularJS w/ module loading capabilities.
+	</p>
+
+	<div class="bar">
+
+		<!-- These two buttons switch the layout varaible,
+			 which causes the correct UL to be shown. -->
+
+		<a href="#" class="list-icon" data-ng-class="{active: layout == 'list'}" data-ng-click="layout = 'list'"></a>
+		<a href="#" class="grid-icon" data-ng-class="{active: layout == 'grid'}" data-ng-click="layout = 'grid'"></a>
+	</div>
+
+	<!-- We have two layouts. We choose which one to show depending on the "layout" binding -->
+
+	<ul data-ng-show="layout == 'grid'" class="grid">
+		<!-- A view with big photos and no text -->
+		<li data-ng-repeat="p in pics">
+			<a data-ng-href="{{p.link}}" target="_blank"><img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D" data-ng-src="{{p.images.low_resolution.url}}" alt="Image from {{p.user.full_name}}" /></a>
+		</li>
+	</ul>
+
+	<ul data-ng-show="layout == 'list'" class="list">
+		<!-- A compact view smaller photos and titles -->
+		<li data-ng-repeat="p in pics">
+			<a data-ng-href="{{p.link}}" target="_blank"><img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D" data-ng-src="{{p.images.thumbnail.url}}" alt="Image from {{p.user.full_name}}" /></a>
+			<p>{{p.caption.text}}</p>
+		</li>
+	</ul>
+</section>

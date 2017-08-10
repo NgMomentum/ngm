@@ -1,7 +1,16 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.rating");
 
-ng.bootstrap.ui.rating.version = new msos.set_version(16, 4, 4);
+ng.bootstrap.ui.rating.version = new msos.set_version(16, 8, 30);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
@@ -17,17 +26,17 @@ angular.module('ng.bootstrap.ui.rating', [])
     titles: ['one', 'two', 'three', 'four', 'five']
 })
 
-.controller('UibRatingController', ['$scope', '$attrs', 'uibRatingConfig', function($scope, $attrs, ratingConfig) {
+.controller('UibRatingController', ['$scope', '$attrs', 'uibRatingConfig', function ($scope, $attrs, ratingConfig) {
     var ngModelCtrl = {
             $setViewValue: angular.noop
         },
         self = this;
 
-    this.init = function(ngModelCtrl_) {
+    this.init = function (ngModelCtrl_) {
         ngModelCtrl = ngModelCtrl_;
         ngModelCtrl.$render = this.render;
 
-        ngModelCtrl.$formatters.push(function(value) {
+        ngModelCtrl.$formatters.push(function (value) {
             if (angular.isNumber(value) && value << 0 !== value) {
                 value = Math.round(value);
             }
@@ -49,7 +58,7 @@ angular.module('ng.bootstrap.ui.rating', [])
         $scope.range = this.buildTemplateObjects(ratingStates);
     };
 
-    this.buildTemplateObjects = function(states) {
+    this.buildTemplateObjects = function (states) {
         for (var i = 0, n = states.length; i < n; i++) {
             states[i] = angular.extend({
                 index: i
@@ -62,7 +71,7 @@ angular.module('ng.bootstrap.ui.rating', [])
         return states;
     };
 
-    this.getTitle = function(index) {
+    this.getTitle = function (index) {
         if (index >= this.titles.length) {
             return index + 1;
         }
@@ -70,7 +79,7 @@ angular.module('ng.bootstrap.ui.rating', [])
         return this.titles[index];
     };
 
-    $scope.rate = function(value) {
+    $scope.rate = function (value) {
         if (!$scope.readonly && value >= 0 && value <= $scope.range.length) {
             var newViewValue = self.enableReset && ngModelCtrl.$viewValue === value ? 0 : value;
             ngModelCtrl.$setViewValue(newViewValue);
@@ -78,7 +87,7 @@ angular.module('ng.bootstrap.ui.rating', [])
         }
     };
 
-    $scope.enter = function(value) {
+    $scope.enter = function (value) {
         if (!$scope.readonly) {
             $scope.value = value;
         }
@@ -89,14 +98,14 @@ angular.module('ng.bootstrap.ui.rating', [])
         }
     };
 
-    $scope.reset = function() {
+    $scope.reset = function () {
         $scope.value = ngModelCtrl.$viewValue;
         if ($scope.onLeave !== angular.noop) {
             $scope.onLeave();
         }
     };
 
-    $scope.onKeydown = function(evt) {
+    $scope.onKeydown = function (evt) {
         if (/(37|38|39|40)/.test(evt.which)) {
             evt.preventDefault();
             evt.stopPropagation();
@@ -104,15 +113,16 @@ angular.module('ng.bootstrap.ui.rating', [])
         }
     };
 
-    this.render = function() {
+    this.render = function () {
         $scope.value = ngModelCtrl.$viewValue;
         $scope.title = self.getTitle($scope.value - 1);
     };
 }])
 
-.directive('uibRating', function() {
+.directive('uibRating', function () {
     return {
         require: ['uibRating', 'ngModel'],
+        restrict: 'A',
         scope: {
             readonly: '=?readOnly',
             onHover: '&',
@@ -120,8 +130,7 @@ angular.module('ng.bootstrap.ui.rating', [])
         },
         controller: 'UibRatingController',
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/rating.html'),
-        replace: true,
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
             var ratingCtrl = ctrls[0],
                 ngModelCtrl = ctrls[1];
             ratingCtrl.init(ngModelCtrl);

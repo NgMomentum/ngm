@@ -1,7 +1,16 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.progressbar");
 
-ng.bootstrap.ui.progressbar.version = new msos.set_version(17, 5, 31);
+ng.bootstrap.ui.progressbar.version = new msos.set_version(16, 10, 27);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.progressbar.css = new msos.loader();
@@ -20,14 +29,14 @@ angular.module('ng.bootstrap.ui.progressbar', [])
     max: 100
 })
 
-.controller('UibProgressController', ['$scope', '$attrs', 'uibProgressConfig', function($scope, $attrs, progressConfig) {
+.controller('UibProgressController', ['$scope', '$attrs', 'uibProgressConfig', function ($scope, $attrs, progressConfig) {
     var self = this,
         animate = angular.isDefined($attrs.animate) ? $scope.$parent.$eval($attrs.animate) : progressConfig.animate;
 
     this.bars = [];
     $scope.max = getMaxOrDefault();
 
-    this.addBar = function(bar, element, attrs) {
+    this.addBar = function (bar, element, attrs) {
         if (!animate) {
             element.css({
                 'transition': 'none'
@@ -39,12 +48,12 @@ angular.module('ng.bootstrap.ui.progressbar', [])
         bar.max = getMaxOrDefault();
         bar.title = attrs && angular.isDefined(attrs.title) ? attrs.title : 'progressbar';
 
-        bar.$watch('value', function(value) {
+        bar.$watch('value', function (value) {
             bar.recalculatePercentage();
         });
 
-        bar.recalculatePercentage = function() {
-            var totalPercentage = self.bars.reduce(function(total, bar) {
+        bar.recalculatePercentage = function () {
+            var totalPercentage = self.bars.reduce(function (total, bar) {
                 bar.percent = +(100 * bar.value / bar.max).toFixed(2);
                 return total + bar.percent;
             }, 0);
@@ -54,22 +63,22 @@ angular.module('ng.bootstrap.ui.progressbar', [])
             }
         };
 
-        bar.$on('$destroy', function() {
+        bar.$on('$destroy', function () {
             element = null;
             self.removeBar(bar);
         });
     };
 
-    this.removeBar = function(bar) {
+    this.removeBar = function (bar) {
         this.bars.splice(this.bars.indexOf(bar), 1);
-        this.bars.forEach(function(bar) {
+        this.bars.forEach(function (bar) {
             bar.recalculatePercentage();
         });
     };
 
-    //$attrs.$observe('maxParam', function(maxParam) {
-    $scope.$watch('maxParam', function(maxParam) {
-        self.bars.forEach(function(bar) {
+    //$attrs.$observe('maxParam', function (maxParam) {
+    $scope.$watch('maxParam', function (maxParam) {
+        self.bars.forEach(function (bar) {
             bar.max = getMaxOrDefault();
             bar.recalculatePercentage();
         });
@@ -80,7 +89,7 @@ angular.module('ng.bootstrap.ui.progressbar', [])
     }
 }])
 
-.directive('uibProgress', function() {
+.directive('uibProgress', function () {
     return {
         replace: true,
         transclude: true,
@@ -93,7 +102,7 @@ angular.module('ng.bootstrap.ui.progressbar', [])
     };
 })
 
-.directive('uibBar', function() {
+.directive('uibBar', function () {
     return {
         replace: true,
         transclude: true,
@@ -103,13 +112,13 @@ angular.module('ng.bootstrap.ui.progressbar', [])
             type: '@'
         },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/bar.html'),
-        link: function(scope, element, attrs, progressCtrl) {
+        link: function (scope, element, attrs, progressCtrl) {
             progressCtrl.addBar(scope, element, attrs);
         }
     };
 })
 
-.directive('uibProgressbar', function() {
+.directive('uibProgressbar', function () {
     return {
         replace: true,
         transclude: true,
@@ -120,7 +129,7 @@ angular.module('ng.bootstrap.ui.progressbar', [])
             type: '@'
         },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/progressbar.html'),
-        link: function(scope, element, attrs, progressCtrl) {
+        link: function (scope, element, attrs, progressCtrl) {
             progressCtrl.addBar(scope, angular.element(element.children()[0]), {
                 title: attrs.title
             });

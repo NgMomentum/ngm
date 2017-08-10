@@ -696,7 +696,8 @@ msos.config.query = msos.parse_query();
 		method = methods.pop(),
 		console_method_func = function (key) {
 			return function () { msos.console.warn('msos.console -> method: ' + key + ' is na!'); };
-		};
+		},
+		formatStackTrace = window.document.documentMode || /\bEdge\//.test(window.navigator && window.navigator.userAgent);
 
 	// Normalize across browsers
     if (!console_win.memory) { console_win.memory = {}; }
@@ -709,7 +710,7 @@ msos.config.query = msos.parse_query();
 	// From AngularJS
     function formatError(arg) {
 		if (arg instanceof Error) {
-			if (arg.stack) {
+			if (arg.stack && formatStackTrace) {
 				arg = (arg.message && arg.stack.indexOf(arg.message) === -1) ? 'Error: ' + arg.message + '\n' + arg.stack : arg.stack;
 			} else if (arg.sourceURL) {
 				arg = arg.message + '\n' + arg.sourceURL + ':' + arg.line;

@@ -1,0 +1,52 @@
+
+<div layout="column" class="md-padding">
+    <style data-ng-ignore>
+        .card-media {
+            margin-right: 16px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .md-subhead.description {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .card-media md-icon {
+            width: 40px;
+            height: 40px;
+            color: rgba(255, 255, 255, 0.87);
+        }
+        span.card-title {
+            padding-left: 15px;
+            margin-top: 20px;
+        }
+        code.css {
+            background-color: #fffcc2;
+        }
+        p.footnote code {
+            font-size: 0.85em;
+        }
+        p.footnote {
+            font-size: 0.85em;
+            margin: 30px;
+            padding: 5px;
+            background-color: rgba(205, 205, 205, 0.45);
+        }
+    </style>
+
+    <p style="margin-bottom: 10px;">
+        Custom component implementations using Material elements often want to easily apply Theme colors to their custom components. Consider the custom <code>&lt;user-card&gt;</code> component below where the <code>md-colors</code> attribute is used to color the background and text colors using either the current or specified Theme palette colors.
+    </p>
+    <!-- Example 1 -->
+    <span class="card-title"> <code>&lt;ex-regular-card&gt;</code> without md-color features</span>
+    <ex-regular-card name="User name, regular" md-theme="default"></ex-regular-card>
+    <!-- Example 2 -->
+    <span class="card-title"> <code>&lt;ex-user-card&gt;</code> coloring using the 'default' Theme</span>
+    <ex-user-card name="User name, user"></ex-user-card>
+    <!-- Example 3 -->
+    <span class="card-title"> <code>&lt;ex-user-card&gt;</code> coloring using the 'forest' Theme</span>
+    <ex-user-card name="User name, user w/theme" theme="forest"></ex-user-card>
+    <!-- Footnote -->
+    <p class="footnote">
+        Note: The <code>md-colors</code> directive allows pre-defined theme colors to be easily applied as CSS style properties. <code>md-colors</code> uses the Palettes defined at
+        <a class="md-accent" href="https://www.google.com/design/spec/style/color.html">Material Design Colors</a> and the Themes defined using <code>$mdThemingProvider</code>. This feature is simply an extension of the <code>$mdTheming</code> features.
+    </p>
+</div>

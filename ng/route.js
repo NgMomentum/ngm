@@ -1,20 +1,22 @@
+
 /**
  * @license AngularJS v1.3.0
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  *
  * Originally derived from v1.3.0,
- *       with updates from v1.3.3, thru v1.5.0,
+ *       with updates from v1.3.3, thru v1.6.5,
  */
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false
+    _: false,
+    ng: false
 */
 
 msos.provide("ng.route");
+
+ng.route.version = new msos.set_version(17, 8, 4);
 
 
 (function (w_angular, w_msos) {
@@ -22,6 +24,7 @@ msos.provide("ng.route");
 
     var ngRouteModule,
         $routeMinErr = w_angular.$$minErr('ngRoute'),
+        isEagerInstantiationEnabled = true,
         vb_rt = false;
 
     if (w_msos.config.verbose === 'route') { vb_rt = true; }
@@ -43,30 +46,23 @@ msos.provide("ng.route");
                     originalPath: path,
                     regexp: path
                 },
-                ret_keys = ret.keys = [];   // must be same ref. (added ret_keys to help see var)
+                ret_keys = ret.keys = [];
 
-            path = path.replace(/([().])/g, '\\$1').replace(
-                /(\/)?:(\w+)([\?\*])?/g,
-                function (dumby, slash, key, option) {
-                    var optional =  option === '?' ? option : null,
-                        star =      option === '*' ? option : null;
+            path = path
+                .replace(/([().])/g, '\\$1')
+                .replace(
+                    /(\/)?:(\w+)(\*\?|[?*])?/g,
+                    function(_na, slash, key, option) {
+                        var optional = (option === '?' || option === '*?') ? '?' : null,
+                            star = (option === '*' || option === '*?') ? '*' : null;
 
-                    ret_keys.push({
-                        name: key,
-                        optional: !!optional
-                    });
+                        ret_keys.push({ name: key, optional: !!optional });
 
-                    slash = slash || '';
+                        slash = slash || '';
 
-                    return (optional ? '' : slash)
-                        + '(?:'
-                        + (optional ? slash : '')
-                        + (star ? '(.+?)' : '([^/]+)')
-                        + (optional || '')
-                        + ')'
-                        + (optional || '');
-                }
-            ).replace(/([\/$\*])/g, '\\$1');
+                        return '' + (optional ? '' : slash) + '(?:' + (optional ? slash : '') + ((star && '(.+?)') || '([^/]+)') + (optional || '') + ')' + (optional || '');
+                    }
+                ).replace(/([/$*])/g, '\\$1');
 
             ret.regexp = new RegExp('^' + path + '$', insensitive ? 'i' : '');
 
@@ -99,9 +95,7 @@ msos.provide("ng.route");
 
             // create redirection for trailing slashes
             if (path) {
-                redirectPath = (path[path.length - 1] === '/')
-                    ? path.substr(0, path.length - 1)
-                    : path + '/';
+                redirectPath = (path[path.length - 1] === '/') ? path.substr(0, path.length - 1) : path + '/';
 
                 routes[redirectPath] = w_angular.extend(
                     { redirectTo: path },
@@ -125,8 +119,22 @@ msos.provide("ng.route");
             return this;
         };
 
-        this.$get = ['$rootScope', '$location', '$routeParams', '$q', '$injector', '$templateRequest', '$sce',
-            function ($rootScope,   $location,   $routeParams,   $q,   $injector,   $templateRequest,   $sce) {
+        this.eagerInstantiationEnabled = function eagerInstantiationEnabled(enabled) {
+            if (w_angular.isDefined(enabled)) {
+                isEagerInstantiationEnabled = enabled;
+                return this;
+            }
+
+            return isEagerInstantiationEnabled;
+        };
+
+        this.$get = ['$rootScope', '$location', '$routeParams', '$q', '$injector', '$templateRequest', '$sce', '$browser',
+            function ($rootScope,   $location,   $routeParams,   $q,   $injector,   $templateRequest,   $sce,   $browser) {
+
+            var forceReload = false,
+                preparedRoute,
+                preparedRouteIsUpdateOnly,
+                $route;
 
             function interpolate(string, params) {
                 var result = [];
@@ -237,10 +245,132 @@ msos.provide("ng.route");
                 w_msos.console.debug(temp_rt + temp_pr + 'done!');
             }
 
+            function getTemplateFor(route) {
+                var template,
+                    templateUrl;
+
+                if (w_angular.isDefined(template = route.template)) {
+
+                    if (w_angular.isFunction(template)) {
+                        template = template(route.params);
+                    }
+
+                } else if (w_angular.isDefined(templateUrl = route.templateUrl)) {
+
+                    if (w_angular.isFunction(templateUrl)) {
+                        templateUrl = templateUrl(route.params);
+                    }
+
+                    if (w_angular.isDefined(templateUrl)) {
+                        route.loadedTemplateUrl = $sce.valueOf(templateUrl);
+                        template = $templateRequest(templateUrl);
+                    }
+                }
+
+                return template;
+            }
+
+            function resolveLocals(route) {
+                var locals,
+                    template;
+
+                if (route) {
+                    locals = w_angular.extend({}, route.resolve);
+
+                    w_angular.forEach(
+                        locals,
+                        function (value, key) {
+                            locals[key] = w_angular.isString(value) ? $injector.get(value) : $injector.invoke(value, null, null, key);
+                        }
+                    );
+
+                    template = getTemplateFor(route);
+
+                    if (w_angular.isDefined(template)) {
+                        locals.$template = template;
+                    }
+
+                    return $q.all($q.defer('ng_route_all_resolveLocals'), locals);
+                }
+
+                return undefined;
+            }
+
+            function getRedirectionData(route) {
+                var data = {
+                        route: route,
+                        hasRedirection: false
+                    },
+                    oldPath,
+                    oldSearch,
+                    newUrl;
+
+                if (route) {
+                    if (route.redirectTo) {
+                        if (w_angular.isString(route.redirectTo)) {
+                            data.path = interpolate(route.redirectTo, route.params);
+                            data.search = route.params;
+                            data.hasRedirection = true;
+                        } else {
+                            oldPath = $location.path();
+                            oldSearch = $location.$$search;      // Eperimental, was $location.search()
+                            newUrl = route.redirectTo(route.pathParams, oldPath, oldSearch);
+
+                            if (w_angular.isDefined(newUrl)) {
+                                data.url = newUrl;
+                                data.hasRedirection = true;
+                            }
+                        }
+                    } else if (route.resolveRedirectTo) {
+                        return $q.resolve(
+                                    $injector.invoke(route.resolveRedirectTo)
+                                ).then(
+                                    function (newUrl) {
+                                        if (w_angular.isDefined(newUrl)) {
+                                            data.url = newUrl;
+                                            data.hasRedirection = true;
+                                        }
+
+                                        return data;
+                                    }
+                                );
+                    }
+                }
+
+                return data;
+            }
+
+            function handlePossibleRedirection(data) {
+                var keepProcessingRoute = true,
+                    oldUrl,
+                    newUrl;
+
+                if (data.route !== $route.current) {
+                    keepProcessingRoute = false;
+                } else if (data.hasRedirection) {
+
+                    oldUrl = $location.url();
+                    newUrl = data.url;
+
+                    if (newUrl) {
+                        $location.url(newUrl).replace();
+                    } else {
+                        newUrl = $location.path(data.path).search(data.search).replace().url();
+                    }
+
+                    if (newUrl !== oldUrl) {
+                        keepProcessingRoute = false;
+                    }
+                }
+
+                return keepProcessingRoute;
+            }
+
             function commitRoute() {
                 var temp_cr = ' - $get - commitRoute -> ',
                     lastRoute = $route.current,
-                    nextRoute = preparedRoute;
+                    nextRoute = preparedRoute,
+                    nextRoutePromise;
 
                 w_msos.console.debug(temp_rt + temp_cr + 'start.');
 
@@ -251,126 +381,90 @@ msos.provide("ng.route");
                 } else if (nextRoute || lastRoute) {
                     forceReload = false;
                     $route.current = nextRoute;
-                    if (nextRoute) {
-                        if (nextRoute.redirectTo) {
-                            w_msos.console.debug(temp_rt + temp_cr + 'redirect.');
-                            if (w_angular.isString(nextRoute.redirectTo)) {
-                                $location.path(interpolate(nextRoute.redirectTo, nextRoute.params)).search(nextRoute.params).replace();
-                            } else {
-                                $location.url(nextRoute.redirectTo(
-                                    nextRoute.pathParams,
-                                    $location.path(),
-                                    $location.$$search      // Eperimental, was $location.search()
-                                )).replace();
-                            }
-                        }
-                    }
 
-                    $q.when($q.defer('ng_route_when_commitRoute'), nextRoute).then(
-                        function () {
-                            if (nextRoute) {
-                                var locals = w_angular.extend(
-                                        {},
-                                        nextRoute.resolve
-                                    ),
-                                    template, templateUrl;
+                    nextRoutePromise = $q.when($q.defer('ng_route_when_commitRoute'), nextRoute);
 
-                                w_angular.forEach(
-                                    locals,
-                                    function (value, key) {
-                                        locals[key] = w_angular.isString(value) ? $injector.get(value) : $injector.invoke(value, null, null, key);
-                                    }
-                                );
+                    $browser.$$incOutstandingRequestCount();
 
-                                template = nextRoute.template;
-
-                                if (w_angular.isDefined(template)) {
-                                    if (_.isFunction(template)) {
-                                        template = template(nextRoute.params);
-                                    }
-                                } else {
-                                    templateUrl = nextRoute.templateUrl;
-                                    if (w_angular.isDefined(templateUrl)) {
-
-                                        if (_.isFunction(templateUrl)) {
-                                            templateUrl = templateUrl(nextRoute.params);
-                                        }
-
-                                        if (w_angular.isDefined(templateUrl)) {
-                                            nextRoute.loadedTemplateUrl = $sce.valueOf(templateUrl);
-                                            template = $templateRequest(templateUrl);
-                                        }
-                                    }
-                                }
-
-                                if (w_angular.isDefined(template)) {
-                                    locals.$template = template;
-                                }
-
-                                w_msos.console.debug(temp_rt + temp_cr + 'returning $q.all');
-                                return $q.all($q.defer('ng_route_all_commitRoute'), locals);
-                            }
-                            return undefined;
-                        }
+                    nextRoutePromise.then(
+                        getRedirectionData
                     ).then(
-                        function (locals) {
-                            if (nextRoute === $route.current) {
-                                if (nextRoute) {
-                                    nextRoute.locals = locals;
-                                    w_angular.copy(nextRoute.params, $routeParams);
+                        handlePossibleRedirection
+                    ).then(
+                        function (keepProcessingRoute) {
+                            return keepProcessingRoute && nextRoutePromise.then(
+                                        resolveLocals
+                                    ).then(
+                                        function (locals) {
+                                            // after route change
+                                            if (nextRoute === $route.current) {
+                                                if (nextRoute) {
+                                                    nextRoute.locals = locals;
+                                                    w_angular.copy(nextRoute.params, $routeParams);
+                                                }
+                                                $rootScope.$broadcast(
+                                                    '$routeChangeSuccess',
+                                                    nextRoute,
+                                                    lastRoute
+                                                );
+                                            }
+                                        }
+                                    );
+                        }).catch(
+                            function (error) {
+                                if (nextRoute === $route.current) {
+                                    $rootScope.$broadcast(
+                                        '$routeChangeError',
+                                        nextRoute,
+                                        lastRoute,
+                                        error
+                                    );
                                 }
-                                $rootScope.$broadcast('$routeChangeSuccess', nextRoute, lastRoute);
                             }
-                        },
-                        function (error) {
-                            if (nextRoute === $route.current) {
-                                $rootScope.$broadcast('$routeChangeError', nextRoute, lastRoute, error);
-                            }
-                        }
-                    );
+                        ).finally(
+                            function () { $browser.$$completeOutstandingRequest(w_angular.noop); }
+                        );
                 }
+
                 w_msos.console.debug(temp_rt + temp_cr + 'done!');
             }
 
-            var forceReload = false,
-                preparedRoute,
-                preparedRouteIsUpdateOnly,
-                $route = {
-                    routes: routes,
+            $route = {
+                routes: routes,
 
-                    reload: function () {
-                        forceReload = true;
-                        $rootScope.$evalAsync(
-                            function () {
-                                w_msos.console.debug(temp_rt + ' - $get - $route - reload -> start.');
-                                // Don't support cancellation of a reload for now...
-                                prepareRoute();
-                                commitRoute();
-    
-                                w_msos.console.debug(temp_rt + ' - $get - $route - reload -> done!');
-                            }
-                        );
-                    },
+                reload: function () {
+                    forceReload = true;
+                    $rootScope.$evalAsync(
+                        function () {
+                            w_msos.console.debug(temp_rt + ' - $get - $route - reload -> start.');
+                            // Don't support cancellation of a reload for now...
+                            prepareRoute();
+                            commitRoute();
 
-                    updateParams: function (newParams) {
-
-                        w_msos.console.debug(temp_rt + ' - $get - $route - updateParams -> start.');
-
-                        if (this.current && this.current.$$route) {
-                            newParams = w_angular.extend({}, this.current.params, newParams);
-
-                            $location.path(interpolate(this.current.$$route.originalPath, newParams));
-                            $location.search(newParams);
-
-                        } else {
-                            throw $routeMinErr(
-                                'norout',
-                                'Tried updating route when with no current route'
-                            );
+                            w_msos.console.debug(temp_rt + ' - $get - $route - reload -> done!');
                         }
-                         w_msos.console.debug(temp_rt + ' - $get - $route - updateParams ->  done!');
+                    );
+                },
+
+                updateParams: function (newParams) {
+
+                    w_msos.console.debug(temp_rt + ' - $get - $route - updateParams -> start.');
+
+                    if (this.current && this.current.$$route) {
+                        newParams = w_angular.extend({}, this.current.params, newParams);
+
+                        $location.path(interpolate(this.current.$$route.originalPath, newParams));
+                        $location.search(newParams);
+
+                    } else {
+                        throw $routeMinErr(
+                            'norout',
+                            'Tried updating route when with no current route'
+                        );
                     }
-                };
+                     w_msos.console.debug(temp_rt + ' - $get - $route - updateParams ->  done!');
+                }
+            };
 
             $rootScope.$on('$locationChangeStart',      prepareRoute);
             $rootScope.$on('$locationChangeSuccess',    commitRoute);
@@ -382,9 +476,6 @@ msos.provide("ng.route");
     function $RouteParamsProvider() {
         this.$get = function () { return {}; };
     }
-
-    ngRouteModule = w_angular.module('ngRoute', ['ng']).provider('$route', $RouteProvider);
-    ngRouteModule.provider('$routeParams', $RouteParamsProvider);
 
     function $RouteScrollProvider() {
 
@@ -398,8 +489,6 @@ msos.provide("ng.route");
         }];
     }
 
-    ngRouteModule.provider('$routeViewScroll', $RouteScrollProvider);
-
     function ngViewFactory($route, $animate, $routeViewScroll) {
         var temp_vf = 'ng/route - ngViewFactory - link';
 
@@ -408,7 +497,7 @@ msos.provide("ng.route");
             terminal: true,
             priority: 400,
             transclude: 'element',
-            link: function (scope, $element, attr, ctrl, $transclude) {
+            link: function (scope, $element, attr, ctrl_na, $transclude) {
                 var currentScope,
                     currentElement,
                     previousLeaveAnimation,
@@ -430,11 +519,12 @@ msos.provide("ng.route");
 
                     if (currentElement) {
                         previousLeaveAnimation = $animate.leave(currentElement);
-                        previousLeaveAnimation.then(
-                            function () {
-                                previousLeaveAnimation = null;
+                        previousLeaveAnimation.done(
+                            function (response) {
+                                if (response !== false) { previousLeaveAnimation = null; }
                             }
                         );
+
                         currentElement = null;
                     }
                 }
@@ -459,10 +549,10 @@ msos.provide("ng.route");
                                 $animate.enter(
                                     clone,
                                     null,
-                                    currentElement || $element).then(
-                                        function onNgViewEnter() {
-                                            if (w_angular.isDefined(autoScrollExp)
-                                             && (!autoScrollExp || scope.$eval(autoScrollExp))) {
+                                    currentElement || $element).done(
+                                        function onNgViewEnter(response) {
+                                            if (response !== false && w_angular.isDefined(autoScrollExp) && (!autoScrollExp || scope.$eval(autoScrollExp))) {
+                                                // $anchorScroll();
                                                 $routeViewScroll();
                                             }
                                         }
@@ -477,7 +567,7 @@ msos.provide("ng.route");
                         currentScope.$emit('$viewContentLoaded');
 
                         // MSOS: don't bother with noop
-                        if (onloadExp && onloadExp !== angular.noop) {
+                        if (onloadExp && onloadExp !== w_angular.noop) {
                             currentScope.$eval(onloadExp);
                         }
 
@@ -495,9 +585,6 @@ msos.provide("ng.route");
             }
         };
     }
-
-    ngViewFactory.$inject = ['$route', '$animate', '$routeViewScroll'];
-
 
     function ngViewControllerFactory($compile, $controller, $route) {
         return {
@@ -521,11 +608,7 @@ msos.provide("ng.route");
                     msos.console.debug(temp_nc + 'has current controller: ' + current.controller);
 
                     locals.$scope = scope;
-                    controller = $controller(current.controller, locals);
-
-                    if (current.controllerAs) {
-                        scope[current.controllerAs] = controller;
-                    }
+                    controller = $controller(current.controller, locals, false, current);
 
                     $element.data('$ngControllerController', controller);
                     $element.children().data('$ngControllerController', controller);
@@ -538,10 +621,33 @@ msos.provide("ng.route");
         };
     }
 
-    ngViewControllerFactory.$inject = ['$compile', '$controller', '$route'];
+    function instantiateRoute($injector) {
+        if (isEagerInstantiationEnabled) {
+            w_msos.console.debug('ng/route - instantiateRoute -> eager.');
+            $injector.get('$route');
+        }
+    }
 
-
-    ngRouteModule.directive('ngView', ngViewFactory);
-    ngRouteModule.directive('ngView', ngViewControllerFactory);
+    ngRouteModule = w_angular.module(
+        'ngRoute',
+        ['ng']
+    ).provider(
+        '$route',
+        $RouteProvider
+    ).provider(
+        '$routeParams',
+        $RouteParamsProvider
+    ).provider(
+        '$routeViewScroll',
+        $RouteScrollProvider
+    ).directive(
+        'ngView',
+        ['$route', '$animate', '$routeViewScroll', ngViewFactory]
+    ).directive(
+        'ngView',
+        ['$compile', '$controller', '$route', ngViewControllerFactory]
+    ).run(
+        ['$injector', instantiateRoute]
+    );
 
 }(window.angular, window.msos));

@@ -1,0 +1,187 @@
+<section id="tooltip">
+    <div data-ng-ignore class="page-header">
+        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
+        <h1>Tooltip
+            <small>(
+                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.tooltip</a>)</small>
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-md-6 show-grid">
+            <div ng-controller="demo.bootstrap.controllers.tooltip.ctrl">
+                <div class="form-group">
+                    <label>Tooltip placement</label>
+                    <select class="form-control" ng-model="placement.selected" ng-options="o as o for o in placement.options"></select>
+                </div>
+                <button tooltip-placement="{{placement.selected}}" uib-tooltip="On the {{placement.selected}}" type="button" class="btn btn-default">Tooltip {{placement.selected}}</button>
+
+                <hr />
+                <div class="form-group">
+                    <label>Dynamic Tooltip Text</label>
+                    <input type="text" ng-model="dynamicTooltipText" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Dynamic Tooltip Popup Text</label>
+                    <input type="text" ng-model="dynamicTooltip" class="form-control">
+                </div>
+                <p>
+                    Pellentesque <a href="#" uib-tooltip="{{dynamicTooltip}}">{{dynamicTooltipText}}</a>, sit amet venenatis urna cursus eget nunc scelerisque viverra mauris, in aliquam. Tincidunt lobortis feugiat vivamus at
+                    <a href="#" tooltip-animation="false" uib-tooltip="I don't fade. :-(">fading</a> eget arcu dictum varius duis at consectetur lorem. Vitae elementum curabitur
+                    <a href="#" tooltip-popup-delay='1000' uib-tooltip='appears with delay'>show delay</a> nunc sed velit dignissim sodales ut eu sem integer vitae. Turpis egestas
+                    <a href="#" tooltip-popup-close-delay='1000' uib-tooltip='hides with delay'>hide delay</a> pharetra convallis posuere morbi leo urna,
+                    <a href="#" uib-tooltip-template="'myTooltipTemplate.html'">Custom template</a> at elementum eu, facilisis sed odio morbi quis commodo odio.
+                </p>
+
+                <p>
+                    I can even contain HTML as a
+                    <a href="#" uib-tooltip-html="htmlTooltip">scope variable</a> or
+                    <a href="#" uib-tooltip-html="'static. {{dynamicTooltipText}}. <b>bold.</b>'">inline string</a>
+                </p>
+
+                <p>
+                    <style>
+                        /* Specify styling for tooltip contents */
+                        
+                        .tooltip.customClass .tooltip-inner {
+                            color: #880000;
+                            background-color: #ffff66;
+                            box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+                        }
+                        /* Hide arrow */
+                        
+                        .tooltip.customClass .tooltip-arrow {
+                            display: none;
+                        }
+                    </style>
+                    I can have a custom class. <a href="#" uib-tooltip="I can have a custom class applied to me!" tooltip-class="customClass">Check me out!</a>
+                </p>
+
+
+                <div class="form-group">
+                    <label>Or use custom triggers, like focus: </label>
+                    <input type="text" value="Click me!" uib-tooltip="See? Now click away..." tooltip-trigger="'focus'" tooltip-placement="right" class="form-control" />
+                </div>
+
+                <div class="form-group" ng-class="{'has-error' : !inputModel}">
+                    <label>Disable tooltips conditionally:</label>
+                    <input type="text" ng-model="inputModel" class="form-control" placeholder="Hover over this for a tooltip until this is filled" uib-tooltip="Enter something in this input field to disable this tooltip" tooltip-placement="top" tooltip-trigger="'mouseenter'" tooltip-enable="!inputModel" />
+                </div>
+                <div class="form-group">
+                    <label>
+                        Open tooltips <span uib-tooltip="Hello!" tooltip-is-open="tooltipIsOpen" tooltip-placement="bottom">conditionally.</span>
+                    </label>
+                    <button ng-click="tooltipIsOpen = !tooltipIsOpen">Toggle tooltip</button>
+                </div>
+                <script type="text/ng-template" id="myTooltipTemplate.html">
+                    <span>Special Tooltip with <strong>markup</strong> and {{ dynamicTooltipText }}</span>
+                </script>
+            </div>
+        </div>
+        <div data-ng-ignore class="col-md-6">
+            <p>A lightweight, extensible directive for fancy tooltip creation. The tooltip directive supports multiple placements, optional transition animation, and more.</p>
+            <p><strong>Note to mobile developers</strong>: Please note that while tooltips may work correctly on mobile devices (including tablets), we have made the decision to not officially support such a use-case because it does not make sense from a UX perspective.</p>
+            <p>There are three versions of the tooltip: <code>uib-tooltip</code>, <code>uib-tooltip-template</code>, and
+                <code>uib-tooltip-html</code>:</p>
+            <ul>
+                <li><code>uib-tooltip</code> - Takes text only and will escape any HTML provided.</li>
+                <li><code>uib-tooltip-html</code>
+                    <small class="badge">$</small> - Takes an expression that evaluates to an HTML string. Note that this HTML is not compiled. If compilation is required, please use the <code>uib-tooltip-template</code> attribute option instead. <em>The user is responsible for ensuring the content is safe to put into the DOM!</em></li>
+                <li><code>uib-tooltip-template</code>
+                    <small class="badge">$</small> - Takes text that specifies the location of a template to use for the tooltip. Note that this needs to be wrapped in a tag.</li>
+            </ul>
+            <h3 id="uib-tooltip-settings">uib-tooltip-* settings</h3>
+            <p>All these settings are available for the three types of tooltips.</p>
+            <ul>
+                <li>
+                    <p><code>tooltip-animation</code>
+                        <small class="badge">$</small>
+                        <small class="badge">C</small>
+                        <em>(Default: <code>true</code>, Config: <code>animation</code>)</em> - Should it fade in and out?</p>
+                </li>
+                <li>
+                    <p><code>tooltip-append-to-body</code>
+                        <small class="badge">$</small>
+                        <small class="badge">C</small>
+                        <em>(Default: <code>false</code>, Config: <code>appendToBody</code>)</em> - Should the tooltip be appended to &#39;$body&#39; instead of the parent element?</p>
+                </li>
+                <li>
+                    <p><code>tooltip-class</code> - Custom class to be applied to the tooltip.</p>
+                </li>
+                <li>
+                    <p><code>tooltip-enable</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>true</code>)</em> - Is it enabled? It will enable or disable the configured tooltip-trigger.</p>
+                </li>
+                <li>
+                    <p><code>tooltip-is-open</code>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>false</code>)</em> - Whether to show the tooltip.</p>
+                </li>
+                <li>
+                    <p><code>tooltip-placement</code>
+                        <small class="badge">C</small>
+                        <em>(Default: <code>top</code>, Config: <code>placement</code>)</em> - Passing in &#39;auto&#39; separated by a space before the placement will enable auto positioning, e.g: &quot;auto bottom-left&quot;. The tooltip will attempt to position where it fits in the closest scrollable ancestor. Accepts:</p>
+                    <ul>
+                        <li><code>top</code> - tooltip on top, horizontally centered on host element.</li>
+                        <li><code>top-left</code> - tooltip on top, left edge aligned with host element left edge.</li>
+                        <li><code>top-right</code> - tooltip on top, right edge aligned with host element right edge.</li>
+                        <li><code>bottom</code> - tooltip on bottom, horizontally centered on host element.</li>
+                        <li><code>bottom-left</code> - tooltip on bottom, left edge aligned with host element left edge.</li>
+                        <li><code>bottom-right</code> - tooltip on bottom, right edge aligned with host element right edge.</li>
+                        <li><code>left</code> - tooltip on left, vertically centered on host element.</li>
+                        <li><code>left-top</code> - tooltip on left, top edge aligned with host element top edge.</li>
+                        <li><code>left-bottom</code> - tooltip on left, bottom edge aligned with host element bottom edge.</li>
+                        <li><code>right</code> - tooltip on right, vertically centered on host element.</li>
+                        <li><code>right-top</code> - tooltip on right, top edge aligned with host element top edge.</li>
+                        <li><code>right-bottom</code> - tooltip on right, bottom edge aligned with host element bottom edge.</li>
+                    </ul>
+                </li>
+                <li>
+                    <p><code>tooltip-popup-close-delay</code>
+                        <small class="badge">C</small>
+                        <em>(Default: <code>0</code>, Config: <code>popupCloseDelay</code>)</em> - For how long should the tooltip remain open after the close trigger event?</p>
+                </li>
+                <li>
+                    <p><code>tooltip-popup-delay</code>
+                        <small class="badge">C</small>
+                        <em>(Default: <code>0</code>, Config: <code>popupDelay</code>)</em> - Popup delay in milliseconds until it opens.</p>
+                </li>
+                <li>
+                    <p><code>tooltip-trigger</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>&#39;mouseenter&#39;</code>)</em> - What should trigger a show of the tooltip? Supports a space separated list of event names, or objects (see below).</p>
+                </li>
+            </ul>
+            <p><strong>Note:</strong> To configure the tooltips, you need to do it on <code>$uibTooltipProvider</code> (also see below).</p>
+            <h3 id="triggers">Triggers</h3>
+            <p>The following show triggers are supported out of the box, along with their provided hide triggers:</p>
+            <ul>
+                <li><code>mouseenter</code>: <code>mouseleave</code></li>
+                <li><code>click</code>: <code>click</code></li>
+                <li><code>outsideClick</code>: <code>outsideClick</code></li>
+                <li><code>focus</code>: <code>blur</code></li>
+                <li><code>none</code></li>
+            </ul>
+            <p>The <code>outsideClick</code> trigger will cause the tooltip to toggle on click, and hide when anything else is clicked.</p>
+            <p>For any non-supported value, the trigger will be used to both show and hide the tooltip. Using the &#39;none&#39; trigger will disable the internal trigger(s), one can then use the <code>tooltip-is-open</code> attribute exclusively to show and hide the tooltip.</p>
+            <h3 id="-uibtooltipprovider">$uibTooltipProvider</h3>
+            <p>Through the <code>$uibTooltipProvider</code>, you can change the way tooltips and popovers behave by default; the attributes above always take precedence. The following methods are available:</p>
+            <ul>
+                <li>
+                    <p><code>setTriggers(obj)</code>
+                        <em>(Example: <code>{ &#39;openTrigger&#39;: &#39;closeTrigger&#39; }</code>)</em> - Extends the default trigger mappings mentioned above with mappings of your own.</p>
+                </li>
+                <li>
+                    <p><code>options(obj)</code> - Provide a set of defaults for certain tooltip and popover attributes. Currently supports the ones with the <small class="badge">C</small> badge.</p>
+                </li>
+            </ul>
+            <h3 id="known-issues">Known issues</h3>
+            <p>For Safari 7+ support, if you want to use the <strong>focus</strong> <code>tooltip-trigger</code>, you need to use an anchor tag with a tab index. For example:</p>
+            <pre><code>&lt;a tabindex=&quot;0&quot; uib-tooltip=&quot;Test&quot; tooltip-trigger=&quot;focus&quot; class=&quot;btn btn-default&quot;&gt;
+Click Me
+&lt;/a&gt;
+</code></pre>
+            <p>For Safari (potentially all versions up to 9), there is an issue with the hover CSS selector when using multiple elements grouped close to each other that are using the tooltip - it is possible for multiple elements to gain the hover state when mousing between the elements quickly and exiting the container at the right time. See <a href="https://github.com/angular-ui/bootstrap/issues/5445">issue #5445</a> for more details.</p>
+        </div>
+    </div>
+</section>

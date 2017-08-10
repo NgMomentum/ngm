@@ -1,0 +1,42 @@
+<div ui-content-for="title">
+  <span>Carousel with $drag</span>
+</div>
+
+<style>
+  .carousel {
+      padding: 20px;
+      height: 40em;
+  }
+  .carousel-item {
+      color: #444;
+      background-color: #f4f4f4;
+      background-size: cover;
+      box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+      -webkit-transition: opacity 0.3s;
+      -moz-transition: opacity 0.3s;
+      transition: opacity 0.3s;
+      opacity: 1;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-transition: -webkit-transform 500ms;
+      -moz-transition: -moz-transform 500ms;
+      transition: transform 500ms;
+  }
+</style>
+<div class="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item" 
+        style='background-image: url(./images/1.jpg);'>
+    </div>
+    <div class="carousel-item"
+         style='background-image: url(./images/2.jpg);'>
+    </div>
+    <div class="carousel-item"
+         style='background-image: url(./images/3.jpg);'>
+    </div>
+  </div>
+</div>

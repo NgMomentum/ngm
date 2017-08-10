@@ -1,0 +1,36 @@
+<section id="alert">
+    <div class="page-header">
+        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
+        <h1>Alert
+            <small>(
+                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.alert</a>)</small>
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-md-6 show-grid">
+            <div ng-controller="demo.bootstrap.controllers.alert.ctrl">
+                <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'warning')" close="closeAlert($index)">{{alert.msg}}</div>
+                <div uib-alert style="background-color:#fa39c3;color:white">A happy alert!</div>
+                <button type="button" class='btn btn-default' ng-click="addAlert()">Add Alert</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <p>This directive can be used both to generate alerts from static and dynamic model data (using the <code>ng-repeat</code> directive).</p>
+            <h3 id="uib-alert-settings">uib-alert settings</h3>
+            <ul>
+                <li>
+                    <p><code>close()</code>
+                        <small class="badge">$</small> - A callback function that gets fired when an <code>alert</code> is closed. If the attribute exists, a close button is displayed as well.</p>
+                </li>
+                <li>
+                    <p><code>dismiss-on-timeout</code>
+                        <em>(Default: <code>none</code>)</em> - Takes the number of milliseconds that specify the timeout duration, after which the alert will be closed. This attribute requires the presence of the <code>close</code> attribute.</p>
+                </li>
+                <li>
+                    <p><code>template-url</code>
+                        <em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/alert.html</code>)</em> - Add the ability to override the template used in the component.</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>

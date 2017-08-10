@@ -1,7 +1,14 @@
-
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
 msos.provide("ng.bootstrap.ui.tooltip");
 
-ng.bootstrap.ui.tooltip.version = new msos.set_version(17, 5, 31);
+ng.bootstrap.ui.tooltip.version = new msos.set_version(16, 10, 27);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.tooltip.css = new msos.loader();
@@ -18,7 +25,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
      * The $tooltip service creates tooltip- and popover-like directives as well as
      * houses global options for them.
      */
-    .provider('$uibTooltip', function() {
+    .provider('$uibTooltip', function () {
         // The default options tooltip and popover.
         var defaultOptions = {
             placement: 'top',
@@ -45,12 +52,12 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
          * `options({})` allows global configuration of all tooltips in the
          * application.
          *
-         *   var app = angular.module( 'App', ['ui.bootstrap.tooltip'], function( $tooltipProvider ) {
+         *   var app = angular.module( 'App', ['ui.bootstrap.tooltip'], function ( $tooltipProvider ) {
          *     // place tooltips left instead of top by default
          *     $tooltipProvider.options( { placement: 'left' } );
          *   });
          */
-        this.options = function(value) {
+        this.options = function (value) {
             angular.extend(globalOptions, value);
         };
 
@@ -63,27 +70,12 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
             angular.extend(triggerMap, triggers);
         };
 
-        /**
-         * This is a helper function for translating camel-case to snake_case.
-         */
-        function snake_case(name) {
-            var regexp = /[A-Z]/g;
-            var separator = '-';
-            return name.replace(regexp, function(letter, pos) {
-                return (pos ? separator : '') + letter.toLowerCase();
-            });
-        }
-
-        /**
-         * Returns the actual instance of the $tooltip service.
-         * TODO support multiple triggers
-         */
-        this.$get = ['$window', '$compile', '$timeout', '$document', '$uibPosition', '$interpolate', '$rootScope', '$parse', '$$stackedMap', function($window, $compile, $timeout, $document, $position, $interpolate, $rootScope, $parse, $$stackedMap) {
+        this.$get = ['$window', '$compile', '$timeout', '$document', '$uibPosition', '$interpolate', '$rootScope', '$parse', '$$stackedMap', function ($window, $compile, $timeout, $document, $position, $interpolate, $rootScope, $parse, $$stackedMap) {
             var openedTooltips = $$stackedMap.createNew();
-            $document.on('keypress', keypressListener);
+            $document.on('keyup', keypressListener);
 
-            $rootScope.$on('$destroy', function() {
-                $document.off('keypress', keypressListener);
+            $rootScope.$on('$destroy', function () {
+                $document.off('keyup', keypressListener);
             });
 
             function keypressListener(e) {
@@ -91,7 +83,6 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                     var last = openedTooltips.top();
                     if (last) {
                         last.value.close();
-                        openedTooltips.removeTop();
                         last = null;
                     }
                 }
@@ -116,7 +107,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                  */
                 function getTriggers(trigger) {
                     var show = (trigger || options.trigger || defaultTriggerShow).split(' ');
-                    var hide = show.map(function(trigger) {
+                    var hide = show.map(function (trigger) {
                         return triggerMap[trigger] || trigger;
                     });
                     return {
@@ -125,27 +116,26 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                     };
                 }
 
-                var directiveName = snake_case(ttType);
+                var directiveName = angular.snakeCase(ttType, '-');
 
                 var startSym = $interpolate.startSymbol();
                 var endSym = $interpolate.endSymbol();
                 var template =
-                    '<div '+ directiveName + '-popup ' +
+                    '<div ' + directiveName + '-popup ' +
                     'uib-title="' + startSym + 'title' + endSym + '" ' +
                     (options.useContentExp ?
                         'content-exp="contentExp()" ' :
-                            'content="' + startSym + 'content' + endSym + '" ') +
-                            'placement="' + startSym + 'placement' + endSym + '" ' +
-                            'popup-class="' + startSym + 'popupClass' + endSym + '" ' +
-                            'animation="animation" ' +
-                            'is-open="isOpen"' +
-                            'origin-scope="origScope" ' +
-                            'class="uib-position-measure"' +
-                            '>' +
-                            '</div>';
+                        'content="' + startSym + 'content' + endSym + '" ') +
+                    'origin-scope="origScope" ' +
+                    'class="uib-position-measure ' + prefix + '" ' +
+                    'tooltip-animation-class="fade"' +
+                    'uib-tooltip-classes ' +
+                    'ng-class="{ in: isOpen }" ' +
+                    '>' +
+                    '</div>';
 
                 return {
-                    compile: function(tElem, tAttrs) {
+                    compile: function (tElem, tAttrs) {
                         var tooltipLinker = $compile(template);
 
                         return function link(scope, element, attrs, tooltipCtrl) {
@@ -165,29 +155,40 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                             var observers = [];
                             var lastPlacement;
 
-                            var positionTooltip = function() {
+                            var positionTooltip = function () {
                                 // check if tooltip exists and is not empty
                                 if (!tooltip || !tooltip.html()) {
                                     return;
                                 }
 
                                 if (!positionTimeout) {
-                                    positionTimeout = $timeout(function() {
+                                    positionTimeout = $timeout(function () {
                                         var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, appendToBody);
+                                        var initialHeight = angular.isDefined(tooltip.offsetHeight) ? tooltip.offsetHeight : tooltip.prop('offsetHeight');
+                                        var elementPos = appendToBody ? $position.offset(element) : $position.position(element);
                                         tooltip.css({
                                             top: ttPosition.top + 'px',
                                             left: ttPosition.left + 'px'
                                         });
+                                        var placementClasses = ttPosition.placement.split('-');
 
-                                        if (!tooltip.hasClass(ttPosition.placement.split('-')[0])) {
+                                        if (!tooltip.hasClass(placementClasses[0])) {
                                             tooltip.removeClass(lastPlacement.split('-')[0]);
-                                            tooltip.addClass(ttPosition.placement.split('-')[0]);
+                                            tooltip.addClass(placementClasses[0]);
                                         }
 
                                         if (!tooltip.hasClass(options.placementClassPrefix + ttPosition.placement)) {
                                             tooltip.removeClass(options.placementClassPrefix + lastPlacement);
                                             tooltip.addClass(options.placementClassPrefix + ttPosition.placement);
                                         }
+
+                                        $timeout(function () {
+                                            var currentHeight = angular.isDefined(tooltip.offsetHeight) ? tooltip.offsetHeight : tooltip.prop('offsetHeight');
+                                            var adjustment = $position.adjustTop(placementClasses, elementPos, initialHeight, currentHeight);
+                                            if (adjustment) {
+                                                tooltip.css(adjustment);
+                                            }
+                                        }, 0, false);
 
                                         // first time through tt element will have the
                                         // uib-position-measure class or if the placement
@@ -211,9 +212,6 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                             // By default, the tooltip is not open.
                             // TODO add ability to start tooltip opened
                             ttScope.isOpen = false;
-                            openedTooltips.add(ttScope, {
-                                close: hide
-                            });
 
                             function toggleTooltipBind() {
                                 if (!ttScope.isOpen) {
@@ -268,7 +266,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 createTooltip();
 
                                 // And show the tooltip.
-                                ttScope.$evalAsync(function() {
+                                ttScope.$evalAsync(function () {
                                     ttScope.isOpen = true;
                                     assignIsOpen(true);
                                     positionTooltip();
@@ -294,7 +292,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 }
 
                                 // First things first: we don't show it anymore.
-                                ttScope.$evalAsync(function() {
+                                ttScope.$evalAsync(function () {
                                     if (ttScope) {
                                         ttScope.isOpen = false;
                                         assignIsOpen(false);
@@ -332,12 +330,17 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 }
 
                                 tooltipLinkedScope = ttScope.$new();
-                                tooltip = tooltipLinker(tooltipLinkedScope, function(tooltip) {
+
+                                tooltip = tooltipLinker(tooltipLinkedScope, function (tooltip) {
                                     if (appendToBody) {
                                         $document.find('body').append(tooltip);
                                     } else {
                                         element.after(tooltip);
                                     }
+                                });
+
+                                openedTooltips.add(ttScope, {
+                                    close: hide
                                 });
 
                                 prepObservers();
@@ -352,6 +355,9 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                     tooltip.remove();
                                     tooltip = null;
                                 }
+
+                                openedTooltips.remove(ttScope);
+
                                 if (tooltipLinkedScope) {
                                     tooltipLinkedScope.$destroy();
                                     tooltipLinkedScope = null;
@@ -388,14 +394,14 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 }
                             }
 
-                            ttScope.contentExp = function() {
+                            ttScope.contentExp = function () {
                                 return ttScope.content;
                             };
 
                             /**
                              * Observe the relevant attributes.
                              */
-                            attrs.$observe('disabled', function(val) {
+                            attrs.$observe('disabled', function (val) {
                                 if (val) {
                                     cancelShow();
                                 }
@@ -406,7 +412,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                             });
 
                             if (isOpenParse) {
-                                scope.$watch(isOpenParse, function(val) {
+                                scope.$watch(isOpenParse, function (val) {
                                     if (ttScope && !val === ttScope.isOpen) {
                                         toggleTooltipBind();
                                     }
@@ -418,7 +424,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
 
                                 if (contentParse) {
                                     observers.push(
-                                        scope.$watch(contentParse, function(val) {
+                                        scope.$watch(contentParse, function (val) {
                                             ttScope.content = val;
                                             if (!val && ttScope.isOpen) {
                                                 hide();
@@ -427,10 +433,10 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                     );
 
                                     observers.push(
-                                        tooltipLinkedScope.$watch(function() {
+                                        tooltipLinkedScope.$watch(function () {
                                             if (!repositionScheduled) {
                                                 repositionScheduled = true;
-                                                tooltipLinkedScope.$$postDigest(function() {
+                                                tooltipLinkedScope.$$postDigest(function () {
                                                     repositionScheduled = false;
                                                     if (ttScope && ttScope.isOpen) {
                                                         positionTooltip();
@@ -441,7 +447,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                     );
                                 } else {
                                     observers.push(
-                                        attrs.$observe(ttType, function(val) {
+                                        attrs.$observe(ttType, function (val) {
                                             ttScope.content = val;
                                             if (!val && ttScope.isOpen) {
                                                 hide();
@@ -453,7 +459,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 }
 
                                 observers.push(
-                                    attrs.$observe(prefix + 'Title', function(val) {
+                                    attrs.$observe(prefix + 'Title', function (val) {
                                         ttScope.title = val;
                                         if (ttScope.isOpen) {
                                             positionTooltip();
@@ -462,8 +468,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 );
 
                                 observers.push(
-                                    attrs.$observe(prefix + 'Placement', function(val) {
-//                                        if (ttScope.isOpen) { hide(); }
+                                    attrs.$observe(prefix + 'Placement', function (val) {
                                         ttScope.placement = val ? val : options.placement;
                                         if (ttScope.isOpen) {
                                             positionTooltip();
@@ -474,7 +479,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
 
                             function unregisterObservers() {
                                 if (observers.length) {
-                                    angular.forEach(observers, function(observer) {
+                                    angular.forEach(observers, function (observer) {
                                         observer();
                                     });
                                     observers.length = 0;
@@ -492,8 +497,8 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 }
                             }
 
-                            var unregisterTriggers = function() {
-                                triggers.show.forEach(function(trigger) {
+                            var unregisterTriggers = function () {
+                                triggers.show.forEach(function (trigger) {
                                     if (trigger === 'outsideClick') {
                                         element.off('click', toggleTooltipBind);
                                     } else {
@@ -501,7 +506,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                         element.off(trigger, toggleTooltipBind);
                                     }
                                 });
-                                triggers.hide.forEach(function(trigger) {
+                                triggers.hide.forEach(function (trigger) {
                                     if (trigger === 'outsideClick') {
                                         $document.off('click', bodyHideTooltipBind);
                                     } else {
@@ -511,13 +516,26 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                             };
 
                             function prepTriggers() {
-                                var val = attrs[prefix + 'Trigger'];
+                                var showTriggers = [],
+                                    hideTriggers = [];
+                                var val = scope.$eval(attrs[prefix + 'Trigger']);
                                 unregisterTriggers();
 
-                                triggers = getTriggers(val);
+                                if (angular.isObject(val)) {
+                                    Object.keys(val).forEach(function (key) {
+                                        showTriggers.push(key);
+                                        hideTriggers.push(val[key]);
+                                    });
+                                    triggers = {
+                                        show: showTriggers,
+                                        hide: hideTriggers
+                                    };
+                                } else {
+                                    triggers = getTriggers(val);
+                                }
 
                                 if (triggers.show !== 'none') {
-                                    triggers.show.forEach(function(trigger, idx) {
+                                    triggers.show.forEach(function (trigger, idx) {
                                         if (trigger === 'outsideClick') {
                                             element.on('click', toggleTooltipBind);
                                             $document.on('click', bodyHideTooltipBind);
@@ -528,7 +546,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                             element.on(triggers.hide[idx], hideTooltipBind);
                                         }
 
-                                        element.on('keypress', function(e) {
+                                        element.on('keypress', function (e) {
                                             if (e.which === 27) {
                                                 hideTooltipBind();
                                             }
@@ -556,7 +574,6 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                             scope.$on('$destroy', function onDestroyTooltip() {
                                 unregisterTriggers();
                                 removeTooltip();
-                                openedTooltips.remove(ttScope);
                                 ttScope = null;
                             });
                         };
@@ -569,9 +586,9 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
 // This is mostly ngInclude code but with a custom scope
 .directive('uibTooltipTemplateTransclude', [
     '$animate', '$sce', '$compile', '$templateRequest',
-    function($animate, $sce, $compile, $templateRequest) {
+    function ($animate, $sce, $compile, $templateRequest) {
         return {
-            link: function(scope, elem, attrs) {
+            link: function (scope, elem, attrs) {
                 var origScope = scope.$eval(attrs.tooltipTemplateTranscludeScope);
 
                 var changeCounter = 0,
@@ -579,7 +596,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                     previousElement,
                     currentElement;
 
-                var cleanupLastIncludeContent = function() {
+                var cleanupLastIncludeContent = function () {
                     if (previousElement) {
                         previousElement.remove();
                         previousElement = null;
@@ -591,7 +608,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                     }
 
                     if (currentElement) {
-                        $animate.leave(currentElement).then(function() {
+                        $animate.leave(currentElement).then(function () {
                             previousElement = null;
                         });
                         previousElement = currentElement;
@@ -599,20 +616,20 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                     }
                 };
 
-                scope.$watch($sce.parseAsResourceUrl(attrs.uibTooltipTemplateTransclude), function(src) {
+                scope.$watch($sce.parseAsResourceUrl(attrs.uibTooltipTemplateTransclude), function (src) {
                     var thisChangeId = ++changeCounter;
 
                     if (src) {
                         //set the 2nd param to true to ignore the template request error so that the inner
                         //contents and scope can be cleaned up.
-                        $templateRequest(src, true).then(function(response) {
+                        $templateRequest(src, true).then(function (response) {
                             if (thisChangeId !== changeCounter) {
                                 return;
                             }
                             var newScope = origScope.$new();
                             var template = response;
 
-                            var clone = $compile(template)(newScope, function(clone) {
+                            var clone = $compile(template)(newScope, function (clone) {
                                 cleanupLastIncludeContent();
                                 $animate.enter(clone, elem);
                             });
@@ -621,7 +638,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                             currentElement = clone;
 
                             currentScope.$emit('$includeContentLoaded', src);
-                        }, function() {
+                        }, function () {
                             if (thisChangeId === changeCounter) {
                                 cleanupLastIncludeContent();
                                 scope.$emit('$includeContentError', src);
@@ -644,10 +661,10 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
  * They must not be animated as they're expected to be present on the tooltip on
  * initialization.
  */
-.directive('uibTooltipClasses', ['$uibPosition', function($uibPosition) {
+.directive('uibTooltipClasses', ['$uibPosition', function ($uibPosition) {
     return {
         restrict: 'A',
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             // need to set the primary position so the
             // arrow has space during position measure.
             // tooltip.positionTooltip()
@@ -662,67 +679,48 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                 element.addClass(scope.popupClass);
             }
 
-            if (scope.animation()) {
+            if (scope.animation) {
                 element.addClass(attrs.tooltipAnimationClass);
             }
         }
     };
 }])
 
-.directive('uibTooltipPopup', function() {
+.directive('uibTooltipPopup', function () {
     return {
-        replace: true,
-        scope: {
-            content: '@',
-            placement: '@',
-            popupClass: '@',
-            animation: '&',
-            isOpen: '&'
-        },
+        restrict: 'A',
+        scope: { content: '@' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip.html')
     };
 })
 
-.directive('uibTooltip', ['$uibTooltip', function($uibTooltip) {
+.directive('uibTooltip', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibTooltip', 'tooltip', 'mouseenter');
 }])
 
-.directive('uibTooltipTemplatePopup', function() {
+.directive('uibTooltipTemplatePopup', function () {
     return {
-        replace: true,
-        scope: {
-            contentExp: '&',
-            placement: '@',
-            popupClass: '@',
-            animation: '&',
-            isOpen: '&',
-            originScope: '&'
-        },
+        restrict: 'A',
+        scope: { contentExp: '&', originScope: '&' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip/template_popup.html')
     };
 })
 
-.directive('uibTooltipTemplate', ['$uibTooltip', function($uibTooltip) {
+.directive('uibTooltipTemplate', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibTooltipTemplate', 'tooltip', 'mouseenter', {
         useContentExp: true
     });
 }])
 
-.directive('uibTooltipHtmlPopup', function() {
+.directive('uibTooltipHtmlPopup', function () {
     return {
-        replace: true,
-        scope: {
-            contentExp: '&',
-            placement: '@',
-            popupClass: '@',
-            animation: '&',
-            isOpen: '&'
-        },
+        restrict: 'A',
+        scope: { contentExp: '&' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip/html_popup.html')
     };
 })
 
-.directive('uibTooltipHtml', ['$uibTooltip', function($uibTooltip) {
+.directive('uibTooltipHtml', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibTooltipHtml', 'tooltip', 'mouseenter', {
         useContentExp: true
     });

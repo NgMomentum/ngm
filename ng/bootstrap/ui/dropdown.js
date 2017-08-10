@@ -1,7 +1,16 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.dropdown");
 
-ng.bootstrap.ui.dropdown.version = new msos.set_version(16, 3, 29);
+ng.bootstrap.ui.dropdown.version = new msos.set_version(16, 8, 29);
 
 
 // Below is the standard plugin, except for templateUrl location and naming (MSOS style)
@@ -13,13 +22,12 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
     openClass: 'open'
 })
 
-.service('uibDropdownService', ['$document', '$rootScope', function($document, $rootScope) {
+.service('uibDropdownService', ['$document', '$rootScope', function ($document, $rootScope) {
     var openScope = null;
 
-    this.open = function(dropdownScope, element) {
+    this.open = function (dropdownScope, element) {
         if (!openScope) {
             $document.on('click', closeDropdown);
-            element.on('keydown', keybindFilter);
         }
 
         if (openScope && openScope !== dropdownScope) {
@@ -29,15 +37,15 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         openScope = dropdownScope;
     };
 
-    this.close = function(dropdownScope, element) {
+    this.close = function (dropdownScope, element) {
         if (openScope === dropdownScope) {
             openScope = null;
             $document.off('click', closeDropdown);
-            element.off('keydown', keybindFilter);
+            $document.off('keydown', this.keybindFilter);
         }
     };
 
-    var closeDropdown = function(evt) {
+    var closeDropdown = function (evt) {
         // This method may still be called during the same mouse event that
         // unbound this event handler. So check openScope before proceeding.
         if (!openScope) {
@@ -63,6 +71,7 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
             return;
         }
 
+        openScope.focusToggleElement();
         openScope.isOpen = false;
 
         if (!$rootScope.$$phase) {
@@ -70,12 +79,17 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         }
     };
 
-    var keybindFilter = function(evt) {
+    this.keybindFilter = function (evt) {
+        var dropdownElement = openScope.getDropdownElement();
+        var toggleElement = openScope.getToggleElement();
+        var dropdownElementTargeted = dropdownElement && dropdownElement[0].contains(evt.target);
+        var toggleElementTargeted = toggleElement && toggleElement[0].contains(evt.target);
+
         if (evt.which === 27) {
             evt.stopPropagation();
             openScope.focusToggleElement();
             closeDropdown();
-        } else if (openScope.isKeynavEnabled() && [38, 40].indexOf(evt.which) !== -1 && openScope.isOpen) {
+        } else if (openScope.isKeynavEnabled() && [38, 40].indexOf(evt.which) !== -1 && openScope.isOpen && (dropdownElementTargeted || toggleElementTargeted)) {
             evt.preventDefault();
             evt.stopPropagation();
             openScope.focusDropdownEntry(evt.which);
@@ -83,7 +97,7 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
     };
 }])
 
-.controller('UibDropdownController', ['$scope', '$element', '$attrs', '$parse', 'uibDropdownConfig', 'uibDropdownService', '$animate', '$uibPosition', '$document', '$compile', '$templateRequest', function($scope, $element, $attrs, $parse, dropdownConfig, uibDropdownService, $animate, $position, $document, $compile, $templateRequest) {
+.controller('UibDropdownController', ['$scope', '$element', '$attrs', '$parse', 'uibDropdownConfig', 'uibDropdownService', '$animate', '$uibPosition', '$document', '$compile', '$templateRequest', function ($scope, $element, $attrs, $parse, dropdownConfig, uibDropdownService, $animate, $position, $document, $compile, $templateRequest) {
     var self = this,
         scope = $scope.$new(), // create a child scope so we are not polluting original one
         templateScope,
@@ -100,7 +114,7 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
 
     $element.addClass('dropdown');
 
-    this.init = function() {
+    this.init = function () {
         if ($attrs.isOpen) {
             getIsOpen = $parse($attrs.isOpen);
             setIsOpen = getIsOpen.assign;
@@ -132,7 +146,7 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         }
     };
 
-    this.toggle = function(open) {
+    this.toggle = function (open) {
         scope.isOpen = arguments.length ? !!open : !scope.isOpen;
         if (setIsOpen !== angular.noop && angular.isFunction(setIsOpen)) {
             setIsOpen(scope, scope.isOpen);
@@ -142,27 +156,27 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
     };
 
     // Allow other directives to watch status
-    this.isOpen = function() {
+    this.isOpen = function () {
         return scope.isOpen;
     };
 
-    scope.getToggleElement = function() {
+    scope.getToggleElement = function () {
         return self.toggleElement;
     };
 
-    scope.getAutoClose = function() {
+    scope.getAutoClose = function () {
         return $attrs.autoClose || 'always'; //or 'outsideClick' or 'disabled'
     };
 
-    scope.getElement = function() {
+    scope.getElement = function () {
         return $element;
     };
 
-    scope.isKeynavEnabled = function() {
+    scope.isKeynavEnabled = function () {
         return keynavEnabled;
     };
 
-    scope.focusDropdownEntry = function(keyCode) {
+    scope.focusDropdownEntry = function (keyCode) {
         var elems = self.dropdownMenu ? //If append to body is used.
             angular.element(self.dropdownMenu).find('a') :
             $element.find('ul').eq(0).find('a');
@@ -193,11 +207,11 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         elems[self.selectedOption].focus();
     };
 
-    scope.getDropdownElement = function() {
+    scope.getDropdownElement = function () {
         return self.dropdownMenu;
     };
 
-    scope.focusToggleElement = function() {
+    scope.focusToggleElement = function () {
         if (self.toggleElement) {
             self.toggleElement[0].focus();
         }
@@ -207,7 +221,9 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         if (appendTo && self.dropdownMenu) {
             var pos = $position.positionElements($element, self.dropdownMenu, 'bottom-left', true),
                 css,
-                rightalign;
+                rightalign,
+                scrollbarPadding,
+                scrollbarWidth = 0;
 
             css = {
                 top: pos.top + 'px',
@@ -220,8 +236,13 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
                 css.right = 'auto';
             } else {
                 css.left = 'auto';
-                css.right = window.innerWidth -
-                    (pos.left + $element.prop('offsetWidth')) + 'px';
+                scrollbarPadding = $position.scrollbarPadding(appendTo);
+
+                if (scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
+                    scrollbarWidth = scrollbarPadding.scrollbarWidth;
+                }
+
+                css.right = window.innerWidth - scrollbarWidth - (pos.left + $element.prop('offsetWidth')) + 'px';
             }
 
             // Need to adjust our positioning to be relative to the appendTo container
@@ -246,7 +267,7 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         var hasOpenClass = openContainer.hasClass(appendTo ? appendToOpenClass : openClass);
 
         if (hasOpenClass === !isOpen) {
-            $animate[isOpen ? 'addClass' : 'removeClass'](openContainer, appendTo ? appendToOpenClass : openClass).then(function() {
+            $animate[isOpen ? 'addClass' : 'removeClass'](openContainer, appendTo ? appendToOpenClass : openClass).then(function () {
                 if (angular.isDefined(isOpen) && isOpen !== wasOpen) {
                     if (toggleInvoker !== angular.noop) {
                         toggleInvoker($scope, {
@@ -259,19 +280,24 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
 
         if (isOpen) {
             if (self.dropdownMenuTemplateUrl) {
-                $templateRequest(self.dropdownMenuTemplateUrl).then(function(tplContent) {
+                $templateRequest(self.dropdownMenuTemplateUrl).then(function (tplContent) {
                     templateScope = scope.$new();
-                    $compile(tplContent.trim())(templateScope, function(dropdownElement) {
+                    $compile(tplContent.trim())(templateScope, function (dropdownElement) {
                         var newEl = dropdownElement;
                         self.dropdownMenu.replaceWith(newEl);
                         self.dropdownMenu = newEl;
+                        $document.on('keydown', uibDropdownService.keybindFilter);
                     });
                 });
+            } else {
+                $document.on('keydown', uibDropdownService.keybindFilter);
             }
 
             scope.focusToggleElement();
             uibDropdownService.open(scope, $element);
         } else {
+            uibDropdownService.close(scope, $element);
+
             if (self.dropdownMenuTemplateUrl) {
                 if (templateScope) {
                     templateScope.$destroy();
@@ -281,7 +307,6 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
                 self.dropdownMenu = newEl;
             }
 
-            uibDropdownService.close(scope, $element);
             self.selectedOption = null;
         }
 
@@ -290,27 +315,27 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
         }
     });
 
-    $scope.$on('$locationChangeSuccess', function() {
+    $scope.$on('$locationChangeSuccess', function () {
         if (scope.getAutoClose() !== 'disabled') {
             scope.isOpen = false;
         }
     });
 }])
 
-.directive('uibDropdown', function() {
+.directive('uibDropdown', function () {
     return {
         controller: 'UibDropdownController',
-        link: function(scope, element, attrs, dropdownCtrl) {
+        link: function (scope, element, attrs, dropdownCtrl) {
             dropdownCtrl.init();
         }
     };
 })
 
-.directive('uibDropdownMenu', function() {
+.directive('uibDropdownMenu', function () {
     return {
         restrict: 'A',
         require: '?^uibDropdown',
-        link: function(scope, element, attrs, dropdownCtrl) {
+        link: function (scope, element, attrs, dropdownCtrl) {
             if (!dropdownCtrl || angular.isDefined(attrs.dropdownNested)) {
                 return;
             }
@@ -329,10 +354,10 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
     };
 })
 
-.directive('uibDropdownToggle', function() {
+.directive('uibDropdownToggle', function () {
     return {
         require: '?^uibDropdown',
-        link: function(scope, element, attrs, dropdownCtrl) {
+        link: function (scope, element, attrs, dropdownCtrl) {
             if (!dropdownCtrl) {
                 return;
             }
@@ -341,11 +366,11 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
 
             dropdownCtrl.toggleElement = element;
 
-            var toggleDropdown = function(event) {
+            var toggleDropdown = function (event) {
                 event.preventDefault();
 
                 if (!element.hasClass('disabled') && !attrs.disabled) {
-                    scope.$apply(function() {
+                    scope.$apply(function () {
                         dropdownCtrl.toggle();
                     });
                 }
@@ -362,7 +387,7 @@ angular.module('ng.bootstrap.ui.dropdown', ['ng.bootstrap.ui.position'])
                 element.attr('aria-expanded', !!isOpen);
             });
 
-            scope.$on('$destroy', function() {
+            scope.$on('$destroy', function () {
                 element.unbind('click', toggleDropdown);
             });
         }

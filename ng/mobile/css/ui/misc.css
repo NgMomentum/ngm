@@ -1,0 +1,142 @@
+
+/* mobile normalization */
+ng-view,
+ng-include,
+ng-transclude,
+ui-shared-state {
+  display: block;
+}
+ng-view.mobile-ng-content,
+.mobile-ng-content > ng-view {
+  height: 100%;
+}
+
+/* mobile-ng (was app) */
+.mobile-ng {
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  background: #777777;
+  overflow: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transition: -webkit-transform 400ms ease;
+  -moz-transition: -moz-transform 400ms ease;
+  -o-transition: -o-transform 400ms ease;
+  transition: transform 400ms ease;
+  -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+}
+.mobile-ng-body {
+  display: block;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+.mobile-ng-content {
+  display: block;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+.mobile-ng-search {
+  position: relative;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  z-index: 1029;
+  width: 100%;
+}
+
+/* validations */
+input.ng-invalid,
+textarea.ng-invalid {
+  border-color: #fc0;
+}
+.ng-dirty input.ng-invalid {
+  border-color: #fc0;
+}
+.ng-dirty input.ng-invalid ~ span.ko {
+  color: #ff3b30;
+}
+
+/* section */
+.mobile-section {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  background: #fff;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.mobile-section > .navbar-header,
+.mobile-section > .navbar-collapse {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.mobile-section-wide {
+  padding-left: 0;
+  padding-right: 0;
+}
+.mobile-section.mobile-section-condensed {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.mobile-section.mobile-section-break {
+  margin-bottom: 20px;
+  -webkit-box-shadow: 0 -1px rgba(0, 0, 0, 0.08), 0 1px rgba(0, 0, 0, 0.07), 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -1px rgba(0, 0, 0, 0.08), 0 1px rgba(0, 0, 0, 0.07), 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+.mobile-section-default {
+  background-color: #777777;
+  color: #fff;
+}
+.mobile-section-primary {
+  background-color: #007aff;
+  color: #fff;
+}
+.mobile-section-success {
+  background-color: #4cd964;
+  color: #fff;
+}
+.mobile-section-info {
+  background-color: #34aadc;
+  color: #fff;
+}
+.mobile-section-warning {
+  background-color: #fc0;
+  color: #fff;
+}
+.mobile-section-danger {
+  background-color: #ff3b30;
+  color: #fff;
+}
+
+/* mobile justified */
+.mobile-justified {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+.mobile-justified > * {
+  display: table-cell;
+  width: 1%;
+  float: none !important;
+}
+
+.navbar-mobile .btn-navbar:hover,
+.navbar-mobile .btn:hover {
+  color: #007aff;
+}
+
+/* mobile carousel */
+.carousel-item,
+.carousel-item > a > img,
+.carousel-item > img {
+  height: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}

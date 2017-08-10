@@ -1,0 +1,27 @@
+
+<section id="masonry">
+    <style data-ng-ignore>
+        .masonry-brick {
+            margin: 1em;
+            display: none;
+        }
+        .masonry-brick.loaded {
+            display: block;
+        }
+    </style>
+
+    <div class="row" ng-controller="demo.widgets.controllers.masonry.ctrl">
+        <div class="col-md-12">
+            <h2>In Action</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" ng-click="add()">Add</button>
+                <button class="btn btn-danger" ng-click="remove()">Remove</button>
+            </div>
+            <div masonry>
+                <div class="masonry-brick" ng-repeat="brick in bricks">
+                    <img ng-src="{{ brick.src }}" alt="A masonry brick">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

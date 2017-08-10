@@ -1,8 +1,17 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.pagination");
 msos.require("ng.bootstrap.ui.paging");
 
-ng.bootstrap.ui.pagination.version = new msos.set_version(17, 5, 31);
+ng.bootstrap.ui.pagination.version = new msos.set_version(16, 10, 27);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.pagination.css = new msos.loader();
@@ -13,14 +22,14 @@ ng.bootstrap.ui.pagination.css.load(msos.resource_url('ng', 'bootstrap/css/ui/pa
 // ui.bootstrap.pagination -> ng.bootstrap.ui.pagination
 // uib/template/pagination/pagination.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/pagination.html'),
 angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
-    .controller('UibPaginationController', ['$scope', '$attrs', '$parse', 'uibPaging', 'uibPaginationConfig', function($scope, $attrs, $parse, uibPaging, uibPaginationConfig) {
+    .controller('UibPaginationController', ['$scope', '$attrs', '$parse', 'uibPaging', 'uibPaginationConfig', function ($scope, $attrs, $parse, uibPaging, uibPaginationConfig) {
         var ctrl = this;
         // Setup configuration parameters
         var maxSize = angular.isDefined($attrs.maxSize) ? $scope.$parent.$eval($attrs.maxSize) : uibPaginationConfig.maxSize,
             rotate = angular.isDefined($attrs.rotate) ? $scope.$parent.$eval($attrs.rotate) : uibPaginationConfig.rotate,
             forceEllipses = angular.isDefined($attrs.forceEllipses) ? $scope.$parent.$eval($attrs.forceEllipses) : uibPaginationConfig.forceEllipses,
             boundaryLinkNumbers = angular.isDefined($attrs.boundaryLinkNumbers) ? $scope.$parent.$eval($attrs.boundaryLinkNumbers) : uibPaginationConfig.boundaryLinkNumbers,
-            pageLabel = angular.isDefined($attrs.pageLabel) ? function(idx) {
+            pageLabel = angular.isDefined($attrs.pageLabel) ? function (idx) {
                 return $scope.$parent.$eval($attrs.pageLabel, {
                     $page: idx
                 });
@@ -31,7 +40,7 @@ angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
         uibPaging.create(this, $scope, $attrs);
 
         if ($attrs.maxSize) {
-            ctrl._watchers.push($scope.$parent.$watch($parse($attrs.maxSize), function(value) {
+            ctrl._watchers.push($scope.$parent.$watch($parse($attrs.maxSize), function (value) {
                 maxSize = parseInt(value, 10);
                 ctrl.render();
             }));
@@ -119,7 +128,7 @@ angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
         }
 
         var originalRender = this.render;
-        this.render = function() {
+        this.render = function () {
             originalRender();
             if ($scope.page > 0 && $scope.page <= $scope.totalPages) {
                 $scope.pages = getPages($scope.page, $scope.totalPages);
@@ -140,7 +149,7 @@ angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
     forceEllipses: false
 })
 
-.directive('uibPagination', ['$parse', 'uibPaginationConfig', function($parse, uibPaginationConfig) {
+.directive('uibPagination', ['$parse', 'uibPaginationConfig', function ($parse, uibPaginationConfig) {
     return {
         scope: {
             totalItems: '=',
@@ -151,13 +160,14 @@ angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
             ngDisabled: '='
         },
         require: ['uibPagination', '?ngModel'],
+        restrict: 'A',
         controller: 'UibPaginationController',
         controllerAs: 'pagination',
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/pagination.html');
         },
-        replace: true,
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
+            element.addClass('pagination');
             var paginationCtrl = ctrls[0],
                 ngModelCtrl = ctrls[1];
 

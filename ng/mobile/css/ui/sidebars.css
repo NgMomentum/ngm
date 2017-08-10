@@ -1,0 +1,81 @@
+
+.mobilesidebar {
+  z-index: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: none;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transition: -webkit-transform 400ms ease;
+  -moz-transition: -moz-transform 400ms ease;
+  -o-transition: -o-transform 400ms ease;
+  transition: transform 400ms ease;
+  pointer-events: none;
+}
+
+.mobilesidebar-left {
+  background: #555555;
+  width: 300px;
+  left: 0;
+  right: auto;
+  -webkit-transition: width 400ms ease;
+  -o-transition: width 400ms ease;
+  transition: width 400ms ease;
+}
+
+.mobilesidebar-right {
+  background: #555555;
+  width: 300px;
+  left: auto;
+  right: 0;
+  -webkit-transition: width 400ms ease;
+  -o-transition: width 400ms ease;
+  transition: width 400ms ease;
+}
+
+.mobilesidebar-left-visible .mobilesidebar-left,
+.mobilesidebar-right-visible .mobilesidebar-right {
+  display: block;
+}
+
+.mobilesidebar-left-in .mobilesidebar-left,
+.mobilesidebar-right-in .mobilesidebar-right {
+  pointer-events: auto;
+}
+
+.mobilesidebar-left-in .mobile-ng {
+  width: 100%;
+  -webkit-transform: translate(300px, 0);
+  -ms-transform: translate(300px, 0);
+  -o-transform: translate(300px, 0);
+  transform: translate(300px, 0);
+  -webkit-transition: -webkit-transform 400ms ease;
+  -moz-transition: -moz-transform 400ms ease;
+  -o-transition: -o-transform 400ms ease;
+  transition: transform 400ms ease;
+}
+
+.mobilesidebar-right-in .mobile-ng {
+  width: 100%;
+  -webkit-transform: translate(-300px, 0);
+  -ms-transform: translate(-300px, 0);
+  -o-transform: translate(-300px, 0);
+  transform: translate(-300px, 0);
+  -webkit-transition: -webkit-transform 400ms ease;
+  -moz-transition: -moz-transform 400ms ease;
+  -o-transition: -o-transform 400ms ease;
+  transition: transform 400ms ease;
+}
+
+.mobilesidebar-header,
+.mobile-ng-name {
+  position: relative;
+  width: 100%;
+  line-height: 70px;
+  padding: 0 10px;
+  font-size: 23px;
+  color: #fff;
+  margin: 0;
+  z-index: 10;
+}

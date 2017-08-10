@@ -1,0 +1,31 @@
+
+<section>
+    <div data-ng-controller="demo.widgets.controllers.editor.ctrl">
+        </br>
+        <div class="container">
+            <a href="http://github.com/fraywing/textAngular"> <img src="http://textangular.com/images/textAngularLogo.png" style="max-width:500%;" class="lighter"></a>
+        </div>
+        </br>
+
+        <div class="container border-around text-center lighter">
+            <span class="text-xlg roboto">A Lightweight, Two-Way-Bound &amp; Totally <b class="text-red">Awesome</b> Angular.js Text-Editor</span>
+        </div>
+        <div class="container lighter">
+            <div text-angular ng-model="htmlContent" name="demo-editor" ta-text-editor-class="border-around container" ta-html-editor-class="border-around"></div>
+        </div>
+        </br>
+
+        <div class="container text-center lighter border-around">
+            <div class="lighter roboto">
+                <p ng-bind="htmlContent" class="text-left text-med text-gray"></p>
+            </div>
+        </div>
+        </br>
+
+        <div class="container">
+            <div class="text-center">Create by fraywing</div>
+            <div class="text-center">2015 Licensed under <a href="http://opensource.org/licenses/MIT">MIT</a></div>
+        </div>
+        </br>
+    </div>
+</section>

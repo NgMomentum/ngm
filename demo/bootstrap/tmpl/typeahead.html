@@ -1,0 +1,211 @@
+<section id="typeahead">
+    <style data-ng-ignore>
+        .typeahead-demo .custom-popup-wrapper {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            background-color: #f9f9f9;
+        }
+        
+        .typeahead-demo .custom-popup-wrapper > .message {
+            padding: 10px 20px;
+            border-bottom: 1px solid #ddd;
+            color: #868686;
+        }
+        
+        .typeahead-demo .custom-popup-wrapper > .dropdown-menu {
+            position: static;
+            float: none;
+            display: block;
+            min-width: 160px;
+            background-color: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+        }
+    </style>
+
+    <script type="text/ng-template" id="customTemplate.html">
+        <a>
+            <img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
+            <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+        </a>
+    </script>
+
+    <script type="text/ng-template" id="customPopupTemplate.html">
+        <div class="custom-popup-wrapper" ng-style="{top: position().top+'px', left: position().left+'px'}" style="display: block;" ng-show="isOpen() && !moveInProgress" aria-hidden="{{!isOpen()}}">
+            <p class="message">select location from drop down.</p>
+
+            <ul class="dropdown-menu" role="listbox">
+                <li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }" ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
+                    <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+                </li>
+            </ul>
+        </div>
+    </script>
+
+    <div data-ng-ignore class="page-header">
+        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
+        <h1>Typeahead
+            <small>(
+                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.typeahead</a>)</small>
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-md-6 show-grid">
+            <div class='container-fluid' ng-controller="demo.bootstrap.controllers.typeahead.ctrl">
+
+                <h4>Static arrays</h4>
+                <pre>Model: {{selected | json}}</pre>
+                <input type="text" ng-model="selected" uib-typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control">
+
+                <h4>Asynchronous results</h4>
+                <pre>Model: {{asyncSelected | json}}</pre>
+                <input type="text" ng-model="asyncSelected" placeholder="Locations loaded via $http" uib-typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" class="form-control">
+                <i ng-show="loadingLocations" class="fa fa-refresh"></i>
+                <div ng-show="noResults">
+                    <i class="fa fa-trash"></i> No Results Found
+                </div>
+
+                <h4>ngModelOptions support</h4>
+                <pre>Model: {{ngModelOptionsSelected | json}}</pre>
+                <input type="text" ng-model="ngModelOptionsSelected" ng-model-options="modelOptions" uib-typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control">
+
+                <h4>Custom templates for results</h4>
+                <pre>Model: {{customSelected | json}}</pre>
+                <input type="text" ng-model="customSelected" placeholder="Custom template" uib-typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" typeahead-template-url="customTemplate.html" class="form-control" typeahead-show-hint="true" typeahead-min-length="0">
+
+                <h4>Custom popup templates for typeahead's dropdown</h4>
+                <pre>Model: {{customPopupSelected | json}}</pre>
+                <input type="text" ng-model="customPopupSelected" placeholder="Custom popup template" uib-typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" typeahead-popup-template-url="customPopupTemplate.html" class="form-control">
+
+            </div>
+        </div>
+        <div data-ng-ignore class="col-md-6">
+            <p>Typeahead is a AngularJS version of <a href="http://getbootstrap.com/2.3.2/javascript.html#typeahead">Bootstrap v2&#39;s typeahead plugin</a>. This directive can be used to quickly create elegant typeaheads with any form text input.</p>
+            <p>It is very well integrated into AngularJS as it uses a subset of the
+                <a href="http://docs.angularjs.org/api/ng.directive:select">select directive</a> syntax, which is very flexible. Supported expressions are:</p>
+            <ul>
+                <li><em>label</em> for <em>value</em> in <em>sourceArray</em></li>
+                <li><em>select</em> as <em>label</em> for <em>value</em> in <em>sourceArray</em></li>
+            </ul>
+            <p>The <code>sourceArray</code> expression can use a special <code>$viewValue</code> variable that corresponds to the value entered inside the input.</p>
+            <p>This directive works with promises, meaning you can retrieve matches using the <code>$http</code> service with minimal effort.</p>
+            <h3 id="uib-typeahead-settings">uib-typeahead settings</h3>
+            <ul>
+                <li>
+                    <p><code>ng-model</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i> - Assignable angular expression to data-bind to.</p>
+                </li>
+                <li>
+                    <p><code>ng-model-options</code>
+                        <small class="badge">$</small> - Options for ng-model (see <a href="https://docs.angularjs.org/api/ng/directive/ngModelOptions">ng-model-options directive</a>). Currently supports the <code>debounce</code> and <code>getterSetter</code> options.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-append-to</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>null</code>)</em> - Should the typeahead popup be appended to an element instead of the parent element?</p>
+                </li>
+                <li>
+                    <p><code>typeahead-append-to-body</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>false</code>)</em> - Should the typeahead popup be appended to $body instead of the parent element?</p>
+                </li>
+                <li>
+                    <p><code>typeahead-editable</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>true</code>)</em> - Should it restrict model values to the ones selected from the popup only?</p>
+                </li>
+                <li>
+                    <p><code>typeahead-focus-first</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>true</code>)</em> - Should the first match automatically be focused as you type?</p>
+                </li>
+                <li>
+                    <p><code>typeahead-focus-on-select</code>
+                        <em>(Default: <code>true</code>)</em> - On selection, focus the input element the typeahead directive is associated with.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-input-formatter</code>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>undefined</code>)</em> - Format the ng-model result after selection.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-is-open</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>angular.noop</code>)</em> - Binding to a variable that indicates if the dropdown is open.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-loading</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>angular.noop</code>)</em> - Binding to a variable that indicates if matches are being retrieved asynchronously.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-min-length</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>1</code>)</em> - Minimal no of characters that needs to be entered before typeahead kicks-in. Must be greater than or equal to 0.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-no-results</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>angular.noop</code>)</em> - Binding to a variable that indicates if no matching results were found.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-should-select($event)</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>null</code>)</em> - A callback executed when a <code>keyup</code> event that might trigger a selection occurs. Selection will only occur if this function returns true.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-on-select($item, $model, $label, $event)</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>null</code>)</em> - A callback executed when a match is selected. $event can be undefined if selection not triggered from a user event.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-popup-template-url</code>
+                        <em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/typeahead.html</code>)</em> - Set custom popup template.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-select-on-blur</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>false</code>)</em> - On blur, select the currently highlighted match.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-select-on-exact</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>false</code>)</em> - Automatically select the item when it is the only one that exactly matches the user input.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-show-hint</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>false</code>)</em> - Show hint when the first option matches.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-template-url</code>
+                        <em>(Default: <code>uib/template/typeahead/typeahead-match.html</code>)</em> - Set custom item template.</p>
+                </li>
+                <li>
+                    <p><code>typeahead-wait-ms</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>0</code>)</em> - Minimal wait time after last character typed before typeahead kicks-in.</p>
+                </li>
+                <li>
+                    <p><code>uib-typeahead</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i> - Comprehension Angular expression (see <a href="http://docs.angularjs.org/api/ng.directive:select">select directive</a>).</p>
+                </li>
+            </ul>
+            <p><strong>Notes</strong></p>
+            <p>If a custom template for the popup is used, the wrapper selector used for the match items is the <code>uib-typeahead-match</code> class.</p>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,64 @@
+
+/* navbar-mobile (was navbar-app) */
+.navbar-mobile {
+  min-height: 50px;
+  border-color: #ccc;
+  background: #f7f7f7;
+  border-width: 1px;
+  border-style: solid;
+  color: #007aff;
+}
+.navbar-mobile .btn-icon-only .fa,
+.navbar-mobile .btn-icon-only .icon {
+  font-size: 22px;
+  vertical-align: middle;
+}
+.navbar-mobile .btn-navbar,
+.navbar-mobile .btn {
+  background: none;
+  border: none;
+  line-height: 50px;
+  padding-top: 0;
+  padding-bottom: 0;
+  color: #007aff;
+  text-transform: uppercase;
+}
+.navbar-brand-center {
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+}
+.navbar-absolute-top,
+.navbar-absolute-bottom {
+  position: absolute;
+  z-index: 1000;
+  border-width: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  margin: 0;
+}
+.has-navbar-top .mobile-ng-body {
+  padding-top: 51px;
+}
+.has-navbar-bottom .mobile-ng-body {
+  padding-bottom: 51px;
+}
+.navbar-absolute-top {
+  top: 0;
+  border-bottom-width: 1px;
+}
+.navbar-absolute-bottom {
+  top: auto;
+  bottom: 0;
+  border-bottom: 0 none;
+  border-top-width: 1px;
+}
+.navbar-mobile .btn-navbar:hover,
+.navbar-mobile .btn:hover {
+  color: #007aff;
+}
