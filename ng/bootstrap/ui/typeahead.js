@@ -1,7 +1,16 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.typeahead");
 
-ng.bootstrap.ui.typeahead.version = new msos.set_version(16, 4, 8);
+ng.bootstrap.ui.typeahead.version = new msos.set_version(16, 8, 30);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
@@ -13,11 +22,12 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
  * A helper service that can parse typeahead's syntax (string provided by users)
  * Extracted to a separate service for ease of unit testing
  */
-.factory('uibTypeaheadParser', ['$parse', function($parse) {
-    //                      00000111000000000000022200000000000000003333333333333330000000000044000
+.factory('uibTypeaheadParser', ['$parse', function ($parse) {
+    //                      000001111111100000000000002222222200000000000000003333333333333330000000000044444444000
     var TYPEAHEAD_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+([\s\S]+?)$/;
+
     return {
-        parse: function(input) {
+        parse: function (input) {
             var match = input.match(TYPEAHEAD_REGEXP);
             if (!match) {
                 throw new Error(
@@ -36,7 +46,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
 }])
 
 .controller('UibTypeaheadController', ['$scope', '$element', '$attrs', '$compile', '$parse', '$q', '$timeout', '$document', '$window', '$rootScope', '$$debounce', '$uibPosition', 'uibTypeaheadParser',
-    function(originalScope, element, attrs, $compile, $parse, $q, $timeout, $document, $window, $rootScope, $$debounce, $position, typeaheadParser) {
+    function (originalScope, element, attrs, $compile, $parse, $q, $timeout, $document, $window, $rootScope, $$debounce, $position, typeaheadParser) {
         var HOT_KEYS = [9, 13, 27, 38, 40];
         var eventDebounceTime = 200;
         var modelCtrl, ngModelOptions;
@@ -48,7 +58,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             minLength = 1;
         }
 
-        originalScope.$watch(attrs.typeaheadMinLength, function(newVal) {
+        originalScope.$watch(attrs.typeaheadMinLength, function (newVal) {
             minLength = !newVal && newVal !== 0 ? 1 : newVal;
         });
 
@@ -57,12 +67,18 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
 
         //should it restrict model values to the ones selected from the popup only?
         var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
-        originalScope.$watch(attrs.typeaheadEditable, function(newVal) {
+        originalScope.$watch(attrs.typeaheadEditable, function (newVal) {
             isEditable = newVal !== false;
         });
 
         //binding to a variable that indicates if matches are being retrieved asynchronously
         var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
+
+        //a function to determine if an event should cause selection
+        var isSelectEvent = attrs.typeaheadShouldSelect ? $parse(attrs.typeaheadShouldSelect) : function (scope, vals) {
+            var evt = vals.$event;
+            return evt.which === 13 || evt.which === 9;
+        };
 
         //a callback executed when a match is selected
         var onSelectCallback = $parse(attrs.typeaheadOnSelect);
@@ -95,7 +111,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
         //model setter executed upon match selection
         var parsedModel = $parse(attrs.ngModel);
         var invokeModelSetter = $parse(attrs.ngModel + '($$$p)');
-        var $setModelValue = function(scope, newValue) {
+        var $setModelValue = function (scope, newValue) {
             if (angular.isFunction(parsedModel(originalScope)) &&
                 ngModelOptions && ngModelOptions.$options && ngModelOptions.$options.getterSetter) {
                 return invokeModelSetter(scope, {
@@ -119,7 +135,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
         //create a child scope for the typeahead directive so we are not polluting original scope
         //with typeahead-specific data (matches, query etc.)
         var scope = originalScope.$new();
-        var offDestroy = originalScope.$on('$destroy', function() {
+        var offDestroy = originalScope.$on('$destroy', function () {
             scope.$destroy();
         });
         scope.$on('$destroy', offDestroy);
@@ -157,6 +173,11 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
                 'vertical-align': 'top',
                 'background-color': 'transparent'
             });
+
+            if (hintInputElem.attr('id')) {
+                hintInputElem.removeAttr('id'); // remove duplicate id if present.
+            }
+
             inputsContainer.append(hintInputElem);
             hintInputElem.after(element);
         }
@@ -183,26 +204,26 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             popUpEl.attr('popup-template-url', attrs.typeaheadPopupTemplateUrl);
         }
 
-        var resetHint = function() {
+        var resetHint = function () {
             if (showHint) {
                 hintInputElem.val('');
             }
         };
 
-        var resetMatches = function() {
+        var resetMatches = function () {
             scope.matches = [];
             scope.activeIdx = -1;
             element.attr('aria-expanded', false);
             resetHint();
         };
 
-        var getMatchId = function(index) {
+        var getMatchId = function (index) {
             return popupId + '-option-' + index;
         };
 
         // Indicate that the specified match is the active (pre-selected) item in the list owned by this typeahead.
         // This attribute is added or removed automatically when the `activeIdx` changes.
-        scope.$watch('activeIdx', function(index) {
+        scope.$watch('activeIdx', function (index) {
             if (index < 0) {
                 element.removeAttr('aria-activedescendant');
             } else {
@@ -210,7 +231,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             }
         });
 
-        var inputIsExactMatch = function(inputValue, index) {
+        var inputIsExactMatch = function (inputValue, index) {
             if (scope.matches.length > index && inputValue) {
                 return inputValue.toUpperCase() === scope.matches[index].label.toUpperCase();
             }
@@ -218,7 +239,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             return false;
         };
 
-        var getMatchesAsync = function(inputValue, evt) {
+        var getMatchesAsync = function (inputValue, evt) {
             var locals = {
                     $viewValue: inputValue
                 };
@@ -231,7 +252,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
                 isNoResultsSetter(originalScope, false);
             }
 
-            $q.when($q.defer('ng_bootstrap_ui_typeahead_getmatches_when'), parserResult.source(originalScope, locals)).then(function(matches) {
+            $q.when($q.defer('ng_bootstrap_ui_typeahead_getmatches_when'), parserResult.source(originalScope, locals)).then(function (matches) {
                 //it might happen that several async queries were in progress if a user were typing fast
                 //but we are interested only in responses that correspond to the current view value
                 var onCurrentRequest = inputValue === modelCtrl.$viewValue;
@@ -264,7 +285,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
                         //Select the single remaining option if user input matches
                         if (selectOnExact && scope.matches.length === 1 && inputIsExactMatch(inputValue, 0)) {
                             if (scope.debounceUpdate && (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate))) {
-                                $$debounce(function() {
+                                $$debounce(function () {
                                     scope.select(0, evt);
                                 }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
                             } else {
@@ -292,7 +313,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
                 if (onCurrentRequest && (isLoadingSetter !== angular.noop)) {
                     isLoadingSetter(originalScope, false);
                 }
-            }, function() {
+            }, function () {
                 resetMatches();
                 if (isLoadingSetter !== angular.noop) {
                     isLoadingSetter(originalScope, false);
@@ -311,7 +332,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
 
         // Declare the debounced function outside recalculating for
         // proper debouncing
-        var debouncedRecalculate = $$debounce(function() {
+        var debouncedRecalculate = $$debounce(function () {
             // if popup is visible
             if (scope.matches.length) {
                 recalculatePosition();
@@ -345,13 +366,13 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
         //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
         var timeoutPromise;
 
-        var scheduleSearchWithTimeout = function(inputValue) {
-            timeoutPromise = $timeout(function() {
+        var scheduleSearchWithTimeout = function (inputValue) {
+            timeoutPromise = $timeout(function () {
                 getMatchesAsync(inputValue);
             }, waitTime);
         };
 
-        var cancelPreviousTimeout = function() {
+        var cancelPreviousTimeout = function () {
             if (timeoutPromise) {
                 $timeout.cancel(timeoutPromise);
             }
@@ -359,13 +380,13 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
 
         resetMatches();
 
-        scope.assignIsOpen = function(isOpen) {
+        scope.assignIsOpen = function (isOpen) {
             if (isOpenSetter !== angular.noop) {
                 isOpenSetter(originalScope, isOpen);
             }
         };
 
-        scope.select = function(activeIdx, evt) {
+        scope.select = function (activeIdx, evt) {
             //called from within the $digest() cycle
             var locals = {};
             var model, item;
@@ -393,26 +414,27 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             //return focus to the input element if a match was selected via a mouse click event
             // use timeout to avoid $rootScope:inprog error
             if (scope.$eval(attrs.typeaheadFocusOnSelect) !== false) {
-                $timeout(function() {
+                $timeout(function () {
                     element[0].focus();
                 }, 0, false);
             }
         };
 
         //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
-        element.on('keydown', function(evt) {
+        element.on('keydown', function (evt) {
             //typeahead is open and an "interesting" key was pressed
             if (scope.matches.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
                 return;
             }
 
+            var shouldSelect = isSelectEvent(originalScope, {$event: evt});
             /**
              * if there's nothing selected (i.e. focusFirst) and enter or tab is hit
              * or
              * shift + tab is pressed to bring focus to the previous element
              * then clear the results
              */
-            if (scope.activeIdx === -1 && (evt.which === 9 || evt.which === 13) || evt.which === 9 && !!evt.shiftKey) {
+            if (scope.activeIdx === -1 && shouldSelect || evt.which === 9 && !!evt.shiftKey) {
                 resetMatches();
                 scope.$digest();
                 return;
@@ -421,54 +443,60 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             evt.preventDefault();
             var target;
             switch (evt.which) {
-                case 9:
-                case 13:
-                    scope.$apply(function() {
-                        if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
-                            $$debounce(function() {
-                                scope.select(scope.activeIdx, evt);
-                            }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
-                        } else {
-                            scope.select(scope.activeIdx, evt);
-                        }
-                    });
-                    break;
-                case 27:
+
+                case 27:     // escape
                     evt.stopPropagation();
 
                     resetMatches();
                     originalScope.$digest();
                     break;
-                case 38:
+                case 38:     // up arrow
                     scope.activeIdx = (scope.activeIdx > 0 ? scope.activeIdx : scope.matches.length) - 1;
                     scope.$digest();
-                    target = popUpEl.find('li')[scope.activeIdx];
+                    target = popUpEl[0].querySelectorAll('.uib-typeahead-match')[scope.activeIdx];
                     target.parentNode.scrollTop = target.offsetTop;
                     break;
-                case 40:
+                case 40:     // down arrow
                     scope.activeIdx = (scope.activeIdx + 1) % scope.matches.length;
                     scope.$digest();
-                    target = popUpEl.find('li')[scope.activeIdx];
+                    target = popUpEl[0].querySelectorAll('.uib-typeahead-match')[scope.activeIdx];
                     target.parentNode.scrollTop = target.offsetTop;
                     break;
+                default:
+                    if (shouldSelect) {
+                        scope.$apply(
+                            function () {
+                                if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
+                                    $$debounce(
+                                        function () {
+                                            scope.select(scope.activeIdx, evt);
+                                        },
+                                        angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']
+                                    );
+                                } else {
+                                    scope.select(scope.activeIdx, evt);
+                                }
+                            }
+                        );
+                    }
             }
         });
 
-        element.bind('focus', function(evt) {
+        element.bind('focus', function (evt) {
             hasFocus = true;
             if (minLength === 0 && !modelCtrl.$viewValue) {
-                $timeout(function() {
+                $timeout(function () {
                     getMatchesAsync(modelCtrl.$viewValue, evt);
                 }, 0);
             }
         });
 
-        element.bind('blur', function(evt) {
+        element.bind('blur', function (evt) {
             if (isSelectOnBlur && scope.matches.length && scope.activeIdx !== -1 && !selected) {
                 selected = true;
-                scope.$apply(function() {
+                scope.$apply(function () {
                     if (scope.debounceUpdate && angular.isObject(scope.debounceUpdate) && angular.isNumber(scope.debounceUpdate.blur)) {
-                        $$debounce(function() {
+                        $$debounce(function () {
                             scope.select(scope.activeIdx, evt);
                         }, scope.debounceUpdate.blur);
                     } else {
@@ -478,9 +506,13 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             }
             if (!isEditable && modelCtrl.$error.editable) {
                 modelCtrl.$setViewValue();
-                // Reset validity as we are clearing
-                modelCtrl.$setValidity('editable', true);
-                modelCtrl.$setValidity('parse', true);
+
+                scope.$apply(function () {
+                    // Reset validity as we are clearing
+                    modelCtrl.$setValidity('editable', true);
+                    modelCtrl.$setValidity('parse', true);
+                });
+
                 element.val('');
             }
             hasFocus = false;
@@ -488,7 +520,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
         });
 
         // Keep reference to click handler to unbind it.
-        var dismissClickHandler = function(evt) {
+        var dismissClickHandler = function (evt) {
             // Issue #3973
             // Firefox treats right click as a click on document
             if (element[0] !== evt.target && evt.which !== 3 && scope.matches.length !== 0) {
@@ -501,7 +533,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
 
         $document.on('click', dismissClickHandler);
 
-        originalScope.$on('$destroy', function() {
+        originalScope.$on('$destroy', function () {
             $document.off('click', dismissClickHandler);
             if (appendToBody || appendTo) {
                 $popup.remove();
@@ -529,7 +561,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             element.after($popup);
         }
 
-        this.init = function(_modelCtrl, _ngModelOptions) {
+        this.init = function (_modelCtrl, _ngModelOptions) {
             modelCtrl = _modelCtrl;
             ngModelOptions = _ngModelOptions;
 
@@ -545,7 +577,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
 
             //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
             //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
-            modelCtrl.$parsers.unshift(function(inputValue) {
+            modelCtrl.$parsers.unshift(function (inputValue) {
                 hasFocus = true;
 
                 if (minLength === 0 || inputValue && inputValue.length >= minLength) {
@@ -577,7 +609,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
                 return undefined;
             });
 
-            modelCtrl.$formatters.push(function(modelValue) {
+            modelCtrl.$formatters.push(function (modelValue) {
                 var candidateViewValue, emptyViewValue;
                 var locals = {};
 
@@ -606,17 +638,17 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
     }
 ])
 
-.directive('uibTypeahead', function() {
+.directive('uibTypeahead', function () {
     return {
         controller: 'UibTypeaheadController',
         require: ['ngModel', '^?ngModelOptions', 'uibTypeahead'],
-        link: function(originalScope, element, attrs, ctrls) {
+        link: function (originalScope, element, attrs, ctrls) {
             ctrls[2].init(ctrls[0], ctrls[1]);
         }
     };
 })
 
-.directive('uibTypeaheadPopup', ['$$debounce', function($$debounce) {
+.directive('uibTypeaheadPopup', ['$$debounce', function ($$debounce) {
     return {
         scope: {
             matches: '=',
@@ -629,13 +661,13 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             debounce: '&'
         },
         replace: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.popupTemplateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead.html');
         },
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             scope.templateUrl = attrs.templateUrl;
 
-            scope.isOpen = function() {
+            scope.isOpen = function () {
                 var isDropdownOpen = scope.matches.length > 0;
                 scope.assignIsOpen({
                     isOpen: isDropdownOpen
@@ -643,18 +675,18 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
                 return isDropdownOpen;
             };
 
-            scope.isActive = function(matchIdx) {
+            scope.isActive = function (matchIdx) {
                 return scope.active === matchIdx;
             };
 
-            scope.selectActive = function(matchIdx) {
+            scope.selectActive = function (matchIdx) {
                 scope.active = matchIdx;
             };
 
-            scope.selectMatch = function(activeIdx, evt) {
+            scope.selectMatch = function (activeIdx, evt) {
                 var debounce = scope.debounce();
                 if (angular.isNumber(debounce) || angular.isObject(debounce)) {
-                    $$debounce(function() {
+                    $$debounce(function () {
                         scope.select({
                             activeIdx: activeIdx,
                             evt: evt
@@ -671,16 +703,16 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
     };
 }])
 
-.directive('uibTypeaheadMatch', ['$templateRequest', '$compile', '$parse', function($templateRequest, $compile, $parse) {
+.directive('uibTypeaheadMatch', ['$templateRequest', '$compile', '$parse', function ($templateRequest, $compile, $parse) {
     return {
         scope: {
             index: '=',
             match: '=',
             query: '='
         },
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             var tplUrl = $parse(attrs.templateUrl)(scope.$parent) || msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead/match.html');
-            $templateRequest(tplUrl).then(function(tplContent) {
+            $templateRequest(tplUrl).then(function (tplContent) {
                 var tplEl = angular.element(tplContent.trim());
                 element.replaceWith(tplEl);
                 $compile(tplEl)(scope);
@@ -706,7 +738,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
         return /<.*>/g.test(matchItem);
     }
 
-    return function(matchItem, query) {
+    return function (matchItem, query) {
 
         matchItem = query ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') : matchItem;
 

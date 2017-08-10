@@ -1,0 +1,59 @@
+
+<div ng-controller="demo.material.controllers.bottomsheet.crtl" class="md-padding">
+
+    <style data-ng-ignore>
+        .md-inline-list-icon-label {
+            display: inline-block;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-top: -10px;
+            height: 24px;
+            vertical-align: middle;
+        }
+        .md-grid-item-content {
+            height: 90px;
+            padding-top: 10px;
+        }
+        .md-grid-item-content md-icon {
+            height: 48px;
+            width: 48px;
+        }
+        
+        .md-grid-text {
+            padding-bottom: 5px;
+        }
+        md-list-item, md-list-item .md-list-item-inner {
+          min-height: 48px;
+        
+        }
+        h2 {
+            line-height: 36px;
+            padding-top: 10px;
+        }
+        .md-subheader .md-subheader-inner {
+            padding: 0;
+        }
+        md-toast .md-toast-content {
+            background-color: #B14141;
+        }
+        md-toast > * {
+            font-weight: bolder;
+        }
+    </style>
+
+    <h2 class="md-title">Usage</h2>
+    <p>Bottom sheets can be displayed by clicking one of the buttons below. Once shown, it can be dismissed by either swiping down or clicking in the shaded area.</p>
+    <h2 class="md-title">Actions</h2>
+    <p>Use one of the following buttons to display a bottom sheet.</p>
+    <div class="bottom-sheet-demo inset" layout="row" layout-sm="column" layout-align="center">
+        <md-button flex="50" class="md-primary md-raised" ng-click="showListBottomSheet()">Show as List</md-button>
+        <md-button flex="50" class="md-primary md-raised" ng-click="showGridBottomSheet()">Show as Grid</md-button>
+    </div>
+
+    <div ng-if="alert">
+        <br/>
+        <b layout="row" layout-align="center center" class="md-padding">
+            {{alert}}
+        </b>
+    </div>
+</div>

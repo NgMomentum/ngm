@@ -1,9 +1,9 @@
 // Copyright Notice:
 //				    pyromane.js
-//			Copyright©2010-2016 - OpenSiteMobile
+//			Copyright©2010-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensite.mobi
+//			http://opensitemobile.com & http://ngmomentum.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -21,7 +21,7 @@ msos.provide("msos.pyromane");
 msos.require("msos.stickup");
 
 
-msos.pyromane.version = new msos.set_version(16, 10, 27);
+msos.pyromane.version = new msos.set_version(17, 5, 20);
 
 
 msos.pyromane.output_obj_store = {};
@@ -40,24 +40,6 @@ msos.pyromane.is_node = function (obj) {
     "use strict";
 
     return (typeof window.Node === "object" ? obj instanceof window.Node : typeof obj === "object" && typeof obj.nodeType === "number" && typeof obj.nodeName === "string");
-};
-
-msos.pyromane.obj_type = function (obj) {
-    "use strict";
-
-    return Object.prototype.toString.call(obj).match(/^\[object (.*)\]$/)[1];
-};
-
-msos.pyromane.get_func_text = function (text) {
-    "use strict";
-
-    if (jQuery.isFunction(text)) {
-        return function (i) {
-            var self = jQuery(this);
-            self.text(text.call(this, i, self.text()));
-        };
-    }
-    return jQuery.text(this);
 };
 
 msos.pyromane.format_output = function (in_array) {
@@ -107,7 +89,8 @@ msos.pyromane.parse_format = function (format) {
             f: msos.pyromane.output_num
         },
         m = 0,
-        type, mapped;
+        type,
+        mapped;
 
     for (m = reg.exec(format); m; m = reg.exec(format)) {
         type = m[8] || m[5];
@@ -154,7 +137,7 @@ msos.pyromane.define_type = function (obj, out) {
 msos.pyromane.output_text = function (obj, out) {
     "use strict";
 
-    var scrubbed = msos.escape_html(msos.pyromane.obj_to_string(obj)) || '';
+    var scrubbed = msos.escape_html(msos.obj_to_string(obj)) || '';
 
     if (scrubbed) {
         out.push(scrubbed);
@@ -164,8 +147,8 @@ msos.pyromane.output_text = function (obj, out) {
 msos.pyromane.output_gen = function (obj, out, class_name) {
     "use strict";
 
-    var type = msos.pyromane.obj_type(obj),
-        scrubbed = msos.escape_html(msos.pyromane.obj_to_string(obj)) || '';
+    var type = msos.obj_type(obj),
+        scrubbed = msos.escape_html(msos.obj_to_string(obj)) || '';
 
     if (scrubbed) {
         out.push('<span class="' + class_name + '">[ ' + type + ':', scrubbed, ']</span>');
@@ -175,7 +158,7 @@ msos.pyromane.output_gen = function (obj, out, class_name) {
 msos.pyromane.output_obj = function (obj, out, class_name) {
     "use strict";
 
-    var type = msos.pyromane.obj_type(obj),
+    var type = msos.obj_type(obj),
         id = '';
 
     if (_.isEmpty(obj)) {
@@ -201,29 +184,14 @@ msos.pyromane.output_obj = function (obj, out, class_name) {
     msos.pyromane.output_obj_store[id] = obj;
 };
 
-msos.pyromane.obj_to_string = function (obj) {
-    "use strict";
-
-    if (typeof obj !== 'string') {
-        return String(obj) || '';
-    }
-
-    return obj;
-};
-
 msos.pyromane.write_msg = function () {
     "use strict";
 
     var message = [],
-        msg_txt = 'msos.pyromane.write_msg -> ',
         form_out = msos.pyromane.format_output,
         i = 0,
         type = '',
         console_array = [];
-
-    if (msos.config.verbose) {
-        msos.console.debug(msg_txt + 'start.');
-    }
 
     for (i = 0; i < msos.console.queue.length; i += 1) {
 
@@ -232,16 +200,6 @@ msos.pyromane.write_msg = function () {
         message = form_out(console_array);
 
         msos.pyromane.write_row(type, message);
-    }
-
-    // Clear queue to accomodate new input
-    msos.console.queue = [];
-
-    if (msos.config.verbose) {
-        if (console && console.log) {
-            console.log(msg_txt, 'done!');
-        }
-        msos.pyromane.write_row('debug', [msg_txt, 'done!']);
     }
 };
 
@@ -294,35 +252,41 @@ msos.pyromane.debug_dump = function () {
         };
 
     for (type in obj_types) {
-        type_selector = "span[id^=" + type + "_]";
-        type_spans = jQuery(type_selector) || [];
-        for (i = 0; i < type_spans.length; i += 1) {
-            obj_elm = type_spans[i];
-            obj_id = obj_elm.id || '';
-            if (obj_id) {
-                jQuery('#' + obj_id).click(
+        if (obj_types.hasOwnProperty(type)) {
 
-                function (evt) {
-                    msos.do_nothing(evt);
-                    var obj_dump = '',
-                        obj_to_dump = msos.pyromane.output_obj_store[this.id];
+            type_selector = "span[id^=" + type + "_]";
+            type_spans = jQuery(type_selector) || [];
+            for (i = 0; i < type_spans.length; i += 1) {
+                obj_elm = type_spans[i];
+                obj_id = obj_elm.id || '';
+                if (obj_id) {
+                    jQuery('#' + obj_id).click(
 
-                    if (typeof obj_to_dump === 'function') {
-                        obj_dump = obj_to_dump.toString();
-                    } else {
-                        // Clear cache for each new run
-                        obj_cache = [];
-                        recursive = 0;
-                        obj_dump = JSON.stringify(obj_to_dump, filter, '\t');
-                        if (recursive > 2) {
-                            msos.notify.info('There are ' + recursive + ' recursive objects in this objects output!', 'Please note:');
+                        function (evt) {
+                            msos.do_nothing(evt);
+                            var obj_dump = '',
+                                obj_to_dump = msos.pyromane.output_obj_store[this.id];
+
+                            if (typeof obj_to_dump === 'function') {
+                                obj_dump = obj_to_dump.toString();
+                            } else {
+                                // Clear cache for each new run
+                                obj_cache = [];
+                                recursive = 0;
+                                obj_dump = JSON.stringify(obj_to_dump, filter, '\t');
+                                if (recursive > 2) {
+                                    msos.notify.info('There are ' + recursive + ' recursive objects in this objects output!', 'Please note:');
+                                }
+                            }
+                            obj_dump = msos.escape_html(obj_dump);
+                            msos.debug.write(obj_dump);
                         }
-                    }
-                    obj_dump = msos.escape_html(obj_dump);
-                    msos.debug.write(obj_dump);
-                });
-                jQuery('#' + obj_id).css('cursor', 'pointer');
+                    );
+
+                    jQuery('#' + obj_id).css('cursor', 'pointer');
+                }
             }
+
         }
     }
 };
@@ -398,14 +362,14 @@ msos.pyromane.setup = function () {
     jQuery('body').append(container);
 
     temp_html =
-        '<div id="pyromane_toolbar" class="msos_navbar">'
-        + '  <ul class="pyromane_tabs">'
-                + fill_li("Clear Log", "Clear console log data", "clear")
-                + fill_li("Toggle Log", "Show/hide console log", "toggle")
-                + fill_li("Toggle Page", "Show/hide current page", "page")
-        + '  </ul>'
-        + '</div>'
-        + '<div class="msos_width" id="pyromane_log"></div>';
+        '<div id="pyromane_toolbar" class="msos_navbar">' +
+        '  <ul class="pyromane_tabs">' +
+        fill_li("Clear Log", "Clear console log data", "clear") +
+        fill_li("Toggle Log", "Show/hide console log", "toggle") +
+        fill_li("Toggle Page", "Show/hide current page", "page") +
+        '  </ul>' +
+        '</div>' +
+        '<div class="msos_width" id="pyromane_log"></div>';
 
     // Works in Chrome for 'xhmtl5'
     container.html(temp_html);

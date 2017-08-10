@@ -1,10 +1,13 @@
-/**
- * @ngdoc overview
- * @name ui.bootstrap.tabs
- *
- * @description
- * AngularJS version of the tabs directive.
- */
+
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.tabs");
 
 ng.bootstrap.ui.tabs.version = new msos.set_version(16, 4, 4);
@@ -16,21 +19,21 @@ ng.bootstrap.ui.tabs.version = new msos.set_version(16, 4, 4);
 // uib/template/tabs/tab.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/tab.html')
 angular.module('ng.bootstrap.ui.tabs', [])
 
-.controller('UibTabsetController', ['$scope', function($scope) {
+.controller('UibTabsetController', ['$scope', function ($scope) {
     var ctrl = this,
         oldIndex;
     ctrl.tabs = [];
 
-    ctrl.select = function(index, evt) {
+    ctrl.select = function (index, evt) {
         if (!destroyed) {
             var previousIndex = findTabIndex(oldIndex);
             var previousSelected = ctrl.tabs[previousIndex];
+
             if (previousSelected) {
-                if (previousSelected.tab.onDeselect !== angular.noop) {
-                    previousSelected.tab.onDeselect({
-                        $event: evt
-                    });
-                }
+                previousSelected.tab.onDeselect({
+                    $event: evt,
+                    $selectedIndex: index
+                });
                 if (evt && evt.isDefaultPrevented()) {
                     return;
                 }
@@ -47,7 +50,7 @@ angular.module('ng.bootstrap.ui.tabs', [])
                 selected.tab.active = true;
                 ctrl.active = selected.index;
                 oldIndex = selected.index;
-            } else if (!selected && angular.isNumber(oldIndex)) {
+            } else if (!selected && angular.isDefined(oldIndex)) {
                 ctrl.active = null;
                 oldIndex = null;
             }
@@ -59,7 +62,7 @@ angular.module('ng.bootstrap.ui.tabs', [])
             tab: tab,
             index: tab.index
         });
-        ctrl.tabs.sort(function(t1, t2) {
+        ctrl.tabs.sort(function (t1, t2) {
             if (t1.index > t2.index) {
                 return 1;
             }
@@ -71,7 +74,7 @@ angular.module('ng.bootstrap.ui.tabs', [])
             return 0;
         });
 
-        if (tab.index === ctrl.active || !angular.isNumber(ctrl.active) && ctrl.tabs.length === 1) {
+        if (tab.index === ctrl.active || !angular.isDefined(ctrl.active) && ctrl.tabs.length === 1) {
             var newActiveIndex = findTabIndex(tab.index);
             ctrl.select(newActiveIndex);
         }
@@ -97,14 +100,14 @@ angular.module('ng.bootstrap.ui.tabs', [])
         ctrl.tabs.splice(index, 1);
     };
 
-    $scope.$watch('tabset.active', function(val) {
-        if (angular.isNumber(val) && val !== oldIndex) {
+    $scope.$watch('tabset.active', function (val) {
+        if (angular.isDefined(val) && val !== oldIndex) {
             ctrl.select(findTabIndex(val));
         }
     });
 
     var destroyed;
-    $scope.$on('$destroy', function() {
+    $scope.$on('$destroy', function () {
         destroyed = true;
     });
 
@@ -117,7 +120,7 @@ angular.module('ng.bootstrap.ui.tabs', [])
     }
 }])
 
-.directive('uibTabset', function() {
+.directive('uibTabset', function () {
     return {
         transclude: true,
         replace: true,
@@ -128,26 +131,25 @@ angular.module('ng.bootstrap.ui.tabs', [])
         },
         controller: 'UibTabsetController',
         controllerAs: 'tabset',
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/tab/set.html');
         },
-        link: function(scope, element, attrs) {
-            scope.vertical = angular.isDefined(attrs.vertical) ?
-                scope.$parent.$eval(attrs.vertical) : false;
-            scope.justified = angular.isDefined(attrs.justified) ?
-                scope.$parent.$eval(attrs.justified) : false;
-            if (angular.isUndefined(attrs.active)) {
-                scope.active = 0;
-            }
+        link: function (scope, element, attrs) {
+            scope.vertical = angular.isDefined(attrs.vertical)
+                ? scope.$parent.$eval(attrs.vertical)
+                : false;
+            scope.justified = angular.isDefined(attrs.justified)
+                ? scope.$parent.$eval(attrs.justified)
+                : false;
         }
     };
 })
 
-.directive('uibTab', ['$parse', function($parse) {
+.directive('uibTab', ['$parse', function ($parse) {
     return {
         require: '^uibTabset',
         replace: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/tab.html');
         },
         transclude: true,
@@ -159,21 +161,21 @@ angular.module('ng.bootstrap.ui.tabs', [])
             //once it inserts the tab's content into the dom
             onDeselect: '&deselect'
         },
-        controller: function() {
+        controller: function () {
             //Empty controller so other directives can require being 'under' a tab
         },
         controllerAs: 'tab',
-        link: function(scope, elm, attrs, tabsetCtrl, transclude) {
+        link: function (scope, elm, attrs, tabsetCtrl, transclude) {
             scope.disabled = false;
             if (attrs.disable) {
-                scope.$parent.$watch($parse(attrs.disable), function(value) {
+                scope.$parent.$watch($parse(attrs.disable), function (value) {
                     scope.disabled = !!value;
                 });
             }
 
             if (angular.isUndefined(attrs.index)) {
                 if (tabsetCtrl.tabs && tabsetCtrl.tabs.length) {
-                    scope.index = Math.max.apply(null, tabsetCtrl.tabs.map(function(t) {
+                    scope.index = Math.max.apply(null, tabsetCtrl.tabs.map(function (t) {
                         return t.index;
                     })) + 1;
                 } else {
@@ -185,7 +187,7 @@ angular.module('ng.bootstrap.ui.tabs', [])
                 scope.classes = '';
             }
 
-            scope.select = function(evt) {
+            scope.select = function (evt) {
                 if (!scope.disabled) {
                     var index;
                     for (var i = 0; i < tabsetCtrl.tabs.length; i++) {
@@ -200,7 +202,7 @@ angular.module('ng.bootstrap.ui.tabs', [])
             };
 
             tabsetCtrl.addTab(scope);
-            scope.$on('$destroy', function() {
+            scope.$on('$destroy', function () {
                 tabsetCtrl.removeTab(scope);
             });
 
@@ -211,11 +213,11 @@ angular.module('ng.bootstrap.ui.tabs', [])
     };
 }])
 
-.directive('uibTabHeadingTransclude', function() {
+.directive('uibTabHeadingTransclude', function () {
     return {
         restrict: 'A',
         require: '^uibTab',
-        link: function(scope, elm, attrs, tabCtrl) {
+        link: function (scope, elm, attrs, tabCtrl) {
             scope.$watch(
                 'headingElement',
                 function updateHeadingElement(heading) {
@@ -237,8 +239,8 @@ angular.module('ng.bootstrap.ui.tabs', [])
             var tab = scope.$eval(attrs.uibTabContentTransclude).tab;
             //Now our tab is ready to be transcluded: both the tab heading area
             //and the tab content area are loaded.  Transclude 'em both.
-            tab.$transcludeFn(tab.$parent, function(contents) {
-                angular.forEach(contents, function(node) {
+            tab.$transcludeFn(tab.$parent, function (contents) {
+                angular.forEach(contents, function (node) {
                     if (isTabHeading(node)) {
                         // Let tabHeadingTransclude know.
                         tab.headingElement = angular.element(node).html();

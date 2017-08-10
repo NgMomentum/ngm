@@ -1,9 +1,9 @@
 // Copyright Notice:
 //				    ad.js
-//			Copyright©2008-2016 - OpenSiteMobile
+//			Copyright©2008-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensite.mobi
+//			https://opensitemobile.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -19,7 +19,7 @@
 
 msos.provide("msos.google.ad");
 
-msos.google.ad.version = new msos.set_version(16, 10, 27);
+msos.google.ad.version = new msos.set_version(17, 6, 26);
 
 
 // Set Google AdSense variable immediately

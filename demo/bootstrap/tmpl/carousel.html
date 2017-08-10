@@ -1,0 +1,100 @@
+<section id="carousel">
+    <div data-ng-ignore class="page-header">
+        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
+        <h1>Carousel
+            <small>(
+                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.carousel</a>)</small>
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-md-6 show-grid">
+            <div ng-controller="demo.bootstrap.controllers.carousel.ctrl">
+                <div style="height: 305px">
+                    <div uib-carousel active="active" interval="myInterval" no-wrap="noWrapSlides">
+                        <div uib-slide ng-repeat="slide in slides track by slide.id" index="slide.id">
+                            <img ng-src="{{slide.image}}" style="margin:auto;" />
+                            <div class="carousel-caption">
+                                <h4>Slide {{slide.id}}</h4>
+                                <p>{{slide.text}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-info" ng-click="addSlide()">Add Slide</button>
+                        <button type="button" class="btn btn-info" ng-click="randomize()">Randomize slides</button>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="noWrapSlides" /> Disable Slide Looping
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        Interval, in milliseconds: <input type="number" class="form-control" ng-model="myInterval">
+                        <br />Enter a negative number or 0 to stop the interval.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-ng-ignore class="col-md-6">
+            <p>Carousel creates a carousel similar to bootstrap&#39;s image carousel.</p>
+            <p>The carousel also offers support for touchscreen devices in the form of swiping. To enable swiping, load the <code>ngTouch</code> module as a dependency.</p>
+            <p>Use a <code>&lt;uib-carousel&gt;</code> element with <code>&lt;uib-slide&gt;</code> elements inside it.</p>
+            <h3 id="uib-carousel-settings">uib-carousel settings</h3>
+            <ul>
+                <li>
+                    <p><code>active</code>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>Index of first slide</code>)</em> - Index of current active slide.</p>
+                </li>
+                <li>
+                    <p><code>interval</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>none</code>)</em> - Sets an interval to cycle through the slides. You need a number bigger than 0 to make the interval work.</p>
+                </li>
+                <li>
+                    <p><code>no-pause</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>false</code>)</em> - The interval pauses on mouseover. Setting this to truthy, disables this pause.</p>
+                </li>
+                <li>
+                    <p><code>no-transition</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>false</code>)</em> - Whether to disable the transition animation between slides. Setting this to truthy, disables this transition.</p>
+                </li>
+                <li>
+                    <p><code>no-wrap</code>
+                        <small class="badge">$</small>
+                        <em>(Default: <code>false</code>)</em> - Disables the looping of slides. Setting <code>no-wrap</code> to an expression which evaluates to a truthy value will prevent looping.</p>
+                </li>
+                <li>
+                    <p><code>template-url</code>
+                        <em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/carousel.html</code>)</em> - Add the ability to override the template used on the component.</p>
+                </li>
+            </ul>
+            <h3 id="uib-slide-settings">uib-slide settings</h3>
+            <ul>
+                <li>
+                    <p><code>actual</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>none</code>)</em> - Use this attribute to bind the slide model (or any object of interest) onto the slide scope, which makes it available for customization in the carousel template.</p>
+                </li>
+                <li>
+                    <p><code>index</code>
+                        <small class="badge">$</small>
+                        <i class="fa fa-eye"></i>
+                        <em>(Default: <code>none</code>)</em> - The index of the slide. Must be unique.</p>
+                </li>
+                <li>
+                    <p><code>template-url</code>
+                        <em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/slide.html</code>)</em> - Add the ability to override the template used on the component.</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>

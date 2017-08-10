@@ -1,8 +1,17 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.datepickerpopup");
 msos.require("ng.bootstrap.ui.datepicker");
 
-ng.bootstrap.ui.datepickerpopup.version = new msos.set_version(16, 4, 8);
+ng.bootstrap.ui.datepickerpopup.version = new msos.set_version(16, 8, 29);
 
 
 angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker', 'ng.bootstrap.ui.position'])
@@ -30,17 +39,19 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
 })
 
 .controller('UibDatepickerPopupController', ['$scope', '$element', '$attrs', '$compile', '$log', '$parse', '$window', '$document', '$rootScope', '$uibPosition', 'dateFilter', 'uibDateParser', 'uibDatepickerPopupConfig', '$timeout', 'uibDatepickerConfig', '$datepickerPopupLiteralWarning',
-    function($scope, $element, $attrs, $compile, $log, $parse, $window, $document, $rootScope, $position, dateFilter, dateParser, datepickerPopupConfig, $timeout, datepickerConfig, $datepickerPopupLiteralWarning) {
+    function ($scope, $element, $attrs, $compile, $log, $parse, $window, $document, $rootScope, $position, dateFilter, dateParser, datepickerPopupConfig, $timeout, datepickerConfig, $datepickerPopupLiteralWarning) {
         var cache = {},
             isHtml5DateInput = false;
         var dateFormat, closeOnDateSelection, appendToBody, onOpenFocus,
             datepickerPopupTemplateUrl, datepickerTemplateUrl, popupEl, datepickerEl, scrollParentEl,
-            ngModel, ngModelOptions, $popup, altInputFormats, watchListeners = [],
-            timezone;
+            ngModel, ngModelOptions, $popup, altInputFormats, watchListeners = [];
 
-        this.init = function(_ngModel_) {
+        this.init = function (_ngModel_) {
             ngModel = _ngModel_;
-            ngModelOptions = _ngModel_.$options;
+            ngModelOptions = angular.isObject(_ngModel_.$options)
+                ? _ngModel_.$options
+                : { timezone: null };
+
             closeOnDateSelection = angular.isDefined($attrs.closeOnDateSelection) ?
                 $scope.$parent.$eval($attrs.closeOnDateSelection) :
                 datepickerPopupConfig.closeOnDateSelection;
@@ -67,7 +78,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
                 isHtml5DateInput = true;
             } else {
                 dateFormat = $attrs.uibDatepickerPopup || datepickerPopupConfig.datepickerPopup;
-                $attrs.$observe('uibDatepickerPopup', function(value, oldValue) {
+                $attrs.$observe('uibDatepickerPopup', function (value, oldValue) {
                     var newDateFormat = value || datepickerPopupConfig.datepickerPopup;
                     // Invalidate the $modelValue to ensure that formatters re-run
                     // FIXME: Refactor when PR is merged: https://github.com/angular/angular.js/pull/10764
@@ -92,19 +103,6 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
 
             // popup element used to display calendar
             popupEl = angular.element('<div uib-datepicker-popup-wrap><div uib-datepicker></div></div>');
-            if (ngModelOptions) {
-                timezone = ngModelOptions.timezone;
-                $scope.ngModelOptions = angular.copy(ngModelOptions);
-                $scope.ngModelOptions.timezone = null;
-                if ($scope.ngModelOptions.updateOnDefault === true) {
-                    $scope.ngModelOptions.updateOn = $scope.ngModelOptions.updateOn ?
-                        $scope.ngModelOptions.updateOn + ' default' : 'default';
-                }
-
-                popupEl.attr('ng-model-options', 'ngModelOptions');
-            } else {
-                timezone = null;
-            }
 
             popupEl.attr({
                 'ng-model': 'date',
@@ -134,29 +132,29 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
                 ngModel.$$parserName = 'date';
                 ngModel.$validators.date = validator;
                 ngModel.$parsers.unshift(parseDate);
-                ngModel.$formatters.push(function(value) {
+                ngModel.$formatters.push(function (value) {
                     if (ngModel.$isEmpty(value)) {
                         $scope.date = value;
                         return value;
                     }
 
-                    $scope.date = dateParser.fromTimezone(value, timezone);
-
-                    if (angular.isNumber($scope.date)) {
-                        $scope.date = new Date($scope.date);
+                    if (angular.isNumber(value)) {
+                        value = new Date(value);
                     }
+
+                    $scope.date = dateParser.fromTimezone(value, ngModelOptions.timezone);
 
                     return dateParser.filter($scope.date, dateFormat);
                 });
             } else {
-                ngModel.$formatters.push(function(value) {
-                    $scope.date = dateParser.fromTimezone(value, timezone);
+                ngModel.$formatters.push(function (value) {
+                    $scope.date = dateParser.fromTimezone(value, ngModelOptions.timezone);
                     return value;
                 });
             }
 
             // Detect changes in the view from the text box
-            ngModel.$viewChangeListeners.push(function() {
+            ngModel.$viewChangeListeners.push(function () {
                 $scope.date = parseDateString(ngModel.$viewValue);
             });
 
@@ -172,10 +170,10 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
                 $element.after($popup);
             }
 
-            $scope.$on('$destroy', function() {
+            $scope.$on('$destroy', function () {
                 if ($scope.isOpen === true) {
                     if (!$rootScope.$$phase) {
-                        $scope.$apply(function() {
+                        $scope.$apply(function () {
                             $scope.isOpen = false;
                         });
                     }
@@ -196,21 +194,21 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             });
         };
 
-        $scope.getText = function(key) {
+        $scope.getText = function (key) {
             return $scope[key + 'Text'] || datepickerPopupConfig[key + 'Text'];
         };
 
-        $scope.isDisabled = function(date) {
+        $scope.isDisabled = function (date) {
             if (date === 'today') {
-                date = dateParser.fromTimezone(new Date(), timezone);
+                date = dateParser.fromTimezone(new Date(), ngModelOptions.timezone);
             }
 
             var dates = {};
-            angular.forEach(['minDate', 'maxDate'], function(key) {
+            angular.forEach(['minDate', 'maxDate'], function (key) {
                 if (!$scope.datepickerOptions[key]) {
                     dates[key] = null;
                 } else if (angular.isDate($scope.datepickerOptions[key])) {
-                    dates[key] = dateParser.fromTimezone(new Date($scope.datepickerOptions[key]), timezone);
+                    dates[key] = new Date($scope.datepickerOptions[key]);
                 } else {
                     if ($datepickerPopupLiteralWarning) {
                         $log.warn('Literal date support has been deprecated, please switch to date object usage');
@@ -225,15 +223,14 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
                 dates.maxDate && $scope.compare(date, dates.maxDate) > 0;
         };
 
-        $scope.compare = function(date1, date2) {
+        $scope.compare = function (date1, date2) {
             return new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()) - new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
         };
 
         // Inner change
-        $scope.dateSelection = function(dt) {
-            if (angular.isDefined(dt)) {
-                $scope.date = dt;
-            }
+        $scope.dateSelection = function (dt) {
+            $scope.date = dt;
+
             var date = $scope.date ? dateParser.filter($scope.date, dateFormat) : null; // Setting to NULL is necessary for form validators to function
             $element.val(date);
             ngModel.$setViewValue(date);
@@ -244,7 +241,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             }
         };
 
-        $scope.keydown = function(evt) {
+        $scope.keydown = function (evt) {
             if (evt.which === 27) {
                 evt.stopPropagation();
                 $scope.isOpen = false;
@@ -252,7 +249,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             }
         };
 
-        $scope.select = function(date, evt) {
+        $scope.select = function (date, evt) {
             evt.stopPropagation();
 
             if (date === 'today') {
@@ -261,13 +258,14 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
                     date = new Date($scope.date);
                     date.setFullYear(today.getFullYear(), today.getMonth(), today.getDate());
                 } else {
-                    date = new Date(today.setHours(0, 0, 0, 0));
+                    date = dateParser.fromTimezone(today, ngModelOptions.timezone);
+                    date.setHours(0, 0, 0, 0);
                 }
             }
             $scope.dateSelection(date);
         };
 
-        $scope.close = function(evt) {
+        $scope.close = function (evt) {
             evt.stopPropagation();
 
             $scope.isOpen = false;
@@ -276,15 +274,15 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
 
         $scope.disabled = angular.isDefined($attrs.disabled) || false;
         if ($attrs.ngDisabled) {
-            watchListeners.push($scope.$parent.$watch($parse($attrs.ngDisabled), function(disabled) {
+            watchListeners.push($scope.$parent.$watch($parse($attrs.ngDisabled), function (disabled) {
                 $scope.disabled = disabled;
             }));
         }
 
-        $scope.$watch('isOpen', function(value) {
+        $scope.$watch('isOpen', function (value) {
             if (value) {
                 if (!$scope.disabled) {
-                    $timeout(function() {
+                    $timeout(function () {
                         positionPopup();
 
                         if (onOpenFocus) {
@@ -318,7 +316,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
         });
 
         function cameltoDash(string) {
-            return string.replace(/([A-Z])/g, function($1) {
+            return string.replace(/([A-Z])/g, function ($1) {
                 return '-' + $1.toLowerCase();
             });
         }
@@ -353,7 +351,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             if (angular.isString(viewValue)) {
                 var date = parseDateString(viewValue);
                 if (!isNaN(date)) {
-                    return dateParser.toTimezone(date, timezone);
+                    return dateParser.fromTimezone(date, ngModelOptions.timezone);
                 }
             }
 
@@ -380,7 +378,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             }
 
             if (angular.isString(value)) {
-                return !isNaN(parseDateString(viewValue));
+                return !isNaN(parseDateString(value));
             }
 
             return false;
@@ -397,7 +395,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             // In some browsers (IE) only element nodes have the 'contains' function
             var popupContainsTarget = popup.contains !== undefined && popup.contains(event.target);
             if ($scope.isOpen && !(dpContainsTarget || popupContainsTarget)) {
-                $scope.$apply(function() {
+                $scope.$apply(function () {
                     $scope.isOpen = false;
                 });
             }
@@ -407,14 +405,14 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             if (evt.which === 27 && $scope.isOpen) {
                 evt.preventDefault();
                 evt.stopPropagation();
-                $scope.$apply(function() {
+                $scope.$apply(function () {
                     $scope.isOpen = false;
                 });
                 $element[0].focus();
             } else if (evt.which === 40 && !$scope.isOpen) {
                 evt.preventDefault();
                 evt.stopPropagation();
-                $scope.$apply(function() {
+                $scope.$apply(function () {
                     $scope.isOpen = true;
                 });
             }
@@ -435,13 +433,13 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             }
         }
 
-        $scope.$on('uib:datepicker.mode', function() {
+        $scope.$on('uib:datepicker.mode', function () {
             $timeout(positionPopup, 0, false);
         });
     }
 ])
 
-.directive('uibDatepickerPopup', function() {
+.directive('uibDatepickerPopup', function () {
     return {
         require: ['ngModel', 'uibDatepickerPopup'],
         controller: 'UibDatepickerPopupController',
@@ -452,7 +450,7 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
             clearText: '@',
             closeText: '@'
         },
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
             var ngModel = ctrls[0],
                 ctrl = ctrls[1];
 
@@ -461,11 +459,11 @@ angular.module('ng.bootstrap.ui.datepickerpopup', ['ng.bootstrap.ui.datepicker',
     };
 })
 
-.directive('uibDatepickerPopupWrap', function() {
+.directive('uibDatepickerPopupWrap', function () {
     return {
-        replace: true,
+        restrict: 'A',
         transclude: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/popup.html');
         }
     };

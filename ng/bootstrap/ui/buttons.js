@@ -1,107 +1,153 @@
+
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.buttons");
 
-ng.bootstrap.ui.buttons.version = new msos.set_version(16, 4, 1);
+ng.bootstrap.ui.buttons.version = new msos.set_version(17, 2, 10);
 
 
 // Below is the standard plugin, except for naming (MSOS style)
 // ui.bootstrap.buttons -> ng.bootstrap.ui.buttons
-angular.module('ng.bootstrap.ui.buttons', [])
+angular.module(
+    'ng.bootstrap.ui.buttons',
+    ['ng']
+).constant(
+    'uibButtonConfig',
+    {
+        activeClass: 'active',
+        toggleEvent: 'click'
+    }
+).controller(
+    'UibButtonsController',
+    ['uibButtonConfig', function (uibButtonConfig) {
+        "use strict";
 
-.constant('uibButtonConfig', {
-    activeClass: 'active',
-    toggleEvent: 'click'
-})
+        this.activeClass = uibButtonConfig.activeClass || 'active';
+        this.toggleEvent = uibButtonConfig.toggleEvent || 'click';
+    }]
+).directive(
+    'uibBtnRadio',
+    ['$parse', function ($parse) {
+        "use strict";
+        return {
+            require: ['uibBtnRadio', 'ngModel'],
+            controller: 'UibButtonsController',
+            controllerAs: 'buttons',
+            link: function (scope, element, attrs, ctrls) {
+                var buttonsCtrl = ctrls[0],
+                    ngModelCtrl = ctrls[1],
+                    uncheckableExpr = $parse(attrs.uibUncheckable);
 
-.controller('UibButtonsController', ['uibButtonConfig', function(buttonConfig) {
-    this.activeClass = buttonConfig.activeClass || 'active';
-    this.toggleEvent = buttonConfig.toggleEvent || 'click';
-}])
+                element.find('input').css({
+                    display: 'none'
+                });
 
-.directive('uibBtnRadio', ['$parse', function($parse) {
-    return {
-        require: ['uibBtnRadio', 'ngModel'],
-        controller: 'UibButtonsController',
-        controllerAs: 'buttons',
-        link: function(scope, element, attrs, ctrls) {
-            var buttonsCtrl = ctrls[0],
-                ngModelCtrl = ctrls[1];
-            var uncheckableExpr = $parse(attrs.uibUncheckable);
+                //model -> UI
+                ngModelCtrl.$render = function () {
+                    element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.uibBtnRadio)));
+                };
 
-            element.find('input').css({
-                display: 'none'
-            });
+                //ui->model
+                element.on(buttonsCtrl.toggleEvent, function () {
+                    if (attrs.disabled) {
+                        return;
+                    }
 
-            //model -> UI
-            ngModelCtrl.$render = function() {
-                element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.uibBtnRadio)));
-            };
+                    var isActive = element.hasClass(buttonsCtrl.activeClass);
 
-            //ui->model
-            element.on(buttonsCtrl.toggleEvent, function() {
-                if (attrs.disabled) {
-                    return;
-                }
+                    if (!isActive || angular.isDefined(attrs.uncheckable)) {
+                        scope.$apply(function () {
+                            ngModelCtrl.$setViewValue(isActive ? null : scope.$eval(attrs.uibBtnRadio));
+                            ngModelCtrl.$render();
+                        });
+                    }
+                });
 
-                var isActive = element.hasClass(buttonsCtrl.activeClass);
-
-                if (!isActive || angular.isDefined(attrs.uncheckable)) {
-                    scope.$apply(function() {
-                        ngModelCtrl.$setViewValue(isActive ? null : scope.$eval(attrs.uibBtnRadio));
-                        ngModelCtrl.$render();
+                if (attrs.uibUncheckable) {
+                    scope.$watch(uncheckableExpr, function (uncheckable) {
+                        attrs.$set('uncheckable', uncheckable ? '' : undefined);
                     });
                 }
-            });
+            }
+        };
+    }]
+).directive(
+    'uibBtnCheckbox',
+    function () {
+        "use strict";
 
-            if (attrs.uibUncheckable) {
-                scope.$watch(uncheckableExpr, function(uncheckable) {
-                    attrs.$set('uncheckable', uncheckable ? '' : undefined);
+        return {
+            require: ['uibBtnCheckbox', 'ngModel'],
+            controller: 'UibButtonsController',
+            controllerAs: 'button',
+            link: function (scope, element, attrs, ctrls) {
+                var buttonsCtrl = ctrls[0],
+                    ngModelCtrl = ctrls[1];
+
+                element.find('input').css({
+                    display: 'none'
                 });
-            }
-        }
-    };
-}])
 
-.directive('uibBtnCheckbox', function() {
-    return {
-        require: ['uibBtnCheckbox', 'ngModel'],
-        controller: 'UibButtonsController',
-        controllerAs: 'button',
-        link: function(scope, element, attrs, ctrls) {
-            var buttonsCtrl = ctrls[0],
-                ngModelCtrl = ctrls[1];
-
-            element.find('input').css({
-                display: 'none'
-            });
-
-            function getTrueValue() {
-                return getCheckboxValue(attrs.btnCheckboxTrue, true);
-            }
-
-            function getFalseValue() {
-                return getCheckboxValue(attrs.btnCheckboxFalse, false);
-            }
-
-            function getCheckboxValue(attribute, defaultValue) {
-                return angular.isDefined(attribute) ? scope.$eval(attribute) : defaultValue;
-            }
-
-            //model -> UI
-            ngModelCtrl.$render = function() {
-                element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
-            };
-
-            //ui->model
-            element.on(buttonsCtrl.toggleEvent, function() {
-                if (attrs.disabled) {
-                    return;
+                function getCheckboxValue(attribute, defaultValue) {
+                    return angular.isDefined(attribute) ? scope.$eval(attribute) : defaultValue;
                 }
 
-                scope.$apply(function() {
-                    ngModelCtrl.$setViewValue(element.hasClass(buttonsCtrl.activeClass) ? getFalseValue() : getTrueValue());
-                    ngModelCtrl.$render();
+                function getTrueValue() {
+                    return getCheckboxValue(attrs.btnCheckboxTrue, true);
+                }
+
+                function getFalseValue() {
+                    return getCheckboxValue(attrs.btnCheckboxFalse, false);
+                }
+
+                //model -> UI
+                ngModelCtrl.$render = function () {
+                    element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
+                };
+
+                //ui->model
+                element.on(buttonsCtrl.toggleEvent, function () {
+                    if (attrs.disabled) {
+                        return;
+                    }
+
+                    scope.$apply(function () {
+                        ngModelCtrl.$setViewValue(element.hasClass(buttonsCtrl.activeClass) ? getFalseValue() : getTrueValue());
+                        ngModelCtrl.$render();
+                    });
                 });
-            });
-        }
-    };
-});
+            }
+        };
+    }
+).directive(
+    'btnCheckboxTrue',
+    function () {
+		"use strict";
+        return {
+            restrict: 'A'
+        };
+    }
+).directive(
+    'btnCheckboxFalse',
+    function () {
+		"use strict";
+        return {
+            restrict: 'A'
+        };
+    }
+).directive(
+    'uibUncheckable',
+    function () {
+		"use strict";
+        return {
+            restrict: 'A'
+        };
+    }
+);

@@ -1,4 +1,13 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.paging");
 
 ng.bootstrap.ui.paging.version = new msos.set_version(16, 3, 21);
@@ -10,25 +19,25 @@ angular.module('ng.bootstrap.ui.paging', [])
      * Helper internal service for generating common controller code between the
      * pager and pagination components
      */
-    .factory('uibPaging', ['$parse', function($parse) {
+    .factory('uibPaging', ['$parse', function ($parse) {
         return {
-            create: function(ctrl, $scope, $attrs) {
+            create: function (ctrl, $scope, $attrs) {
                 ctrl.setNumPages = $attrs.numPages ? $parse($attrs.numPages).assign : angular.noop;
                 ctrl.ngModelCtrl = {
                     $setViewValue: angular.noop
                 }; // nullModelCtrl
                 ctrl._watchers = [];
 
-                ctrl.init = function(ngModelCtrl, config) {
+                ctrl.init = function (ngModelCtrl, config) {
                     ctrl.ngModelCtrl = ngModelCtrl;
                     ctrl.config = config;
 
-                    ngModelCtrl.$render = function() {
+                    ngModelCtrl.$render = function () {
                         ctrl.render();
                     };
 
                     if ($attrs.itemsPerPage) {
-                        ctrl._watchers.push($scope.$parent.$watch($attrs.itemsPerPage, function(value) {
+                        ctrl._watchers.push($scope.$parent.$watch($attrs.itemsPerPage, function (value) {
                             ctrl.itemsPerPage = parseInt(value, 10);
                             $scope.totalPages = ctrl.calculateTotalPages();
                             ctrl.updatePage();
@@ -37,7 +46,7 @@ angular.module('ng.bootstrap.ui.paging', [])
                         ctrl.itemsPerPage = config.itemsPerPage;
                     }
 
-                    $scope.$watch('totalItems', function(newTotal, oldTotal) {
+                    $scope.$watch('totalItems', function (newTotal, oldTotal) {
                         if (angular.isDefined(newTotal) || newTotal !== oldTotal) {
                             $scope.totalPages = ctrl.calculateTotalPages();
                             ctrl.updatePage();
@@ -45,16 +54,16 @@ angular.module('ng.bootstrap.ui.paging', [])
                     });
                 };
 
-                ctrl.calculateTotalPages = function() {
+                ctrl.calculateTotalPages = function () {
                     var totalPages = ctrl.itemsPerPage < 1 ? 1 : Math.ceil($scope.totalItems / ctrl.itemsPerPage);
                     return Math.max(totalPages || 0, 1);
                 };
 
-                ctrl.render = function() {
+                ctrl.render = function () {
                     $scope.page = parseInt(ctrl.ngModelCtrl.$viewValue, 10) || 1;
                 };
 
-                $scope.selectPage = function(page, evt) {
+                $scope.selectPage = function (page, evt) {
                     if (evt) {
                         evt.preventDefault();
                     }
@@ -69,19 +78,19 @@ angular.module('ng.bootstrap.ui.paging', [])
                     }
                 };
 
-                $scope.getText = function(key) {
+                $scope.getText = function (key) {
                     return $scope[key + 'Text'] || ctrl.config[key + 'Text'];
                 };
 
-                $scope.noPrevious = function() {
+                $scope.noPrevious = function () {
                     return $scope.page === 1;
                 };
 
-                $scope.noNext = function() {
+                $scope.noNext = function () {
                     return $scope.page === $scope.totalPages;
                 };
 
-                ctrl.updatePage = function() {
+                ctrl.updatePage = function () {
                     if (ctrl.setNumPages !== angular.noop) {
                         ctrl.setNumPages($scope.$parent, $scope.totalPages); // Readonly variable
                     }
@@ -93,7 +102,7 @@ angular.module('ng.bootstrap.ui.paging', [])
                     }
                 };
 
-                $scope.$on('$destroy', function() {
+                $scope.$on('$destroy', function () {
                     while (ctrl._watchers.length) {
                         ctrl._watchers.shift()();
                     }

@@ -1,0 +1,57 @@
+
+<div ui-content-for="title">
+  <span>Drag</span>
+</div>
+
+<style>
+  [drag-to-dismiss] {
+      transform: translate(0,0);
+   /* NOTE: this is required to prevent mobile webkit issues */
+      -webkit-user-drag: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-transition: opacity 300ms, -webkit-transform 300ms;
+      -moz-transition: opacity 300ms, -moz-transform 300ms;
+      transition: opacity 300ms, transform 300ms;
+      opacity: 1;
+  }
+  .notices-container {
+	overflow-x: hidden;
+  }
+  .dismiss {
+      -webkit-transition: opacity 300ms, -webkit-transform 300ms;
+      -moz-transition: opacity 300ms, -moz-transform 300ms;
+      transition: opacity 300ms, transform 300ms;
+      opacity: 0.5;
+  }
+  .dismitted {
+      -webkit-transition: opacity 300ms, -webkit-transform 300ms;
+      -moz-transition: opacity 300ms, -moz-transform 300ms;
+      transition: opacity 300ms, transform 300ms;
+      opacity: 0;
+  }
+</style>
+
+<div class="scrollable">
+  <div class="scrollable-header">
+      <div class="alert alert-info">
+        Drag right to dismiss notices!
+      </div>
+  </div>
+  <div class="scrollable-content">
+    <div class="container-fluid">
+      <div class="notices-container">
+        <div ng-repeat="notice in notices">
+          <div drag-to-dismiss="deleteNotice(notice)" class="mobile-section mobile-section-break">
+            <i class="fa fa-{{notice.icon}}"></i> {{notice.message}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <br/>
+  </div>
+</div>

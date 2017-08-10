@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="utf-8">
+    <title>Wait and Eat</title>
+    <!--Bootstrap latest compiled and minified CSS-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <!--Optional theme-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <style>
+        body {
+            padding-top: 80px;
+        }
+        .starter-template {
+            padding: 40px 15px;
+            text-align: center;
+        }
+        .starter-template h1 {
+            font-size: 63px;
+        }
+        .party-form {
+            margin-bottom: 20px;
+        }
+
+        /* Auth styles */
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+        }
+        .form-signin .form-signin-heading,
+        .form-signin .checkbox {
+            margin-bottom: 10px;
+        }
+        .form-signin .checkbox {
+            font-weight: normal;
+        }
+        .form-signin .form-control {
+            position: relative;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .form-signin .form-control:focus {
+            z-index: 2;
+        }
+        .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        .form-signin input[type="password"] {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        .form-signin input[type="submit"] {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!--navbar directive that stays at the top of every page-->
+    <gz-navbar></gz-navbar>
+
+    <!--Main content that changes based on route-->
+    <div ng-view class="container"></div>
+
+    <!--Third-party JS-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
+    <script src="https://code.angularjs.org/1.5.0/angular-route.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.6.0/firebase.js"></script>
+    <script>
+        // Initialize Firebase. Use your own config values here. This is just a sample.
+        // You can copy and paste your config values by following the instructions at
+        // https://firebase.google.com/docs/web/setup#add_firebase_to_your_app.
+        firebase.initializeApp(
+            {
+                apiKey: "AIzaSyDQODZCA5Ul1tU6XqdkkrW1oic30JfsRZE",
+                authDomain: "ngmomentum.firebaseapp.com",
+                databaseURL: "https://ngmomentum.firebaseio.com",
+                storageBucket: "ngmomentum.appspot.com",
+                messagingSenderId: "119009400783"
+            }
+        );
+    </script>
+    <script src="https://cdn.firebase.com/libs/angularfire/2.1.0/angularfire.min.js"></script>
+
+    <!--main app module-->
+    <script src="app/app.module.js"></script>
+
+    <!--auth module-->
+    <script src="app/auth/auth.module.js"></script>
+    <script src="app/auth/config.route.js"></script>
+    <script src="app/auth/auth.controller.js"></script>
+    <script src="app/auth/auth.service.js"></script>
+    <script src="app/auth/authForm.directive.js"></script>
+
+    <!--landing module-->
+    <script src="app/landing/landing.module.js"></script>
+    <script src="app/landing/config.route.js"></script>
+
+    <!--waitlist module-->
+    <script src="app/waitList/waitList.module.js"></script>
+    <script src="app/waitList/config.route.js"></script>
+    <script src="app/waitList/waitList.controller.js"></script>
+    <script src="app/waitList/directives/partyForm.directive.js"></script>
+    <script src="app/waitList/directives/partyTable.directive.js"></script>
+
+    <!--core module-->
+    <script src="app/core/core.module.js"></script>
+    <script src="app/core/constants.js"></script>
+    <script src="app/core/firebaseData.service.js"></script>
+    <script src="app/core/party.service.js"></script>
+    <script src="app/core/textMessage.service.js"></script>
+
+    <!--layout module-->
+    <script src="app/layout/layout.module.js"></script>
+    <script src="app/layout/navbar.directive.js"></script>
+
+</body>
+</html>

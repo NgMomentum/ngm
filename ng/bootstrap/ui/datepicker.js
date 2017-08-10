@@ -1,21 +1,32 @@
 
+/*global
+    msos: false,
+    jQuery: false,
+    Modernizr: false,
+    _: false,
+    angular: false,
+    ng: false
+*/
+
 msos.provide("ng.bootstrap.ui.datepicker");
 
-ng.bootstrap.ui.datepicker.version = new msos.set_version(16, 4, 8);
+ng.bootstrap.ui.datepicker.version = new msos.set_version(17, 2, 10);
 
 
 // Below is the standard plugin, except for naming (MSOS style)
 // ui.bootstrap.dateparser -> ng.bootstrap.ui.dateparser
-angular.module('ng.bootstrap.ui.dateparser', [])
-
-.service('uibDateParser', ['$log', '$locale', 'dateFilter', 'orderByFilter', function($log, $locale, dateFilter, orderByFilter) {
+angular.module(
+    'ng.bootstrap.ui.dateparser',
+    ['ng']
+).service(
+    'uibDateParser',
+    ['$log', '$locale', 'dateFilter', 'orderByFilter', function ($log, $locale, dateFilter, orderByFilter) {
     // Pulled from https://github.com/mbostock/d3/blob/master/src/format/requote.js
-    var SPECIAL_CHARACTERS_REGEXP = /[\\\^\$\*\+\?\|\[\]\(\)\.\{\}]/g;
+    var SPECIAL_CHARACTERS_REGEXP = /[\\\^\$\*\+\?\|\[\]\(\)\.\{\}]/g,
+        localeId,
+        formatCodeToRegex;
 
-    var localeId;
-    var formatCodeToRegex;
-
-    this.init = function() {
+    this.init = function () {
         localeId = $locale.id;
 
         this.parsers = {};
@@ -24,10 +35,10 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         formatCodeToRegex = [{
             key: 'yyyy',
             regex: '\\d{4}',
-            apply: function(value) {
+            apply: function (value) {
                 this.year = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 var _date = new Date();
                 _date.setFullYear(Math.abs(date.getFullYear()));
                 return dateFilter(_date, 'yyyy');
@@ -35,11 +46,11 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         }, {
             key: 'yy',
             regex: '\\d{2}',
-            apply: function(value) {
+            apply: function (value) {
                 value = +value;
                 this.year = value < 69 ? value + 2000 : value + 1900;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 var _date = new Date();
                 _date.setFullYear(Math.abs(date.getFullYear()));
                 return dateFilter(_date, 'yy');
@@ -47,10 +58,10 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         }, {
             key: 'y',
             regex: '\\d{1,4}',
-            apply: function(value) {
+            apply: function (value) {
                 this.year = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 var _date = new Date();
                 _date.setFullYear(Math.abs(date.getFullYear()));
                 return dateFilter(_date, 'y');
@@ -58,10 +69,10 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         }, {
             key: 'M!',
             regex: '0?[1-9]|1[0-2]',
-            apply: function(value) {
+            apply: function (value) {
                 this.month = value - 1;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 var value = date.getMonth();
                 if (/^[0-9]$/.test(value)) {
                     return dateFilter(date, 'MM');
@@ -72,46 +83,46 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         }, {
             key: 'MMMM',
             regex: $locale.DATETIME_FORMATS.MONTH.join('|'),
-            apply: function(value) {
+            apply: function (value) {
                 this.month = $locale.DATETIME_FORMATS.MONTH.indexOf(value);
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'MMMM');
             }
         }, {
             key: 'MMM',
             regex: $locale.DATETIME_FORMATS.SHORTMONTH.join('|'),
-            apply: function(value) {
+            apply: function (value) {
                 this.month = $locale.DATETIME_FORMATS.SHORTMONTH.indexOf(value);
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'MMM');
             }
         }, {
             key: 'MM',
             regex: '0[1-9]|1[0-2]',
-            apply: function(value) {
+            apply: function (value) {
                 this.month = value - 1;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'MM');
             }
         }, {
             key: 'M',
             regex: '[1-9]|1[0-2]',
-            apply: function(value) {
+            apply: function (value) {
                 this.month = value - 1;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'M');
             }
         }, {
             key: 'd!',
             regex: '[0-2]?[0-9]{1}|3[0-1]{1}',
-            apply: function(value) {
+            apply: function (value) {
                 this.date = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 var value = date.getDate();
                 if (/^[1-9]$/.test(value)) {
                     return dateFilter(date, 'dd');
@@ -122,118 +133,118 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         }, {
             key: 'dd',
             regex: '[0-2][0-9]{1}|3[0-1]{1}',
-            apply: function(value) {
+            apply: function (value) {
                 this.date = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'dd');
             }
         }, {
             key: 'd',
             regex: '[1-2]?[0-9]{1}|3[0-1]{1}',
-            apply: function(value) {
+            apply: function (value) {
                 this.date = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'd');
             }
         }, {
             key: 'EEEE',
             regex: $locale.DATETIME_FORMATS.DAY.join('|'),
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'EEEE');
             }
         }, {
             key: 'EEE',
             regex: $locale.DATETIME_FORMATS.SHORTDAY.join('|'),
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'EEE');
             }
         }, {
             key: 'HH',
             regex: '(?:0|1)[0-9]|2[0-3]',
-            apply: function(value) {
+            apply: function (value) {
                 this.hours = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'HH');
             }
         }, {
             key: 'hh',
             regex: '0[0-9]|1[0-2]',
-            apply: function(value) {
+            apply: function (value) {
                 this.hours = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'hh');
             }
         }, {
             key: 'H',
             regex: '1?[0-9]|2[0-3]',
-            apply: function(value) {
+            apply: function (value) {
                 this.hours = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'H');
             }
         }, {
             key: 'h',
             regex: '[0-9]|1[0-2]',
-            apply: function(value) {
+            apply: function (value) {
                 this.hours = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'h');
             }
         }, {
             key: 'mm',
             regex: '[0-5][0-9]',
-            apply: function(value) {
+            apply: function (value) {
                 this.minutes = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'mm');
             }
         }, {
             key: 'm',
             regex: '[0-9]|[1-5][0-9]',
-            apply: function(value) {
+            apply: function (value) {
                 this.minutes = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'm');
             }
         }, {
             key: 'sss',
             regex: '[0-9][0-9][0-9]',
-            apply: function(value) {
+            apply: function (value) {
                 this.milliseconds = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'sss');
             }
         }, {
             key: 'ss',
             regex: '[0-5][0-9]',
-            apply: function(value) {
+            apply: function (value) {
                 this.seconds = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'ss');
             }
         }, {
             key: 's',
             regex: '[0-9]|[1-5][0-9]',
-            apply: function(value) {
+            apply: function (value) {
                 this.seconds = +value;
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 's');
             }
         }, {
             key: 'a',
             regex: $locale.DATETIME_FORMATS.AMPMS.join('|'),
-            apply: function(value) {
+            apply: function (value) {
                 if (this.hours === 12) {
                     this.hours = 0;
                 }
@@ -242,13 +253,13 @@ angular.module('ng.bootstrap.ui.dateparser', [])
                     this.hours += 12;
                 }
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'a');
             }
         }, {
             key: 'Z',
             regex: '[+-]\\d{4}',
-            apply: function(value) {
+            apply: function (value) {
                 var matches = value.match(/([+-])(\d{2})(\d{2})/),
                     sign = matches[1],
                     hours = matches[2],
@@ -256,60 +267,80 @@ angular.module('ng.bootstrap.ui.dateparser', [])
                 this.hours += toInt(sign + hours);
                 this.minutes += toInt(sign + minutes);
             },
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'Z');
             }
         }, {
             key: 'ww',
             regex: '[0-4][0-9]|5[0-3]',
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'ww');
             }
         }, {
             key: 'w',
             regex: '[0-9]|[1-4][0-9]|5[0-3]',
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'w');
             }
         }, {
             key: 'GGGG',
             regex: $locale.DATETIME_FORMATS.ERANAMES.join('|').replace(/\s/g, '\\s'),
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'GGGG');
             }
         }, {
             key: 'GGG',
             regex: $locale.DATETIME_FORMATS.ERAS.join('|'),
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'GGG');
             }
         }, {
             key: 'GG',
             regex: $locale.DATETIME_FORMATS.ERAS.join('|'),
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'GG');
             }
         }, {
             key: 'G',
             regex: $locale.DATETIME_FORMATS.ERAS.join('|'),
-            formatter: function(date) {
+            formatter: function (date) {
                 return dateFilter(date, 'G');
             }
         }];
     };
 
+    function getFormatCodeToRegex(key) {
+        return filterFilter(formatCodeToRegex, {key: key}, true)[0];
+    }
+
+    this.getParser = function (key) {
+        var f = getFormatCodeToRegex(key);
+
+        return f && f.apply || null;
+    };
+
+    this.overrideParser = function (key, parser) {
+        var f = getFormatCodeToRegex(key);
+
+        if (f && _.isFunction(parser)) {
+            this.parsers = {};
+            f.apply = parser;
+        }
+
+    }.bind(this);
+
     this.init();
 
-    function createParser(format, func) {
+    function createParser(format) {
         var map = [],
-            regex = format.split('');
+            regex = format.split(''),
+            quoteIndex = format.indexOf('\''),  // check for literal values
+            inLiteral = false,
+            i = 0;
 
-        // check for literal values
-        var quoteIndex = format.indexOf('\'');
         if (quoteIndex > -1) {
-            var inLiteral = false;
             format = format.split('');
-            for (var i = quoteIndex; i < format.length; i++) {
+            for (i = quoteIndex; i < format.length; i += 1) {
                 if (inLiteral) {
                     if (format[i] === '\'') {
                         if (i + 1 < format.length && format[i + 1] === '\'') { // escaped single quote
@@ -333,24 +364,27 @@ angular.module('ng.bootstrap.ui.dateparser', [])
             format = format.join('');
         }
 
-        angular.forEach(formatCodeToRegex, function(data) {
-            var index = format.indexOf(data.key);
+        angular.forEach(formatCodeToRegex, function (data) {
+            var index = format.indexOf(data.key),
+                i = 0;
 
             if (index > -1) {
                 format = format.split('');
 
                 regex[index] = '(' + data.regex + ')';
                 format[index] = '$'; // Custom symbol to define consumed part of format
-                for (var i = index + 1, n = index + data.key.length; i < n; i++) {
+
+                for (i = index + 1, n = index + data.key.length; i < n; i += 1) {
                     regex[i] = '';
                     format[i] = '$';
                 }
+
                 format = format.join('');
 
                 map.push({
                     index: index,
                     key: data.key,
-                    apply: data[func],
+                    apply: data.apply,
                     matcher: data.regex
                 });
             }
@@ -362,8 +396,80 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         };
     }
 
-    this.filter = function(date, format) {
-        if (!angular.isDate(date) || isNaN(date) || !format) {
+    function createFormatter(format) {
+        var formatters = [],
+            i = 0,
+            formatter,
+            literalIdx;
+
+        while (i < format.length) {
+            if (_.isNumber(literalIdx)) {
+                if (format.charAt(i) === '\'') {
+                    if (i + 1 >= format.length || format.charAt(i + 1) !== '\'') {
+                        formatters.push(constructLiteralFormatter(format, literalIdx, i));
+                        literalIdx = null;
+                    }
+                } else if (i === format.length) {
+                    while (literalIdx < format.length) {
+                        formatter = constructFormatterFromIdx(format, literalIdx);
+                        formatters.push(formatter);
+                        literalIdx = formatter.endIdx;
+                    }
+                }
+
+                i += 1;
+                continue;
+            }
+
+            if (format.charAt(i) === '\'') {
+                literalIdx = i;
+                i += 1;
+                continue;
+            }
+
+            formatter = constructFormatterFromIdx(format, i);
+
+            formatters.push(formatter.parser);
+            i = formatter.endIdx;
+        }
+
+        return formatters;
+    }
+
+    function constructLiteralFormatter(format, literalIdx, endIdx) {
+        return function () {
+            return format.substr(literalIdx + 1, endIdx - literalIdx - 1);
+        };
+    }
+
+    function constructFormatterFromIdx(format, i) {
+        var currentPosStr = format.substr(i),
+            j = 0,
+            data;
+
+        for (var j = 0; j < formatCodeToRegex.length; j += 1) {
+            if (new RegExp('^' + formatCodeToRegex[j].key).test(currentPosStr)) {
+                data = formatCodeToRegex[j];
+
+                return {
+                    endIdx: i + data.key.length,
+                    parser: data.formatter
+                };
+            }
+        }
+
+        return {
+            endIdx: i + 1,
+            parser: function () {
+                return currentPosStr.charAt(0);
+            }
+        };
+    }
+
+    this.filter = function (date, format) {
+        var formatters;
+
+        if (!_.isDate(date) || _.isNaN(date) || !format) {
             return '';
         }
 
@@ -374,33 +480,21 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         }
 
         if (!this.formatters[format]) {
-            this.formatters[format] = createParser(format, 'formatter');
+            this.formatters[format] = createFormatter(format);
         }
 
-        var parser = this.formatters[format],
-            map = parser.map;
+        formatters = this.formatters[format];
 
-        var _format = format;
-
-        return map.reduce(function(str, mapper, i) {
-            var match = _format.match(new RegExp('(.*)' + mapper.key));
-            if (match && angular.isString(match[1])) {
-                str += match[1];
-                _format = _format.replace(match[1] + mapper.key, '');
-            }
-
-            var endStr = i === map.length - 1 ? _format : '';
-
-            if (mapper.apply) {
-                return str + mapper.apply.call(null, date) + endStr;
-            }
-
-            return str + endStr;
-        }, '');
+        return formatters.reduce(
+            function (str, formatter) {
+                return str + formatter(date);
+            },
+            ''
+        );
     };
 
-    this.parse = function(input, format, baseDate) {
-        if (!angular.isString(input) || !format) {
+    this.parse = function (input, format, baseDate) {
+        if (!_.isString(input) || !format) {
             return input;
         }
 
@@ -422,7 +516,7 @@ angular.module('ng.bootstrap.ui.dateparser', [])
             tzOffset = false;
         if (results && results.length) {
             var fields, dt;
-            if (angular.isDate(baseDate) && !isNaN(baseDate.getTime())) {
+            if (_.isDate(baseDate) && !_.isNaN(baseDate.getTime())) {
                 fields = {
                     year: baseDate.getFullYear(),
                     month: baseDate.getMonth(),
@@ -517,8 +611,8 @@ angular.module('ng.bootstrap.ui.dateparser', [])
         return date && timezone ? convertTimezoneToLocal(date, timezone, true) : date;
     }
 
-    //https://github.com/angular/angular.js/blob/4daafd3dbe6a80d578f5a31df1bb99c77559543e/src/Angular.js#L1207
     function timezoneToOffset(timezone, fallback) {
+        timezone = timezone.replace(/:/g, '');
         var requestedTimezoneOffset = Date.parse('Jan 01, 1970 00:00:00 ' + timezone) / 60000;
         return isNaN(requestedTimezoneOffset) ? fallback : requestedTimezoneOffset;
     }
@@ -531,9 +625,11 @@ angular.module('ng.bootstrap.ui.dateparser', [])
 
     function convertTimezoneToLocal(date, timezone, reverse) {
         reverse = reverse ? -1 : 1;
-        var timezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
-        return addDateMinutes(date, reverse * (timezoneOffset - date.getTimezoneOffset()));
-    }
+        var dateTimezoneOffset = date.getTimezoneOffset(),
+            timezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
+
+        return addDateMinutes(date, reverse * (timezoneOffset - dateTimezoneOffset));
+  }
 }]);
 
 
@@ -561,6 +657,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     maxMode: 'year',
     minDate: null,
     minMode: 'day',
+    monthColumns: 3,
     ngModelOptions: {},
     shortcutPropagation: false,
     showWeeks: true,
@@ -568,15 +665,17 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     yearRows: 4
 })
 
-.controller('UibDatepickerController', ['$scope', '$attrs', '$parse', '$interpolate', '$locale', '$log', 'dateFilter', 'uibDatepickerConfig', '$datepickerLiteralWarning', '$datepickerSuppressError', 'uibDateParser',
-    function($scope, $attrs, $parse, $interpolate, $locale, $log, dateFilter, datepickerConfig, $datepickerLiteralWarning, $datepickerSuppressError, dateParser) {
+.controller(
+    'UibDatepickerController',
+    ['$scope', '$element', '$attrs', '$parse', '$interpolate', '$locale', '$log', 'dateFilter', 'uibDatepickerConfig', '$datepickerLiteralWarning', '$datepickerSuppressError', 'uibDateParser',
+    function ($scope, $element, $attrs, $parse, $interpolate, $locale, $log, dateFilter, datepickerConfig, $datepickerLiteralWarning, $datepickerSuppressError, dateParser) {
         var self = this,
-            ngModelCtrl = {
-                $setViewValue: angular.noop
-            }, // nullModelCtrl;
+            ngModelCtrl,
             ngModelOptions = {},
-            watchListeners = [],
-            optionsUsed = !!$attrs.datepickerOptions;
+            watchListeners = [];
+
+        $element.addClass('uib-datepicker');
+        $attrs.$set('role', 'application');
 
         if (!$scope.datepickerOptions) {
             $scope.datepickerOptions = {};
@@ -599,12 +698,13 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             'maxMode',
             'minDate',
             'minMode',
+            'monthColumns',
             'showWeeks',
             'shortcutPropagation',
             'startingDay',
             'yearColumns',
             'yearRows'
-        ].forEach(function(key) {
+        ].forEach(function (key) {
             switch (key) {
                 case 'customClass':
                 case 'dateDisabled':
@@ -624,6 +724,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                         $interpolate($scope.datepickerOptions[key])($scope.$parent) :
                         datepickerConfig[key];
                     break;
+                case 'monthColumns':
                 case 'showWeeks':
                 case 'shortcutPropagation':
                 case 'yearColumns':
@@ -643,7 +744,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                     break;
                 case 'maxDate':
                 case 'minDate':
-                    $scope.$watch('datepickerOptions.' + key, function(value) {
+                    $scope.$watch('datepickerOptions.' + key, function (value) {
                         if (value) {
                             if (angular.isDate(value)) {
                                 self[key] = dateParser.fromTimezone(new Date(value), ngModelOptions.timezone);
@@ -667,10 +768,10 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                 case 'maxMode':
                 case 'minMode':
                     if ($scope.datepickerOptions[key]) {
-                        $scope.$watch(function() {
+                        $scope.$watch(function () {
                             return $scope.datepickerOptions[key];
-                        }, function(value) {
-                            self[key] = $scope[key] = angular.isDefined(value) ? value : datepickerOptions[key];
+                        }, function (value) {
+                            self[key] = $scope[key] = angular.isDefined(value) ? value : $scope.datepickerOptions[key];
                             if (key === 'minMode' && self.modes.indexOf($scope.datepickerOptions.datepickerMode) < self.modes.indexOf(self[key]) ||
                                 key === 'maxMode' && self.modes.indexOf($scope.datepickerOptions.datepickerMode) > self.modes.indexOf(self[key])) {
                                 $scope.datepickerMode = self[key];
@@ -689,13 +790,13 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
 
         $scope.disabled = angular.isDefined($attrs.disabled) || false;
         if (angular.isDefined($attrs.ngDisabled)) {
-            watchListeners.push($scope.$parent.$watch($attrs.ngDisabled, function(disabled) {
+            watchListeners.push($scope.$parent.$watch($attrs.ngDisabled, function (disabled) {
                 $scope.disabled = disabled;
                 self.refreshView();
             }));
         }
 
-        $scope.isActive = function(dateObject) {
+        $scope.isActive = function (dateObject) {
             if (self.compare(dateObject.date, self.activeDate) === 0) {
                 $scope.activeDateId = dateObject.uid;
                 return true;
@@ -703,12 +804,16 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             return false;
         };
 
-        this.init = function(ngModelCtrl_) {
+        this.init = function (ngModelCtrl_) {
             ngModelCtrl = ngModelCtrl_;
-            ngModelOptions = ngModelCtrl_.$options || datepickerConfig.ngModelOptions;
+
+            ngModelOptions = ngModelCtrl_.$options
+                || $scope.datepickerOptions.ngModelOptions
+                || datepickerConfig.ngModelOptions;
+
             if ($scope.datepickerOptions.initDate) {
                 self.activeDate = dateParser.fromTimezone($scope.datepickerOptions.initDate, ngModelOptions.timezone) || new Date();
-                $scope.$watch('datepickerOptions.initDate', function(initDate) {
+                $scope.$watch('datepickerOptions.initDate', function (initDate) {
                     if (initDate && (ngModelCtrl.$isEmpty(ngModelCtrl.$modelValue) || ngModelCtrl.$invalid)) {
                         self.activeDate = dateParser.fromTimezone(initDate, ngModelOptions.timezone);
                         self.refreshView();
@@ -718,16 +823,18 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                 self.activeDate = new Date();
             }
 
-            this.activeDate = ngModelCtrl.$modelValue ?
-                dateParser.fromTimezone(new Date(ngModelCtrl.$modelValue), ngModelOptions.timezone) :
-                dateParser.fromTimezone(new Date(), ngModelOptions.timezone);
+            var date = ngModelCtrl.$modelValue ? new Date(ngModelCtrl.$modelValue) : new Date();
 
-            ngModelCtrl.$render = function() {
+            this.activeDate = !isNaN(date)
+                ? dateParser.fromTimezone(date, ngModelOptions.timezone)
+                : dateParser.fromTimezone(new Date(), ngModelOptions.timezone);
+
+            ngModelCtrl.$render = function () {
                 self.render();
             };
         };
 
-        this.render = function() {
+        this.render = function () {
             if (ngModelCtrl.$viewValue) {
                 var date = new Date(ngModelCtrl.$viewValue),
                     isValid = !isNaN(date);
@@ -741,7 +848,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             this.refreshView();
         };
 
-        this.refreshView = function() {
+        this.refreshView = function () {
             if (this.element) {
                 $scope.selectedDt = null;
                 this._refreshView();
@@ -756,7 +863,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             }
         };
 
-        this.createDateObject = function(date, format) {
+        this.createDateObject = function (date, format) {
             var model = ngModelCtrl.$viewValue ? new Date(ngModelCtrl.$viewValue) : null;
             model = dateParser.fromTimezone(model, ngModelOptions.timezone);
             var today = new Date();
@@ -784,7 +891,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             return dt;
         };
 
-        this.isDisabled = function(date) {
+        this.isDisabled = function (date) {
             return $scope.disabled ||
                 this.minDate && this.compare(date, this.minDate) < 0 ||
                 this.maxDate && this.compare(date, this.maxDate) > 0 ||
@@ -794,7 +901,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                 });
         };
 
-        this.customClass = function(date) {
+        this.customClass = function (date) {
             return $scope.customClass({
                 date: date,
                 mode: $scope.datepickerMode
@@ -802,7 +909,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         };
 
         // Split array into smaller arrays
-        this.split = function(arr, size) {
+        this.split = function (arr, size) {
             var arrays = [];
             while (arr.length > 0) {
                 arrays.push(arr.splice(0, size));
@@ -810,7 +917,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             return arrays;
         };
 
-        $scope.select = function(date) {
+        $scope.select = function (date) {
             if ($scope.datepickerMode === self.minMode) {
                 var dt = ngModelCtrl.$viewValue ? dateParser.fromTimezone(new Date(ngModelCtrl.$viewValue), ngModelOptions.timezone) : new Date(0, 0, 0, 0, 0, 0, 0);
                 dt.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
@@ -827,14 +934,14 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             $scope.$broadcast('uib:datepicker.focus');
         };
 
-        $scope.move = function(direction) {
+        $scope.move = function (direction) {
             var year = self.activeDate.getFullYear() + direction * (self.step.years || 0),
                 month = self.activeDate.getMonth() + direction * (self.step.months || 0);
             self.activeDate.setFullYear(year, month, 1);
             self.refreshView();
         };
 
-        $scope.toggleMode = function(direction) {
+        $scope.toggleMode = function (direction) {
             direction = direction || 1;
 
             if ($scope.datepickerMode === self.maxMode && direction === 1 ||
@@ -861,14 +968,14 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             40: 'down'
         };
 
-        var focusElement = function() {
+        var focusElement = function () {
             self.element[0].focus();
         };
 
         // Listen for focus requests from popup directive
         $scope.$on('uib:datepicker.focus', focusElement);
 
-        $scope.keydown = function(evt) {
+        $scope.keydown = function (evt) {
             var key = $scope.keys[evt.which];
 
             if (!key || evt.shiftKey || evt.altKey || $scope.disabled) {
@@ -893,7 +1000,17 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             }
         };
 
-        $scope.$on('$destroy', function() {
+        $element.on(
+            'keydown',
+            function (evt) {
+                $scope.$apply(
+                    function () {
+                        $scope.keydown(evt);
+                    }
+                );
+        });
+
+        $scope.$on('$destroy', function () {
             //Clear all watch listeners on destroy
             while (watchListeners.length) {
                 watchListeners.shift()();
@@ -907,7 +1024,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     }
 ])
 
-.controller('UibDaypickerController', ['$scope', '$element', 'dateFilter', function(scope, $element, dateFilter) {
+.controller('UibDaypickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
     var DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     this.step = {
@@ -920,13 +1037,13 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             (year % 100 !== 0 || year % 400 === 0) ? 29 : DAYS_IN_MONTH[month];
     }
 
-    this.init = function(ctrl) {
+    this.init = function (ctrl) {
         angular.extend(ctrl, this);
         scope.showWeeks = ctrl.showWeeks;
         ctrl.refreshView();
     };
 
-    this.getDates = function(startDate, n) {
+    this.getDates = function (startDate, n) {
         var dates = new Array(n),
             current = new Date(startDate),
             i = 0,
@@ -939,7 +1056,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return dates;
     };
 
-    this._refreshView = function() {
+    this._refreshView = function () {
         var year = this.activeDate.getFullYear(),
             month = this.activeDate.getMonth(),
             firstDayOfMonth = new Date(this.activeDate);
@@ -986,7 +1103,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         }
     };
 
-    this.compare = function(date1, date2) {
+    this.compare = function (date1, date2) {
         var _date1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate());
         var _date2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
         _date1.setFullYear(date1.getFullYear());
@@ -1003,7 +1120,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return Math.floor(Math.round((time - checkDate) / 86400000) / 7) + 1;
     }
 
-    this.handleKeyDown = function(key, evt) {
+    this.handleKeyDown = function (key, evt) {
         var date = this.activeDate.getDate();
 
         if (key === 'left') {
@@ -1027,18 +1144,18 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     };
 }])
 
-.controller('UibMonthpickerController', ['$scope', '$element', 'dateFilter', function(scope, $element, dateFilter) {
+.controller('UibMonthpickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
     this.step = {
         years: 1
     };
     this.element = $element;
 
-    this.init = function(ctrl) {
+    this.init = function (ctrl) {
         angular.extend(ctrl, this);
         ctrl.refreshView();
     };
 
-    this._refreshView = function() {
+    this._refreshView = function () {
         var months = new Array(12),
             year = this.activeDate.getFullYear(),
             date;
@@ -1052,10 +1169,11 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         }
 
         scope.title = dateFilter(this.activeDate, this.formatMonthTitle);
-        scope.rows = this.split(months, 3);
+        scope.rows = this.split(months, this.monthColumns);
+        scope.yearHeaderColspan = this.monthColumns > 3 ? this.monthColumns - 2 : 1;
     };
 
-    this.compare = function(date1, date2) {
+    this.compare = function (date1, date2) {
         var _date1 = new Date(date1.getFullYear(), date1.getMonth());
         var _date2 = new Date(date2.getFullYear(), date2.getMonth());
         _date1.setFullYear(date1.getFullYear());
@@ -1063,17 +1181,17 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return _date1 - _date2;
     };
 
-    this.handleKeyDown = function(key, evt) {
+    this.handleKeyDown = function (key, evt) {
         var date = this.activeDate.getMonth();
 
         if (key === 'left') {
             date = date - 1;
         } else if (key === 'up') {
-            date = date - 3;
+            date = date - this.monthColumns;
         } else if (key === 'right') {
             date = date + 1;
         } else if (key === 'down') {
-            date = date + 3;
+            date = date - this.monthColumns;
         } else if (key === 'pageup' || key === 'pagedown') {
             var year = this.activeDate.getFullYear() + (key === 'pageup' ? -1 : 1);
             this.activeDate.setFullYear(year);
@@ -1086,7 +1204,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     };
 }])
 
-.controller('UibYearpickerController', ['$scope', '$element', 'dateFilter', function(scope, $element, dateFilter) {
+.controller('UibYearpickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
     var columns, range;
     this.element = $element;
 
@@ -1094,7 +1212,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return parseInt((year - 1) / range, 10) * range + 1;
     }
 
-    this.yearpickerInit = function() {
+    this.yearpickerInit = function () {
         columns = this.yearColumns;
         range = this.yearRows * columns;
         this.step = {
@@ -1102,7 +1220,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         };
     };
 
-    this._refreshView = function() {
+    this._refreshView = function () {
         var years = new Array(range),
             date;
 
@@ -1119,11 +1237,11 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         scope.columns = columns;
     };
 
-    this.compare = function(date1, date2) {
+    this.compare = function (date1, date2) {
         return date1.getFullYear() - date2.getFullYear();
     };
 
-    this.handleKeyDown = function(key, evt) {
+    this.handleKeyDown = function (key, evt) {
         var date = this.activeDate.getFullYear();
 
         if (key === 'left') {
@@ -1145,19 +1263,19 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     };
 }])
 
-.directive('uibDatepicker', function() {
+.directive('uibDatepicker', function () {
     return {
-        replace: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker.html');
         },
         scope: {
             datepickerOptions: '=?'
         },
         require: ['uibDatepicker', '^ngModel'],
+        restrict: 'A',
         controller: 'UibDatepickerController',
         controllerAs: 'datepicker',
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
             var datepickerCtrl = ctrls[0],
                 ngModelCtrl = ctrls[1];
 
@@ -1166,15 +1284,15 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     };
 })
 
-.directive('uibDaypicker', function() {
+.directive('uibDaypicker', function () {
     return {
-        replace: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/day.html');
         },
         require: ['^uibDatepicker', 'uibDaypicker'],
+        restrict: 'A',
         controller: 'UibDaypickerController',
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
             var datepickerCtrl = ctrls[0],
                 daypickerCtrl = ctrls[1];
 
@@ -1183,15 +1301,15 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     };
 })
 
-.directive('uibMonthpicker', function() {
+.directive('uibMonthpicker', function () {
     return {
-        replace: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/month.html');
         },
         require: ['^uibDatepicker', 'uibMonthpicker'],
+        restrict: 'A',
         controller: 'UibMonthpickerController',
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
             var datepickerCtrl = ctrls[0],
                 monthpickerCtrl = ctrls[1];
 
@@ -1200,15 +1318,15 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     };
 })
 
-.directive('uibYearpicker', function() {
+.directive('uibYearpicker', function () {
     return {
-        replace: true,
-        templateUrl: function(element, attrs) {
+        templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/year.html');
         },
         require: ['^uibDatepicker', 'uibYearpicker'],
+        restrict: 'A',
         controller: 'UibYearpickerController',
-        link: function(scope, element, attrs, ctrls) {
+        link: function (scope, element, attrs, ctrls) {
             var ctrl = ctrls[0];
             angular.extend(ctrl, ctrls[1]);
             ctrl.yearpickerInit();
