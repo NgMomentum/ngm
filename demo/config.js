@@ -61,7 +61,7 @@ if (msos.config.debug_script) {
 		msos.resource_url('jquery', 'v321_msos.uc.js'),
 		msos.resource_url('firebase', 'v420.min.js'),		// There is no uncompressed file available
 		msos.resource_url('ng', 'v165_msos.uc.js'),
-		msos.resource_url('ng', 'ui/router/v041_msos.uc.js'),
+		msos.resource_url('ng', 'ui/router/v042_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
 		msos.resource_url('ng', 'firebase/v230_msos.uc.js'),
 		msos.resource_url('hello', 'v1151.uc.js'),
@@ -76,7 +76,7 @@ if (msos.config.debug_script) {
 		msos.resource_url('jquery', 'v321_msos.min.js'),
 		msos.resource_url('firebase', 'v420.min.js'),
 		msos.resource_url('ng', 'v165_msos.min.js'),
-		msos.resource_url('ng', 'ui/router/v041_msos.min.js'),
+		msos.resource_url('ng', 'ui/router/v042_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
 		msos.resource_url('ng', 'firebase/v230_msos.min.js'),
 		msos.resource_url('hello', 'v1151.min.js'),
