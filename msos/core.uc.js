@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					core.js
-//			Copyright©2010-2015 - OpenSiteMobile
+//			Copyright©2010-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensitemobile.com
@@ -9,20 +9,16 @@
 //			Author: Dwight Vietzke
 //			Email:  dwight_vietzke@yahoo.com
 //
-// OpenSiteMobile base MobileSiteOS™ framework functions
+// OpenSiteMobile base MobileSiteOS framework functions
 
 /*global
     msos: false,
     jQuery: false,
-    Modernizr: false,
     _: false
 */
 
-msos.version = new msos.set_version(15, 11, 28);
-
-msos.console.info('msos/core -> start, ' + msos.version);
+msos.console.info('msos/core -> start, (/mobilesiteos/msos/core.uc.js file), ' + (new msos.set_version(17, 6, 26)));
 msos.console.time('core');
-
 
 // *******************************************
 // MSOS Functions using jQuery, underscore.js
@@ -65,9 +61,7 @@ msos.valid_jq_node = function ($node, type) {
 msos.in_dom_jq_node = function ($node) {
 	"use strict";
 
-	if ($node
-	 && $node.length
-	 && $node[0].parentNode) {
+	if ($node && $node.length && $node[0].parentNode) {
 		return true;
 	}
 
@@ -111,6 +105,97 @@ msos.zero_pad = function (input, count, left) {
     return str;
 };
 
+msos.array_segments = function (array, size) {
+	"use strict";
+
+    // initialize vars
+    var i = 0,
+		j = array.length,
+		tempArray = [];
+
+    // loop through and jump based on size
+		for (i = 0; i < j; i += size) {
+        // slice chunk of arr and push to tempArray
+        tempArray.push(array.slice(i, i + size));
+    }
+
+    // return temp array (chunck)
+    return tempArray;
+};
+
+msos.run_console_alert = function () {
+	"use strict";
+
+	var queue_segments = msos.array_segments(msos.console.queue, 25),
+		i = 0;
+
+		for (i = 0; i < queue_segments.length; i += 1) {
+			alert(queue_segments[i].join("\n"));
+		}
+};
+
+msos.run_console_remote_cnt = 0;
+msos.run_console_remote = function () {
+
+	msos.run_console_remote_cnt += 1;
+
+	// If the iframe isn't ready...
+	if (msos.remoteWindow === null) {
+		if (msos.run_console_remote_cnt < 6) {
+			setTimeout(msos.run_console_remote, 100);
+		}
+		return;
+	}
+
+	var console_array = msos.console.remote.length ? msos.console.remote.shift() : undefined,
+		method = '',
+		message = '';
+
+	if (console_array) { 
+		method = console_array.shift();
+		message = console_array.map(msos.obj_stringify);
+
+		if (method === 'debug' || method === 'time' || method === 'timeEnd' || method === 'warn') {
+			method = 'info';
+		}
+
+		msos.remoteWindow.postMessage(
+			JSON.stringify({
+				response: message.join(' '),
+				type: method
+			}),
+			msos.remote_origin
+		);
+	}
+
+	if (msos.console.remote.length) {
+		// Keep sending data
+		setTimeout(msos.run_console_remote, 15);
+	} else {
+		// Check for more data
+		setTimeout(msos.run_console_remote, 10000);
+	}
+};
+
+msos.run_debugging_output = function () {
+	"use strict";
+
+	if (msos.config.console_alert) {
+		msos.run_console_alert();
+	}
+
+	if (msos.config.console_remote) {
+		msos.run_console_remote();
+	}
+
+	if (msos.config.console) {
+		msos.pyromane.run();
+	}
+
+	// Clear queue to accomodate new input
+	msos.console.queue = [];
+};
+
 msos.run_onresize = function () {
     "use strict";
 
@@ -123,12 +208,16 @@ msos.run_onresize = function () {
     // Get the viewport size (which resets msos.config.view_port)
     msos.get_viewport(window);
 
-	// Run all window onresize functions now
-	for (m = 0; m < msos.onresize_functions.length; m += 1) {
-		msos.onresize_functions[m]();
+	// Compare against original...
+	if (port_width === msos.config.view_port.width) {
+		msos.console.debug(temp_onr + 'done, no change w: ' + msos.config.view_port.width);
+	} else {
+		// Run all window onresize functions now
+		for (m = 0; m < msos.onresize_functions.length; m += 1) {
+			msos.onresize_functions[m]();
+		}
+		msos.console.debug(temp_onr + 'done, orig. w: ' + port_width + ', new w: ' + msos.config.view_port.width + ', for: ' + m + ' functions.');
 	}
-
-	msos.console.debug(temp_onr + 'done, orig. w: ' + port_width + ', new w: ' + msos.config.view_port.width + ', for: ' + m + ' functions.');
 };
 
 msos.run_onorientationchange = function () {
@@ -449,7 +538,7 @@ msos.ajax_request = function (ajax_uri, data_type, on_success_func, on_complete_
 			}
 
 			if (msos.config.verbose) {
-				msos.console.debug(req_text + 'status: ' + status + ', data length: ' + (data.length || 0));
+				msos.console.debug(req_text + 'status: ' + status + ', data length: ' + (data && data.length || 0));
 			}
 
 			if (_.isFunction(on_success_func)) { on_success_func(data, status, xhr); }
@@ -466,6 +555,9 @@ msos.ajax_request = function (ajax_uri, data_type, on_success_func, on_complete_
     jQuery.ajax(
 		{
 			url: ajax_uri,
+			type: 'GET',
+			xhrFields: { withCredentials: true },
+			crossDomain: true,
 			dataType: data_type,
 			cache: msos.config.cache,
 			success: on_success_request,
@@ -483,9 +575,7 @@ msos.ajax_error = function (xhr, status, error) {
 		i18n = {};
 
     // Timing of i18n common loading is a factor
-    if (msos.i18n
-     && msos.i18n.common
-     && msos.i18n.common.bundle) {
+    if (msos.i18n && msos.i18n.common && msos.i18n.common.bundle) {
 		i18n = msos.i18n.common.bundle;
     }
 
@@ -523,11 +613,7 @@ msos.hide_mobile_url = function () {
 		// Order with msos.notify is important. We don't want scrolling and DOM manipulations to interact.
 		window.scrollTo(0, 1);
 
-		scrollTop =
-				window.pageYOffset
-			|| (window.document.compatMode === "CSS1Compat" && window.document.documentElement.scrollTop)
-			||  window.document.body.scrollTop
-			||  0;
+		scrollTop = window.pageYOffset || (window.document.compatMode === "CSS1Compat" && window.document.documentElement.scrollTop) ||  window.document.body.scrollTop ||  0;
 
 		msos.console.debug(temp_mu + 'called, scrollTop: ' + scrollTop);
 
@@ -572,9 +658,7 @@ msos.notify = {
 		var self = msos.notify;
 
 		// Errors and warnings are a special case, (we always show them to completion)
-		if (self.current !== null
-		 && self.current.type !== 'warning'
-		 && self.current.type !== 'error') {
+		if (self.current !== null && self.current.type !== 'warning' && self.current.type !== 'error') {
 
 			msos.console.debug('msos.notify.clear_current -> called, on type: ' + self.current.type);
 
@@ -593,8 +677,7 @@ msos.notify = {
 		self.clear_current();
 
 		for (n = 0; n < self.queue.length; n += 1) {
-			if (self.queue[n].type !== 'warning'
-			 && self.queue[n].type !== 'error') {
+			if (self.queue[n].type !== 'warning' && self.queue[n].type !== 'error') {
 				clearTimeout(self.queue[n].auto_delay);
 			}
 		}
@@ -763,9 +846,7 @@ window.onerror = function (msg, url, line, col, er) {
 	msos.console.error('window.onerror -> fired, line: ' + line + ', url: ' + url + ', error: ' + msg, er);
 
 	// Timing and availability of i18n common loading is a factor (so isolate)
-	if (msos.i18n
-	 && msos.i18n.common
-	 && msos.i18n.common.bundle) {
+	if (msos.i18n && msos.i18n.common && msos.i18n.common.bundle) {
 		error_txt = msos.i18n.common.bundle.error || error_txt;
 	}
 
@@ -848,8 +929,7 @@ msos.check_resources = function () {
 
     // Check our document.write injected scripts for loading (Google API's, etc.)
     for (i = 0; i < scripts.length; i += 1) {
-		if (scripts[i].readyState
-		&& (scripts[i].readyState !== "loaded" || scripts[i].readyState !== "complete")) {
+		if (scripts[i].readyState && (scripts[i].readyState !== "loaded" || scripts[i].readyState !== "complete")) {
 			src = scripts[i].getAttribute("src") || '';
 			if (src) {
 				msos.console.error(temp_chk + 'file failed to load: ' + src);
@@ -860,9 +940,7 @@ msos.check_resources = function () {
 
     if (count_module > 0 || count_file > 0) {
 		// Timing of i18n common loading is a factor
-		if (msos.i18n
-		 && msos.i18n.common
-		 && msos.i18n.common.bundle) {
+		if (msos.i18n && msos.i18n.common && msos.i18n.common.bundle) {
 			for (key in i18n) {
 				if (i18n.hasOwnProperty(key)) {
 					if (msos.i18n.common.bundle[key]) {
@@ -895,8 +973,7 @@ msos.set_bandwidth = function () {
 		kbps_new = false,
 		cnt = 0,
 		sum = 0,
-		avg = 0,
-		i = 0;
+		avg = 0;
 
 	// This function does **not** provide a rigorous bandwidth value, but just
 	// a reasonable "best guess" estimate. It is important to note that it
@@ -955,7 +1032,7 @@ msos.set_bandwidth = function () {
 	msos.console.debug(temp_sb + 'done, bandwidth: ' + parseInt(avg, 10));
 };
 
-msos.connection = function() {
+msos.connection = function () {
 	"use strict";
 
 	var temp_con = 'msos.connection -> ',
@@ -990,15 +1067,7 @@ msos.connection = function() {
 
 	// On a relative scale (not actual kbps - ref. see msos.ajax_request)
 	if (con_type === 'na') {
-		con_type = between(con_bwidth, 1, 50)
-					? "slow"
-					: between(con_bwidth, 51, 150)				// actual is approx. 100-150kbps
-						? "2g"
-						: between(con_bwidth, 151, 600)			// actual is approx. 600-1400kbps
-							? "3g"
-							: between(con_bwidth, 601, 1000)	// actual is approx. 3000-6000kbps 
-								? "4g"
-								: "fast";
+		con_type = between(con_bwidth, 1, 50) ? "slow": between(con_bwidth, 51, 150) ? "2g" : between(con_bwidth, 151, 600) ? "3g" : between(con_bwidth, 601, 1000) ? "4g" : "fast";
 	}
 
 	// Record our findings
@@ -1022,8 +1091,7 @@ msos.set_window_onchange = function () {
 	jQuery(window).on('resize', _.debounce(msos.run_onresize, 250));
 
 	// Bind onorientationchange function (always run on change)
-	if (msos.config.orientation
-	 && msos.config.orientation_change) {
+	if (msos.config.orientation && msos.config.orientation_change) {
 		jQuery(window).on('orientationchange', _.debounce(msos.run_onorientationchange, 100));
 	}
 
@@ -1062,8 +1130,8 @@ msos.run_final = function () {
 
 	msos.console.debug(temp_rf + ' -> done!');
 
-	// Last function, report debugging output
-	if (msos.pyromane) { setTimeout(msos.pyromane.run, 500); }
+	// Last function, add debugging output
+	msos.run_debugging_output();
 
 	msos.run_onload_incr += 1;
 };
@@ -1085,7 +1153,7 @@ msos.run_onload = function () {
 		cc = cfg.storage;
 
 	/*
-		JavaScript is all about timing. This funtion allows precise timing of software
+		JavaScript is all about timing. This function allows precise timing of software
 		execution in layers. Important because it allows us to load modules based on user
 		preferences, browser settings and page html in cascading order of readiness.
 	*/
@@ -1160,7 +1228,7 @@ msos.run_onload = function () {
 		return;
     }
 
-	if (msos.require_queue === 0 && msos.i18n_queue === 0) {
+	if (msos.require_queue === 0 && msos.i18n_queue === 0 && msos.pending_file_loads.length === 0) {
 
 		// All required modules loaded, so run cached page level/user interface functions
 		msos.run_function_array('onload_functions');
@@ -1193,14 +1261,19 @@ msos.run_onload = function () {
 			msos.console.warn(run_txt + 'waited: ' + (msos.require_attempts * to_secs) + ' secs.');
 		} else if (msos.require_attempts > 100) {
 			report_stop = function () {
-				msos.console.error(run_txt + 'failed, module queue: ' + msos.require_queue + ', i18n queue: ' + msos.i18n_queue);
+				msos.console.error(run_txt + 'failed, module queue: ' + msos.require_queue + ', i18n queue: ' + msos.i18n_queue + ', pending file loading:', msos.pending_file_loads);
 				msos.notify.warning(jQuery('title').text(), 'Page Timed Out');
 				msos.check_resources();
+
+				// Report debugging info where possible
+				msos.run_debugging_output();
 			};
+
 			// Let any 'thrown errors' settle, then report script stop
 			setTimeout(report_stop, 400);
 			return;
 		}
+
 		setTimeout(msos.run_onload, delay);
 		msos.require_attempts += 1;
     }

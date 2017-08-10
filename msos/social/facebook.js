@@ -1,9 +1,9 @@
 // Copyright Notice:
 //				    facebook.js
-//			Copyright©2013 - OpenSiteMobile
+//			Copyright©2013-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensite.mobi
+//			http://opensitemobile.com and http://ngmomentum.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -18,7 +18,7 @@
 
 msos.provide("msos.social.facebook");
 
-msos.social.facebook.version = new msos.set_version(13, 6, 14);
+msos.social.facebook.version = new msos.set_version(17, 6, 22);
 
 
 msos.social.facebook.like = function () {
@@ -57,7 +57,7 @@ msos.social.facebook.like = function () {
 		jQuery('.fb-like').attr(fb_data);
 
 		// Use our loader for better debugging
-		msos.site.loader.load('facebook-jssdk', url, 'js');
+		msos.site.loader.load(url, 'js');
     }
 };
 

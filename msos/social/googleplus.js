@@ -1,9 +1,9 @@
 // Copyright Notice:
 //				    googleplus.js
-//			Copyright©2013 - OpenSiteMobile
+//			Copyright©2013-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensite.mobi
+//			http://opensitemobile.com and http://ngmomentum.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -18,7 +18,7 @@
 
 msos.provide("msos.social.googleplus");
 
-msos.social.googleplus.version = new msos.set_version(13, 6, 14);
+msos.social.googleplus.version = new msos.set_version(17, 6, 22);
 
 
 msos.social.googleplus.one = function () {
@@ -38,7 +38,7 @@ msos.social.googleplus.one = function () {
 		jQuery('.g-plusone').attr(gp_data);
 
 		// Use our loader for better debugging
-		msos.site.loader.load('google_plusone_api', url, 'js');
+		msos.site.loader.load(url, 'js');
     }
 };
 

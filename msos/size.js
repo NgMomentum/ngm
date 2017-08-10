@@ -1,9 +1,9 @@
 // Copyright Notice:
 //				    size.js
-//			Copyright©2012-2016 - OpenSiteMobile
+//			Copyright©2012-2017 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensite.mobi
+//			http://opensitemobile.com and http://ngmomentum.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -20,7 +20,7 @@
 msos.provide("msos.size");
 msos.require("msos.i18n.common");
 
-msos.size.version = new msos.set_version(16, 10, 27);
+msos.size.version = new msos.set_version(17, 6, 22);
 
 msos.size.page_ready = function () {
 	"use strict";
@@ -83,6 +83,11 @@ msos.size.set_display = function () {
 			setTimeout(run_on_display_change, 150);
 		}
 	);
+
+	if (!msos.config.size) {
+		msos.console.error(temp_rd + 'failed, no msos.config.size value!');
+		msos.config.size = 'large';
+	}
 
 	// Load sizing stylesheet
     loader_obj.load(msos.resource_url(msos.config.size_folder, 'size/' + msos.config.size + '.css'));
