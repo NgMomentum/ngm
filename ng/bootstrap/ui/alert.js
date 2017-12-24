@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.alert");
 
-ng.bootstrap.ui.alert.version = new msos.set_version(16, 10, 27);
+ng.bootstrap.ui.alert.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.alert.css = new msos.loader();
@@ -21,7 +18,8 @@ ng.bootstrap.ui.alert.css.load(msos.resource_url('ng', 'bootstrap/css/ui/alert.c
 // ui.bootstrap.alert -> ng.bootstrap.ui.alert
 // uib/template/alert/alert.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/alert.html')
 angular.module(
-    'ng.bootstrap.ui.alert', []
+    'ng.bootstrap.ui.alert',
+    ['ng', 'ng.bootstrap.ui']
 ).controller(
     'UibAlertController',
     ['$scope', '$element', '$attrs', '$interpolate', '$timeout',

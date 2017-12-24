@@ -1,165 +1,164 @@
-<section id="dateparser">
-    <div data-ng-ignore class="page-header">
-        <a href="#top" class="btn btn-info" style="float:right;"><i class="fa fa-chevron-up"></i></a>
-        <h1>Collapse
-            <small>(
-                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.dateparser</a>)</small>
-        </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-6 show-grid">
-            <div ng-controller="demo.bootstrap.controllers.dateparser.ctrl">
-                <h4>Formatting codes playground</h4>
-                <p class="form-group">
-                    <label>Define your format</label>
-                    <input type="text" ng-model="format" class="form-control">
-                </p>
-                <p class="form-group">
-                    <label>Result</label>
-                    <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="date" />
-                </p>
-            </div>
-        </div>
-        <div data-ng-ignore class="col-md-6">
-            <p>The <code>uibDateParser</code> is what the <code>uib-datepicker</code> uses internally to parse the dates. You can use it standalone by injecting the <code>uibDateParser</code> service where you need it.</p>
-            <p>The public API for the dateParser is a single method called <code>parse</code>.</p>
-            <p>Certain format codes support i18n. Check this <a href="https://docs.angularjs.org/guide/i18n">guide</a> for more information.</p>
-            <h3 id="uibdateparser-s-parse-function">uibDateParser&#39;s parse function</h3>
-            <h5 id="parameters">parameters</h5>
-            <ul>
-                <li>
-                    <p><code>input</code>
-                        <em>(Type: <code>string</code>, Example: <code>2004/Sep/4</code>)</em> - The input date to parse.</p>
-                </li>
-                <li>
-                    <p><code>format</code>
-                        <em>(Type: <code>string</code>, Example: <code>yyyy/MMM/d</code>)</em> - The format we want to use. Check all the supported formats below.</p>
-                </li>
-                <li>
-                    <p><code>baseDate</code>
-                        <em>(Type: <code>Date</code>, Example: <code>new Date()</code>)</em> - If you want to parse a date but maintain the timezone, you can pass an existing date here.</p>
-                </li>
-            </ul>
-            <h5 id="return">return</h5>
-            <ul>
-                <li>If the specified input matches the format, a new date with the input will be returned, otherwise, it will return undefined.</li>
-            </ul>
-            <h3 id="uibdateparser-s-format-codes">uibDateParser&#39;s format codes</h3>
-            <ul>
-                <li>
-                    <p><code>yyyy</code>
-                        <em>(Example: <code>2015</code>)</em> - Parses a 4 digits year.</p>
-                </li>
-                <li>
-                    <p><code>yy</code>
-                        <em>(Example: <code>15</code>)</em> - Parses a 2 digits year.</p>
-                </li>
-                <li>
-                    <p><code>y</code>
-                        <em>(Example: <code>15</code>)</em> - Parses a year with 1, 2, 3, or 4 digits.</p>
-                </li>
-                <li>
-                    <p><code>MMMM</code>
-                        <em>(Example: <code>February</code>, i18n support)</em> - Parses the full name of a month.</p>
-                </li>
-                <li>
-                    <p><code>MMM</code>
-                        <em>(Example: <code>Feb</code>, i18n support)</em> - Parses the short name of a month.</p>
-                </li>
-                <li>
-                    <p><code>MM</code>
-                        <em>(Example: <code>12</code>, Leading 0)</em> - Parses a numeric month.</p>
-                </li>
-                <li>
-                    <p><code>M</code>
-                        <em>(Example: <code>3</code>)</em> - Parses a numeric month.</p>
-                </li>
-                <li>
-                    <p><code>M!</code>
-                        <em>(Example: <code>3</code> or <code>03</code>)</em> - Parses a numeric month, but allowing an optional leading zero</p>
-                </li>
-                <li>
-                    <p><code>dd</code>
-                        <em>(Example: <code>05</code>, Leading 0)</em> - Parses a numeric day.</p>
-                </li>
-                <li>
-                    <p><code>d</code>
-                        <em>(Example: <code>5</code>)</em> - Parses a numeric day.</p>
-                </li>
-                <li>
-                    <p><code>d!</code>
-                        <em>(Example: <code>3</code> or <code>03</code>)</em> - Parses a numeric day, but allowing an optional leading zero</p>
-                </li>
-                <li>
-                    <p><code>EEEE</code>
-                        <em>(Example: <code>Sunday</code>, i18n support)</em> - Parses the full name of a day.</p>
-                </li>
-                <li>
-                    <p><code>EEE</code>
-                        <em>(Example: <code>Mon</code>, i18n support)</em> - Parses the short name of a day.</p>
-                </li>
-                <li>
-                    <p><code>HH</code>
-                        <em>(Example: <code>14</code>, Leading 0)</em> - Parses a 24 hours time.</p>
-                </li>
-                <li>
-                    <p><code>H</code>
-                        <em>(Example: <code>3</code>)</em> - Parses a 24 hours time.</p>
-                </li>
-                <li>
-                    <p><code>hh</code>
-                        <em>(Example: <code>11</code>, Leading 0)</em> - Parses a 12 hours time.</p>
-                </li>
-                <li>
-                    <p><code>h</code>
-                        <em>(Example: <code>3</code>)</em> - Parses a 12 hours time.</p>
-                </li>
-                <li>
-                    <p><code>mm</code>
-                        <em>(Example: <code>09</code>, Leading 0)</em> - Parses the minutes.</p>
-                </li>
-                <li>
-                    <p><code>m</code>
-                        <em>(Example: <code>3</code>)</em> - Parses the minutes.</p>
-                </li>
-                <li>
-                    <p><code>sss</code>
-                        <em>(Example: <code>094</code>, Leading 0)</em> - Parses the milliseconds.</p>
-                </li>
-                <li>
-                    <p><code>ss</code>
-                        <em>(Example: <code>08</code>, Leading 0)</em> - Parses the seconds.</p>
-                </li>
-                <li>
-                    <p><code>s</code>
-                        <em>(Example: <code>22</code>)</em> - Parses the seconds.</p>
-                </li>
-                <li>
-                    <p><code>a</code>
-                        <em>(Example: <code>10AM</code>)</em> - Parses a 12 hours time with AM/PM.</p>
-                </li>
-                <li>
-                    <p><code>Z</code>
-                        <em>(Example: <code>-0800</code>)</em> - Parses the timezone offset in a signed 4 digit representation</p>
-                </li>
-                <li>
-                    <p><code>ww</code>
-                        <em>(Example: <code>03</code>, Leading 0)</em> - Parses the week number</p>
-                </li>
-                <li>
-                    <p><code>w</code>
-                        <em>(Example: <code>03</code>)</em> - Parses the week number</p>
-                </li>
-                <li>
-                    <p><code>G</code>, <code>GG</code>, <code>GGG</code>
-                        <em>(Example: <code>AD</code>)</em> - Parses the era (<code>AD</code> or <code>BC</code>)</p>
-                </li>
-                <li><code>GGGG</code>
-                    <em>(Example: <code>Anno Domini</code>)</em> - Parses the long form of the era (<code>Anno Domini</code> or <code>Before Christ</code>)</li>
-            </ul>
-            <p>* The ones marked with <code>Leading 0</code>, needs a leading 0 for values less than 10. Exception being milliseconds which needs it for values under 100.</p>
-            <p>** It also supports <code>fullDate|longDate|medium|mediumDate|mediumTime|short|shortDate|shortTime</code> as the format for parsing.</p>
-            <p>*** It supports template literals as a string between the single quote <code>&#39;</code> character, i.e. <code>&#39;The Date is&#39; MM/DD/YYYY</code>. If one wants the literal single quote character, one must use <code>&#39;&#39;&#39;&#39;</code>.</p>
-        </div>
-    </div>
-</section>
+
+<div data-ng-ignore class="page-header">
+	<h1>Collapse
+		<small>
+			(<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.dateparser</a>)
+		</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-md-6 show-grid">
+		<div ng-controller="demo.bootstrap.controllers.dateparser.ctrl">
+			<h4>Formatting codes playground</h4>
+			<p class="form-group">
+				<label>Define your format</label>
+				<input type="text" ng-model="format" class="form-control">
+			</p>
+			<p class="form-group">
+				<label>Result</label>
+				<input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="date" />
+			</p>
+		</div>
+	</div>
+	<div data-ng-ignore class="col-md-6">
+		<p>The <code>uibDateParser</code> is what the <code>uib-datepicker</code> uses internally to parse the dates. You can use it standalone by injecting the <code>uibDateParser</code> service where you need it.</p>
+		<p>The public API for the dateParser is a single method called <code>parse</code>.</p>
+		<p>Certain format codes support i18n. Check this <a href="https://docs.angularjs.org/guide/i18n">guide</a> for more information.</p>
+		<h3 id="uibdateparser-s-parse-function">uibDateParser&#39;s parse function</h3>
+		<h5 id="parameters">parameters</h5>
+		<ul>
+			<li>
+				<p><code>input</code>
+					<em>(Type: <code>string</code>, Example: <code>2004/Sep/4</code>)</em> - The input date to parse.</p>
+			</li>
+			<li>
+				<p><code>format</code>
+					<em>(Type: <code>string</code>, Example: <code>yyyy/MMM/d</code>)</em> - The format we want to use. Check all the supported formats below.</p>
+			</li>
+			<li>
+				<p><code>baseDate</code>
+					<em>(Type: <code>Date</code>, Example: <code>new Date()</code>)</em> - If you want to parse a date but maintain the timezone, you can pass an existing date here.</p>
+			</li>
+		</ul>
+		<h5 id="return">return</h5>
+		<ul>
+			<li>If the specified input matches the format, a new date with the input will be returned, otherwise, it will return undefined.</li>
+		</ul>
+		<h3 id="uibdateparser-s-format-codes">uibDateParser&#39;s format codes</h3>
+		<ul>
+			<li>
+				<p><code>yyyy</code>
+					<em>(Example: <code>2015</code>)</em> - Parses a 4 digits year.</p>
+			</li>
+			<li>
+				<p><code>yy</code>
+					<em>(Example: <code>15</code>)</em> - Parses a 2 digits year.</p>
+			</li>
+			<li>
+				<p><code>y</code>
+					<em>(Example: <code>15</code>)</em> - Parses a year with 1, 2, 3, or 4 digits.</p>
+			</li>
+			<li>
+				<p><code>MMMM</code>
+					<em>(Example: <code>February</code>, i18n support)</em> - Parses the full name of a month.</p>
+			</li>
+			<li>
+				<p><code>MMM</code>
+					<em>(Example: <code>Feb</code>, i18n support)</em> - Parses the short name of a month.</p>
+			</li>
+			<li>
+				<p><code>MM</code>
+					<em>(Example: <code>12</code>, Leading 0)</em> - Parses a numeric month.</p>
+			</li>
+			<li>
+				<p><code>M</code>
+					<em>(Example: <code>3</code>)</em> - Parses a numeric month.</p>
+			</li>
+			<li>
+				<p><code>M!</code>
+					<em>(Example: <code>3</code> or <code>03</code>)</em> - Parses a numeric month, but allowing an optional leading zero</p>
+			</li>
+			<li>
+				<p><code>dd</code>
+					<em>(Example: <code>05</code>, Leading 0)</em> - Parses a numeric day.</p>
+			</li>
+			<li>
+				<p><code>d</code>
+					<em>(Example: <code>5</code>)</em> - Parses a numeric day.</p>
+			</li>
+			<li>
+				<p><code>d!</code>
+					<em>(Example: <code>3</code> or <code>03</code>)</em> - Parses a numeric day, but allowing an optional leading zero</p>
+			</li>
+			<li>
+				<p><code>EEEE</code>
+					<em>(Example: <code>Sunday</code>, i18n support)</em> - Parses the full name of a day.</p>
+			</li>
+			<li>
+				<p><code>EEE</code>
+					<em>(Example: <code>Mon</code>, i18n support)</em> - Parses the short name of a day.</p>
+			</li>
+			<li>
+				<p><code>HH</code>
+					<em>(Example: <code>14</code>, Leading 0)</em> - Parses a 24 hours time.</p>
+			</li>
+			<li>
+				<p><code>H</code>
+					<em>(Example: <code>3</code>)</em> - Parses a 24 hours time.</p>
+			</li>
+			<li>
+				<p><code>hh</code>
+					<em>(Example: <code>11</code>, Leading 0)</em> - Parses a 12 hours time.</p>
+			</li>
+			<li>
+				<p><code>h</code>
+					<em>(Example: <code>3</code>)</em> - Parses a 12 hours time.</p>
+			</li>
+			<li>
+				<p><code>mm</code>
+					<em>(Example: <code>09</code>, Leading 0)</em> - Parses the minutes.</p>
+			</li>
+			<li>
+				<p><code>m</code>
+					<em>(Example: <code>3</code>)</em> - Parses the minutes.</p>
+			</li>
+			<li>
+				<p><code>sss</code>
+					<em>(Example: <code>094</code>, Leading 0)</em> - Parses the milliseconds.</p>
+			</li>
+			<li>
+				<p><code>ss</code>
+					<em>(Example: <code>08</code>, Leading 0)</em> - Parses the seconds.</p>
+			</li>
+			<li>
+				<p><code>s</code>
+					<em>(Example: <code>22</code>)</em> - Parses the seconds.</p>
+			</li>
+			<li>
+				<p><code>a</code>
+					<em>(Example: <code>10AM</code>)</em> - Parses a 12 hours time with AM/PM.</p>
+			</li>
+			<li>
+				<p><code>Z</code>
+					<em>(Example: <code>-0800</code>)</em> - Parses the timezone offset in a signed 4 digit representation</p>
+			</li>
+			<li>
+				<p><code>ww</code>
+					<em>(Example: <code>03</code>, Leading 0)</em> - Parses the week number</p>
+			</li>
+			<li>
+				<p><code>w</code>
+					<em>(Example: <code>03</code>)</em> - Parses the week number</p>
+			</li>
+			<li>
+				<p><code>G</code>, <code>GG</code>, <code>GGG</code>
+					<em>(Example: <code>AD</code>)</em> - Parses the era (<code>AD</code> or <code>BC</code>)</p>
+			</li>
+			<li><code>GGGG</code>
+				<em>(Example: <code>Anno Domini</code>)</em> - Parses the long form of the era (<code>Anno Domini</code> or <code>Before Christ</code>)</li>
+		</ul>
+		<p>* The ones marked with <code>Leading 0</code>, needs a leading 0 for values less than 10. Exception being milliseconds which needs it for values under 100.</p>
+		<p>** It also supports <code>fullDate|longDate|medium|mediumDate|mediumTime|short|shortDate|shortTime</code> as the format for parsing.</p>
+		<p>*** It supports template literals as a string between the single quote <code>&#39;</code> character, i.e. <code>&#39;The Date is&#39; MM/DD/YYYY</code>. If one wants the literal single quote character, one must use <code>&#39;&#39;&#39;&#39;</code>.</p>
+	</div>
+</div>

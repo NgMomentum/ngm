@@ -1,113 +1,111 @@
-<section id="progressbar">
-    <div data-ng-ignore class="page-header">
-        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
-        <h1>Progressbar
-            <small>(
-                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.progressbar</a>)</small>
-        </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-6 show-grid">
-            <div ng-controller="demo.bootstrap.controllers.progressbar.ctrl">
-                <h3>Static</h3>
-                <div class="row">
-                    <div class="col-sm-4">
-                        <uib-progressbar value="55"></uib-progressbar>
-                    </div>
-                    <div class="col-sm-4">
-                        <uib-progressbar class="progress-striped" value="22" type="warning">22%</uib-progressbar>
-                    </div>
-                    <div class="col-sm-4">
-                        <uib-progressbar class="progress-striped active" max="200" value="166" type="danger"><i>166 / 200</i></uib-progressbar>
-                    </div>
-                </div>
 
-                <hr />
-                <h3>Dynamic <button type="button" class="btn btn-sm btn-primary" ng-click="random()">Randomize</button></h3>
-                <uib-progressbar max="max" value="dynamic"><span style="color:white; white-space:nowrap;">{{dynamic}} / {{max}}</span></uib-progressbar>
+<div data-ng-ignore class="page-header">
+	<h1>Progressbar
+		<small>(
+			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.progressbar</a>)</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-md-6 show-grid">
+		<div ng-controller="demo.bootstrap.controllers.progressbar.ctrl">
+			<h3>Static</h3>
+			<div class="row">
+				<div class="col-sm-4">
+					<uib-progressbar value="55"></uib-progressbar>
+				</div>
+				<div class="col-sm-4">
+					<uib-progressbar class="progress-striped" value="22" type="warning">22%</uib-progressbar>
+				</div>
+				<div class="col-sm-4">
+					<uib-progressbar class="progress-striped active" max="200" value="166" type="danger"><i>166 / 200</i></uib-progressbar>
+				</div>
+			</div>
 
-                <small><em>No animation</em></small>
-                <uib-progressbar animate="false" value="dynamic" type="success"><b>{{dynamic}}%</b></uib-progressbar>
+			<hr />
+			<h3>Dynamic <button type="button" class="btn btn-sm btn-primary" ng-click="random()">Randomize</button></h3>
+			<uib-progressbar max="max" value="dynamic"><span style="color:white; white-space:nowrap;">{{dynamic}} / {{max}}</span></uib-progressbar>
 
-                <small><em>Object (changes type based on value)</em></small>
-                <uib-progressbar class="progress-striped active" value="dynamic" type="{{type}}">{{type}} <i ng-show="showWarning">!!! Watch out !!!</i></uib-progressbar>
+			<small><em>No animation</em></small>
+			<uib-progressbar animate="false" value="dynamic" type="success"><b>{{dynamic}}%</b></uib-progressbar>
 
-                <hr />
-                <h3>Stacked <button type="button" class="btn btn-sm btn-primary" ng-click="randomStacked()">Randomize</button></h3>
-                <uib-progress>
-                    <uib-bar ng-repeat="bar in stacked track by $index" value="bar.value" type="{{bar.type}}"><span ng-hide="bar.value < 5">{{bar.value}}%</span></uib-bar>
-                </uib-progress>
+			<small><em>Object (changes type based on value)</em></small>
+			<uib-progressbar class="progress-striped active" value="dynamic" type="{{type}}">{{type}} <i ng-show="showWarning">!!! Watch out !!!</i></uib-progressbar>
 
-            </div>
-        </div>
-        <div data-ng-ignore class="col-md-6">
-            <p>A progress bar directive that is focused on providing feedback on the progress of a workflow or action.</p>
-            <p>It supports multiple (stacked) <code>&lt;uib-bar&gt;</code> into the same <code>&lt;uib-progress&gt;</code> element or a single <code>&lt;uib-progressbar&gt;</code> element with optional <code>max</code> attribute and transition animations.</p>
-            <h3 id="uib-progressbar-settings">uib-progressbar settings</h3>
-            <ul>
-                <li>
-                    <p><code>value</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i> - The current value of progress completed.</p>
-                </li>
-                <li>
-                    <p><code>type</code>
-                        <em>(Default: <code>null</code>)</em> - Bootstrap style type. Possible values are &#39;success&#39;, &#39;info&#39;, &#39;warning&#39;, and, &#39;danger&#39; to use Bootstrap&#39;s pre-existing styling, or any desired custom suffix.</p>
-                </li>
-                <li>
-                    <p><code>max</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>100</code>)</em> - A number that specifies the total value of bars that is required.</p>
-                </li>
-                <li>
-                    <p><code>animate</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Whether bars use transitions to achieve the width change.</p>
-                </li>
-                <li>
-                    <p><code>title</code>
-                        <em>(Default: <code>progressbar</code>)</em> - Title to use as label (for accessibility).</p>
-                </li>
-            </ul>
-            <h3 id="uib-progress-settings">uib-progress settings</h3>
-            <ul>
-                <li>
-                    <p><code>max</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>100</code>)</em> - A number that specifies the total value of bars that is required.</p>
-                </li>
-                <li>
-                    <p><code>animate</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Whether bars use transitions to achieve the width change.</p>
-                </li>
-                <li>
-                    <p><code>title</code>
-                        <em>(Default: <code>progressbar</code>)</em> - Title to use as label (for accessibility).</p>
-                </li>
-            </ul>
-            <h3 id="uib-bar-settings">uib-bar settings</h3>
-            <ul>
-                <li>
-                    <p><code>value</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i> - The current value of progress completed.</p>
-                </li>
-                <li>
-                    <p><code>type</code>
-                        <em>(Default: <code>null</code>)</em> - Bootstrap style type. Possible values are &#39;success&#39;, &#39;info&#39;, &#39;warning&#39;, and, &#39;danger&#39; to use Bootstrap&#39;s pre-existing styling, or any desired custom suffix.</p>
-                </li>
-                <li>
-                    <p><code>title</code>
-                        <em>(Default: <code>progressbar</code>)</em> - Title to use as label (for accessibility).</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</section>
+			<hr />
+			<h3>Stacked <button type="button" class="btn btn-sm btn-primary" ng-click="randomStacked()">Randomize</button></h3>
+			<uib-progress>
+				<uib-bar ng-repeat="bar in stacked track by $index" value="bar.value" type="{{bar.type}}"><span ng-hide="bar.value < 5">{{bar.value}}%</span></uib-bar>
+			</uib-progress>
+
+		</div>
+	</div>
+	<div data-ng-ignore class="col-md-6">
+		<p>A progress bar directive that is focused on providing feedback on the progress of a workflow or action.</p>
+		<p>It supports multiple (stacked) <code>&lt;uib-bar&gt;</code> into the same <code>&lt;uib-progress&gt;</code> element or a single <code>&lt;uib-progressbar&gt;</code> element with optional <code>max</code> attribute and transition animations.</p>
+		<h3 id="uib-progressbar-settings">uib-progressbar settings</h3>
+		<ul>
+			<li>
+				<p><code>value</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i> - The current value of progress completed.</p>
+			</li>
+			<li>
+				<p><code>type</code>
+					<em>(Default: <code>null</code>)</em> - Bootstrap style type. Possible values are &#39;success&#39;, &#39;info&#39;, &#39;warning&#39;, and, &#39;danger&#39; to use Bootstrap&#39;s pre-existing styling, or any desired custom suffix.</p>
+			</li>
+			<li>
+				<p><code>max</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>100</code>)</em> - A number that specifies the total value of bars that is required.</p>
+			</li>
+			<li>
+				<p><code>animate</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Whether bars use transitions to achieve the width change.</p>
+			</li>
+			<li>
+				<p><code>title</code>
+					<em>(Default: <code>progressbar</code>)</em> - Title to use as label (for accessibility).</p>
+			</li>
+		</ul>
+		<h3 id="uib-progress-settings">uib-progress settings</h3>
+		<ul>
+			<li>
+				<p><code>max</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>100</code>)</em> - A number that specifies the total value of bars that is required.</p>
+			</li>
+			<li>
+				<p><code>animate</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Whether bars use transitions to achieve the width change.</p>
+			</li>
+			<li>
+				<p><code>title</code>
+					<em>(Default: <code>progressbar</code>)</em> - Title to use as label (for accessibility).</p>
+			</li>
+		</ul>
+		<h3 id="uib-bar-settings">uib-bar settings</h3>
+		<ul>
+			<li>
+				<p><code>value</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i> - The current value of progress completed.</p>
+			</li>
+			<li>
+				<p><code>type</code>
+					<em>(Default: <code>null</code>)</em> - Bootstrap style type. Possible values are &#39;success&#39;, &#39;info&#39;, &#39;warning&#39;, and, &#39;danger&#39; to use Bootstrap&#39;s pre-existing styling, or any desired custom suffix.</p>
+			</li>
+			<li>
+				<p><code>title</code>
+					<em>(Default: <code>progressbar</code>)</em> - Title to use as label (for accessibility).</p>
+			</li>
+		</ul>
+	</div>
+</div>

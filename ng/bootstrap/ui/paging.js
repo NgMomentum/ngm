@@ -10,16 +10,14 @@
 
 msos.provide("ng.bootstrap.ui.paging");
 
-ng.bootstrap.ui.paging.version = new msos.set_version(16, 3, 21);
+ng.bootstrap.ui.paging.version = new msos.set_version(17, 12, 6);
 
 // Below is the standard ui.bootstrap.accordion plugin, except for naming (MSOS style)
 // ui.bootstrap.paging -> ng.bootstrap.ui.paging
-angular.module('ng.bootstrap.ui.paging', [])
-    /**
-     * Helper internal service for generating common controller code between the
-     * pager and pagination components
-     */
-    .factory('uibPaging', ['$parse', function ($parse) {
+angular.module(
+    'ng.bootstrap.ui.paging',
+    ['ng', 'ng.bootstrap.ui']
+).factory('uibPaging', ['$parse', function ($parse) {
         return {
             create: function (ctrl, $scope, $attrs) {
                 ctrl.setNumPages = $attrs.numPages ? $parse($attrs.numPages).assign : angular.noop;

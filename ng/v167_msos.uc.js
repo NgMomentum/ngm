@@ -4,7 +4,7 @@
  * License: MIT
  *
  * Originally derived from  v1.3.0-beta.11,
- *       with updates   to  v.1.6.5
+ *       with updates   to  v.1.6.7
  *       ...plus improvements for MobileSiteOS ;)
  */
 
@@ -17,13 +17,16 @@
     Uint8Array: false
 */
 
-msos.console.info('ng/v165_msos -> start.');
+msos.console.info('ng/v167_msos -> start.');
 msos.console.time('ng');
 
 (function (window) {
     "use strict";
 
-    function noop() { msos.console.trace('ng - noop -> executed.'); return undefined; }
+    function noop() {
+        if (msos.console.debug_script) { msos.console.trace('ng - noop -> executed.'); }
+        return undefined;
+    }
 
     function UNINITIALIZED_VALUE() { msos.console.debug('ng - UNINITIALIZED_VALUE -> called.'); }
 
@@ -48,14 +51,16 @@ msos.console.time('ng');
 
     var angular = {},
         version = {
-            full: '1.6.5',
+            full: '1.6.7',
             major: 1,
             minor: 6,
-            dot: 5,
-            codeName: 'toffee_salinization_msos'
+            dot: 7,
+            codeName: 'imperial_backstroke_msos'
         },
         msos_verbose = msos.config.verbose,
         msos_debug = msos.console.debug,
+        msos_script = msos.console.debug_script,
+        msos_indent = ',\n     ',
         msos_prev_modules = [],
         start_time = msos.new_time(),
         end_time = 0,
@@ -163,6 +168,7 @@ msos.console.time('ng');
         ANIMATION_ITERATION_COUNT_KEY = 'IterationCount',
         ANIMATION_PLAYSTATE_KEY = 'PlayState',
         SAFE_FAST_FORWARD_DURATION_VALUE = 9999,
+        ANIMATION_INITIAL_STATE = 0,
         ANIMATION_DELAY_PROP,
         ANIMATION_DURATION_PROP,
         TRANSITION_DELAY_PROP,
@@ -175,12 +181,7 @@ msos.console.time('ng');
         DETECT_STAGGER_CSS_PROPERTIES,
         slice = [].slice,
         splice = [].splice,
-        FUNCTION_CTOR = Function.constructor,
-        OBJECT_CTOR = {}.constructor,
-        FUNCTION_CTOR_PROTO = FUNCTION_CTOR.prototype,
-        OBJECT_CTOR_PROTO = OBJECT_CTOR.prototype,
-        BIND = FUNCTION_CTOR_PROTO.bind,
-        objectValueOf = OBJECT_CTOR_PROTO.valueOf,
+        objectValueOf = {}.constructor.prototype.valueOf,
         lowercase = function (s) {
             return _.isString(s) ? s.toLowerCase() : String(s);
         },
@@ -204,7 +205,7 @@ msos.console.time('ng');
         msie = window.document.documentMode,
         android = parseInt((/android (\d+)/.exec(lowercase((window.navigator || {}).userAgent)) || [])[1], 10),
         isChromePackagedApp = window.chrome && ((window.chrome.app && window.chrome.app.runtime) || (!window.chrome.app && window.chrome.runtime && window.chrome.runtime.id)),
-        history_pushstate = !!((!isChromePackagedApp && window.history && window.history.pushState) && !(android < 4)),
+        history_pushstate = Boolean((!isChromePackagedApp) && window.history && window.history.pushState),
         jqLite,
         getAnnotation,
         providerSuffix = 'Provider',
@@ -227,8 +228,8 @@ msos.console.time('ng');
         $controllerMinErr = null,
         $AnimateProvider = [],
         $jsonpCallbacksProvider = null,
-        $$AnimateAsyncRunFactoryProvider = null,
-        $$AnimateRunnerFactoryProvider = null,
+        $$AnimateAsyncRunProvider = null,
+        $$AnimateRunProvider = null,
         $$MapProvider,
         $AnimateCssProvider,
         $$AnimateCssDriverProvider,
@@ -246,6 +247,9 @@ msos.console.time('ng');
         nodeName_ = function (element) {
             return lowercase(element.nodeName || (element[0] && element[0].nodeName));
         },
+        nodeDebugName_ = function (element) {
+            return jQuery(element).data('debug') || nodeName_(element) || 'unknown';
+        },
         uid = 0,
         scope_uid = 0,
         elem_uid = 0,
@@ -254,7 +258,6 @@ msos.console.time('ng');
         browser_std_defer = 10,     // Std AngularJS default is 0 (zero)
         browser_defer_ids = {},
         bindJQueryFired = false,
-        bindbootstrapFired = false,
         JQLitePrototype = {},
         BOOLEAN_ATTR = {},
         BOOLEAN_ELEMENTS = {},
@@ -456,7 +459,7 @@ msos.console.time('ng');
         validStdAttrs = _.extend(
             {},
             validAttrs,
-            { style: true, id: true, on: true, placeholder: true }  // Some of these may need to move to "validAttrs", ref: id, placeholder
+            { style: true, id: true, name: true, on: true, placeholder: true }  // Some of these may need to move to "validAttrs", ref: id, placeholder
         ),
         validStdHtml = _.extend(
             {},
@@ -464,14 +467,14 @@ msos.console.time('ng');
             svgElements,
             mediaElements,
             blockedElements,
-            { body: true, button: true, legend: true }    // Some of these may need to move to "validStdHtml", ref: button, legend
+            { html: true, body: true, button: true, legend: true, textarea: true, input: true }    // Some of these may need to move to "validStdHtml", ref: button, legend
         ),
         customAttr = {},
         customHtml = {};
 
     window.angular = angular;
 
-    msos_debug('ng -> browser supports history pushstate: ' + history_pushstate);
+    msos_debug('ng - history_pushstate -> browser support: ' + history_pushstate);
 
     if ((window.ontransitionend === undefined) && (window.onwebkittransitionend !== undefined)) {
         CSS_PREFIX = '-webkit-';
@@ -521,7 +524,7 @@ msos.console.time('ng');
     //  _.isObject = function (obj) {
     //                  var type = typeof obj;
     //                  return type === 'function' || type === 'object' && !!obj;
-    //  };
+    //               };
     function isObject(value) {
         return value !== null && typeof value === 'object';
     }
@@ -600,6 +603,10 @@ msos.console.time('ng');
         // NodeList objects (with `item` method) and
         // other objects with suitable length characteristics are array-like
         return _.isNumber(length) && ((length >= 0 && ((length - 1) in obj || obj instanceof Array)) || typeof obj.item === 'function');
+    }
+
+    function stringifyFn(str_fn) {
+        return Function.prototype.toString.call(str_fn);
     }
 
     function isValidObjectMaxDepth(maxDepth) {
@@ -743,14 +750,17 @@ msos.console.time('ng');
         return extend(Object.create(parent), extra);
     }
 
+    function restrict_a_dir() {
+        return { restrict: 'A' };
+    }
+
     function ng_bind(self, fn) {
         var curryArgs = arguments.length > 2 ? sliceArgs(arguments, 2) : [];
 
         if (_.isFunction(fn) && !(fn instanceof RegExp)) {
-            return curryArgs.length ? function () {
-                    return arguments.length ? fn.apply(self, concat(curryArgs, arguments, 0))
-                        : fn.apply(self, curryArgs);
-                  } : function () {
+            return curryArgs.length ? function ng_bind_curry() {
+                    return arguments.length ? fn.apply(self, concat(curryArgs, arguments, 0)) : fn.apply(self, curryArgs);
+                  } : function ng_bind_args() {
                     return arguments.length ? fn.apply(self, arguments) : fn.call(self);
                   };
         }
@@ -932,7 +942,7 @@ msos.console.time('ng');
             });
         }
     
-        return function(element, options) {
+        return function apply_animation_classes(element, options) {
             if (options.addClass) {
                 $$addClass(element, options.addClass);
                 options.addClass = null;
@@ -945,11 +955,11 @@ msos.console.time('ng');
     }
 
     function prepareAnimationOptions(options) {
-        var temp_pa = 'ng/animate - prepareAnimationOptions -> ',
+        var temp_pa = 'ng - prepareAnimationOptions -> ',
             domOperation;
 
         if (msos_verbose === 'animate') {
-            msos_debug(temp_pa + 'start, options (input):', options);
+            msos_debug(temp_pa + 'start' + msos_indent + 'options (input):', options);
         }
         
         options = options || {};
@@ -969,7 +979,7 @@ msos.console.time('ng');
         }
 
         if (msos_verbose === 'animate') {
-            msos_debug(temp_pa + ' done, options (output):', options);
+            msos_debug(temp_pa + ' done' + msos_indent + 'options (output):', options);
         }
         return options;
     }
@@ -1137,7 +1147,7 @@ msos.console.time('ng');
             value = styleTuple[1];
 
         if (msos_verbose === 'animate') {
-            msos_debug('ng/animate/v161_msos - applyInlineStyle -> called, node:', node);
+            msos_debug('ng - applyInlineStyle -> called' + msos_indent + 'prop: ' + prop + msos_indent + 'value: ' + value + msos_indent + 'node: ' + nodeDebugName_(node));
         }
 
         node.style[prop] = value;
@@ -1215,7 +1225,7 @@ msos.console.time('ng');
     }
 
     function truthyTimingValue(val) {
-        return val === 0 || val != null;    // Leave as is...
+        return val === 0 || (val !== null && val !== undefined);
     }
 
     function getCssTransitionDurationStyle(duration, applyOnlyDuration) {
@@ -1303,8 +1313,7 @@ msos.console.time('ng');
             message += template.replace(
                 /\{\d+\}/g,
                 function (match) {
-                    var index = +match.slice(1, -1),
-                        shiftedIndex = index + SKIP_INDEXES;
+                    var index = +match.slice(1, -1);
 
                     if (index < templateArgs.length) {
                         return templateArgs[index];
@@ -1314,12 +1323,13 @@ msos.console.time('ng');
                 }
             );
 
-            message += '\n     ' + msos.config.onerror_uri +
-                (module ? module + '/' : '') + code;
+            message += '\n     ' + msos.config.onerror_uri;
 
             for (i = 0; i < templateArgs.length; i += 1, paramPrefix = '&') {
                 message += paramPrefix + 'p' + i + '=' + encodeURIComponent(templateArgs[i]);
             }
+
+            message += '#' + (module ? module + '/' : '') + code;
 
             return new ErrorConstructor(message);
         };
@@ -1346,8 +1356,8 @@ msos.console.time('ng');
         var purlFn,
             output;
 
-        if (msos_verbose) {
-            msos_debug('ng - urlResolve -> start,\n     url: ' + url + (note ? ',\n     ref: ' + note : ''));
+        if (msos_verbose === 'browser') {
+            msos_debug('ng - urlResolve -> start' + msos_indent + 'url: ' + url + (note ? msos_indent + 'ref: ' + note : ''));
         }
 
         urlParsingNode.setAttribute('href', url);
@@ -1355,8 +1365,8 @@ msos.console.time('ng');
         if (urlCache['cache-' + urlParsingNode.href]) {
             output = urlCache['cache-' + urlParsingNode.href];
 
-            if (msos_verbose) {
-                msos_debug('ng - urlResolve -> done,\n     cached:', output);
+            if (msos_verbose === 'browser') {
+                msos_debug('ng - urlResolve -> done' + msos_indent + 'cached:', output);
             }
         } else {
             purlFn = msos.purl(urlParsingNode.href, true);
@@ -1375,8 +1385,8 @@ msos.console.time('ng');
 
             urlCache['cache-' + urlParsingNode.href] = output;
 
-            if (msos_verbose) {
-                msos_debug('ng - urlResolve -> done,\n     parsed:', output);
+            if (msos_verbose === 'browser') {
+                msos_debug('ng - urlResolve -> done' + msos_indent + 'parsed:', output);
             }
         }
 
@@ -1733,6 +1743,54 @@ msos.console.time('ng');
         return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) : elemHtml.match(/^(<[^>]+>)/)[1].replace(/^<([\w-]+)/, function (match_na, nodeName) { return '<' + lowercase(nodeName); });
     }
 
+	function tryDecodeURIComponent(value) {
+		try {
+			return decodeURIComponent(value);
+		} catch (e) {
+			// Ignore any invalid uri component.
+			msos.console.warn('ng - tryDecodeURIComponent -> failed, for: ' + value);
+		}
+	}
+
+	function parseKeyValue(keyValue) {
+		var obj = {};
+
+		forEach(
+			(keyValue || '').split('&'),
+			function (key_val) {
+				var splitPoint,
+					key,
+					val;
+
+				if (key_val) {
+					key = key_val = key_val.replace(/\+/g,'%20');
+					splitPoint = key_val.indexOf('=');
+
+					if (splitPoint !== -1) {
+						key = key_val.substring(0, splitPoint);
+						val = key_val.substring(splitPoint + 1);
+					}
+
+					key = tryDecodeURIComponent(key);
+
+					if (isDefined(key)) {
+						val = isDefined(val) ? tryDecodeURIComponent(val) : true;
+
+						if (!hasOwnProperty.call(obj, key)) {
+							obj[key] = val;
+						} else if (_.isArray(obj[key])) {
+							obj[key].push(val);
+						} else {
+							obj[key] = [obj[key], val];
+						}
+					}
+				}
+			}
+		);
+
+		return obj;
+	}
+
     function encodeUriQuery(val, pctEncodeSpaces) {
         return encodeURIComponent(val).
             replace(/%40/gi, '@').
@@ -1756,11 +1814,27 @@ msos.console.time('ng');
 
         while (i) {
             i -= 1;
-            segments[i] = encodeUriSegment(segments[i]);
+            // decode forward slashes to prevent them from being double encoded
+			segments[i] = encodeUriSegment(segments[i].replace(/%2F/g, '/'));
         }
 
         return segments.join('/');
     }
+
+	function decodePath(path, html5Mode) {
+		var segments = path.split('/'),
+			i = segments.length;
+
+		while (i--) {
+			segments[i] = decodeURIComponent(segments[i]);
+			if (html5Mode) {
+				// encode forward slashes to prevent them from being mistaken for path separators
+				segments[i] = segments[i].replace(/\//g, '%2F');
+			}
+		}
+
+		return segments.join('/');
+	}
 
     function encodeEntities(value) {
         value = _.escape(value);
@@ -1873,38 +1947,42 @@ msos.console.time('ng');
         bindJQueryFired = true;
     }
 
-    function assertArg(arg, name, reason) {
+    function assertArg(input, name, reason) {
+        if (!input) {
+            if (msos_script) {
+                msos.console.trace('ng - assertArg -> trace for undefined input.');
+            }
 
-        if (!arg) {
             throw ngMinErr(
-                'assert_arg_req',
-                'Argument from \'{0}\' is {1}',
+                'areq',
+                'Argument \'{0}\' is {1}',
                 (name || '?'),
-                (reason || 'required.')
+                (reason || 'required')
             );
         }
     }
 
-    function assertArgFn(input, name, reason) {
-        var tpo = typeof input;
+    function assertArgFn(input, name, reason, acceptArrayAnnotation) {
 
-        if (msos_verbose) {
-            msos_debug('ng - assertArgFn -> called, name: ' + name + ', type: ' + tpo);
+        if (acceptArrayAnnotation && _.isArray(input)) {
+            input = input[input.length - 1];
         }
 
-        if (!input) {
-            assertArg(
-                isDefined(input),
-                name ,
-                'missing definition code, or did not load. Ref: ' + reason
-            );
-        } else {
-            assertArg(
-                _.isFunction(input),
-                name,
-                'typeof: ' + tpo + (tpo === 'string' ? ' -> ' + input : '') + ', ' + reason
-            );
+        assertArg(
+            isDefined(input),
+            name ,
+            'missing definition code, or did not load. Ref: ' + reason
+        );
+
+        if (typeof input === 'function') {
+            if (!input.name && !input.ng_name && name) { input.ng_name = name; }
         }
+
+        assertArg(
+            _.isFunction(input),
+            name,
+            'not a function, got ' + (typeof input === 'object' ? input.constructor.name || 'Object' : typeof input) + ', ' + reason
+        );
     }
 
     function assertNotHasOwnProperty(name, context) {
@@ -1917,11 +1995,11 @@ msos.console.time('ng');
         }
     }
 
-    function getter(obj, path, bindFnToScope) {
+    function getter(obj, g_path, bindFnToScope) {
 
-        if (!path) { return obj; }
+        if (!g_path) { return obj; }
 
-        var keys = path.split('.') || [],
+        var keys = g_path.split('.') || [],
             key,
             lastInstance = obj,
             i = 0;
@@ -2078,6 +2156,7 @@ msos.console.time('ng');
     function setupModuleLoader(window) {
 
         var temp_sm = 'ng - setupModuleLoader',
+            vst = msos_verbose === 'module' ? true : false,
             angular_module = {};
 
         msos_debug(temp_sm + ' -> start.');
@@ -2095,7 +2174,7 @@ msos.console.time('ng');
                 debug = 'created';
             }
 
-            if (msos_verbose === 'module') {
+            if (vst) {
                 msos_debug(temp_sm + ' - ensure -> ' + e_name + ', (' + debug + ')\n     ensure obj:', obj[e_name]);
             }
 
@@ -2112,6 +2191,7 @@ msos.console.time('ng');
             function () {
 
                 var build_modules = {},
+                    build_functions = {},
                     ng_module_func = null;
 
                 ng_module_func = function (m_name, m_requires, m_config) {
@@ -2119,7 +2199,7 @@ msos.console.time('ng');
                         prev_m_requires = [],
                         diff_m_requires = [];
 
-                    if (msos_verbose) {
+                    if (vst) {
                         msos_debug(temp_sm + temp_bmf + 'start: ' + m_name);
                     }
 
@@ -2158,161 +2238,175 @@ msos.console.time('ng');
                         m_requires = ['ng'];
                     }
 
-                    // Just add it too those that didn't, but have requirements
+                    // Just add it to those that didn't, but have requirements
                     if (_.indexOf(m_requires, 'ng') < 0) { m_requires.unshift('ng'); }
 
-                    if (msos_verbose) {
+                    if (vst) {
                         msos_debug(temp_sm + temp_bmf + ' done: ' + m_name + ', required:', m_requires);
                     }
 
-                    return ensure(build_modules, m_name, function () {
+                    if (!build_functions.hasOwnProperty(m_name)) {
 
-                        var temp_em = ' - ng_module_func - factory',
-                            info = {},
-                            invokeQueue = [],
-                            configBlocks = [],
-                            runBlocks = [],
-                            create_config,
-                            moduleInstance = {};
+                        build_functions[m_name] = ensure(build_modules, m_name, function () {
 
-                        if (msos_verbose) {
-                            msos_debug(temp_sm + temp_em + ' -> start: ' + m_name);
-                        }
+                            var temp_em = ' - ng_module_func - factory',
+                                info = {},
+                                invokeQueue = [],
+                                configBlocks = [],
+                                runBlocks = [],
+                                create_config,
+                                moduleInstance = {};
 
-                        function invokeLater(provider, method, insertMethod, queue) {
-
-                            if (!queue) { queue = invokeQueue; }
-
-                            if (msos_verbose === 'module') {
-                                    msos_debug(temp_sm + temp_em + ' -> invokeLater (create),\n     for: ' + m_name + ',\n     provider: ' + provider + ',\n     method: ' + method);
+                            if (vst) {
+                                msos_debug(temp_sm + temp_em + ' -> start: ' + m_name);
                             }
 
-                            return function invoke_later_func() {
-                                var reg_inj = angular.registered_injectors,
-                                    recipeName = '',
-                                    in_args = arguments;
+                            function invokeLater(provider, method, insertMethod, queue) {
 
-                                queue[insertMethod || 'push']([provider, method, arguments]);
+                                if (!queue) { queue = invokeQueue; }
 
-                                if (method === 'value' || method === 'constant') {
-                                    // Value or constant invokation creates an injection var.
-                                    recipeName = in_args && in_args[0] && _.isString(in_args[0]) ? in_args[0] : '';
+                                if (vst) {
+                                        msos_debug(temp_sm + temp_em + ' -> invokeLater (create)' + msos_indent + 'for: ' + m_name + msos_indent + 'provider: ' + provider + msos_indent + 'method: ' + method);
+                                }
 
-                                    if (recipeName) {
-                                        // Check for modules creating the same injector variable names
-                                        if (reg_inj[recipeName] && reg_inj[recipeName] !== m_name) {
-                                            msos.console.error(temp_sm + temp_em + ' -> invokeLater, inject: ' + recipeName + ' was already defined by ' + reg_inj[recipeName]);
+                                return function invoke_later_func() {
+                                    var reg_inj = angular.registered_injectors,
+                                        recipeName = '',
+                                        in_args = arguments;
+
+                                    queue[insertMethod || 'push']([provider, method, arguments]);
+
+                                    if (method === 'value' || method === 'constant') {
+                                        // Value or constant invokation creates an injection var.
+                                        recipeName = in_args && in_args[0] && _.isString(in_args[0]) ? in_args[0] : '';
+
+                                        if (recipeName) {
+                                            // Check for modules creating the same injector variable names
+                                            if (reg_inj[recipeName] && reg_inj[recipeName] !== m_name) {
+                                                msos.console.error(temp_sm + temp_em + ' -> invokeLater, inject: ' + recipeName + ' was already defined by ' + reg_inj[recipeName]);
+                                            } else {
+                                                reg_inj[recipeName] = m_name;
+                                            }
                                         } else {
-                                            reg_inj[recipeName] = m_name;
+                                            msos.console.error(temp_sm + temp_em + ' -> invokeLater, failed for: ' + m_name, in_args);
                                         }
-                                    } else {
-                                        msos.console.error(temp_sm + temp_em + ' -> invokeLater, failed for: ' + m_name, in_args);
                                     }
-                                }
 
-                                if (msos_verbose === 'module') {
-                                    msos_debug(temp_sm + temp_em + ' -> invokeLater (exec),\n     for: ' + m_name + ',\n     inject: ' + recipeName + ',\n     provider: ' + provider + ',\n     method: ' + method + ',\n     instance:', moduleInstance);
-                                }
+                                    if (vst) {
+                                        msos_debug(temp_sm + temp_em + ' -> invokeLater (exec)' + msos_indent + 'for: ' + m_name + msos_indent + 'inject: ' + recipeName + msos_indent + 'provider: ' + provider + msos_indent + 'method: ' + method + msos_indent + 'instance:', moduleInstance);
+                                    }
 
-                                return moduleInstance;
-                            };
-                        }
-
-                        function invokeLaterAndSetModuleName(provider, method, queue) {
-
-                            if (!queue) { queue = invokeQueue; }
-
-                            if (msos_verbose === 'module') {
-                                    msos_debug(temp_sm + temp_em + ' -> invokeLaterAndSetModuleName (create),\n     for: ' + m_name + ',\n     provider: ' + provider + ',\n     method: ' + method);
+                                    return moduleInstance;
+                                };
                             }
 
-                            return function invoke_later_set_name_func(recipeName, factoryFunction) {
-                                var ff = factoryFunction,
-                                    reg_inj = angular.registered_injectors;
+                            function invokeLaterAndSetModuleName(provider, method, queue) {
 
-                                if (ff) {
-                                    if (_.isArray(ff)) {
-                                        if (_.isFunction(ff[ff.length - 1])) {
-                                            ff[ff.length - 1].$$moduleName = m_name;
+                                if (!queue) { queue = invokeQueue; }
+
+                                if (vst) {
+                                    msos_debug(temp_sm + temp_em + ' -> invokeLaterAndSetModuleName (create)' + msos_indent + 'for: ' + m_name + msos_indent + 'provider: ' + provider + msos_indent + 'method: ' + method);
+                                }
+
+                                return function invoke_later_set_name_func(recipeName, factoryFunction) {
+                                    var db_stuff = '',
+                                        ff = factoryFunction,
+                                        reg_inj = angular.registered_injectors;
+
+                                    if (ff) {
+                                        db_stuff = 'type: ';
+                                        if (_.isArray(ff)) {
+                                            db_stuff += 'array';
+                                            if (_.isFunction(ff[ff.length - 1])) {
+                                                ff[ff.length - 1].$$moduleName = m_name;
+                                            }
+                                        } else if (_.isFunction(ff)) {
+                                            db_stuff += 'function';
+                                            ff.$$moduleName = m_name;
+                                        } else if (_.isObject(ff)) {
+                                            db_stuff += 'object';
+                                            ff.$$moduleName = m_name;
+                                        } else {
+                                            db_stuff += 'na';
                                         }
-                                    } else if (_.isFunction(ff)) {
-                                        ff.$$moduleName = m_name;
                                     }
-                                }
 
-                                queue.push([provider, method, arguments]);
+                                    queue.push([provider, method, arguments]);
 
-                                // Check for modules creating the same injector variable names
-                                if (reg_inj[recipeName] && reg_inj[recipeName] !== m_name) {
-                                    msos.console.error(temp_sm + temp_em + ' -> invokeLaterAndSetModuleName (exec), inject: ' + recipeName + ' is already defined by ' + reg_inj[recipeName]);
-                                } else {
-                                    reg_inj[recipeName] = m_name;
-                                }
-
-                                if (msos_verbose === 'module') {
-                                    msos_debug(temp_sm + temp_em + ' -> invokeLaterAndSetModuleName (exec),\n     for: ' + m_name + ',\n     inject: ' + recipeName + ',\n     provider: ' + provider + ',\n     method: ' + method + ',\n     instance:', moduleInstance);
-                                }
-
-                                return moduleInstance;
-                            };
-                        }
-
-                        create_config = invokeLater('$injector', 'invoke', 'push', configBlocks);
-
-                        moduleInstance = {
-                            // Private state
-                            _invokeQueue: invokeQueue,
-                            _configBlocks: configBlocks,
-                            _runBlocks: runBlocks,
-
-                            info: function (value) {
-                                if (isDefined(value)) {
-                                    if (!isObject(value)) {
-                                        throw ngMinErr('aobj', 'Argument \'{0}\' must be an object', 'value');
+                                    // Check for modules creating the same injector variable names
+                                    if (reg_inj[recipeName] && reg_inj[recipeName] !== m_name) {
+                                        msos.console.error(temp_sm + temp_em + ' -> invokeLaterAndSetModuleName (exec), inject: ' + recipeName + ' is already defined by ' + reg_inj[recipeName]);
+                                    } else {
+                                        reg_inj[recipeName] = m_name;
                                     }
-                                    info = value;
+
+                                    if (vst) {
+                                        msos_debug(temp_sm + temp_em + ' -> invokeLaterAndSetModuleName (exec)' + msos_indent + 'for: ' + m_name + msos_indent + 'inject: ' + recipeName + msos_indent + 'provider: ' + provider + msos_indent + 'method: ' + method + msos_indent + 'instance:', moduleInstance);
+                                    }
+
+                                    return moduleInstance;
+                                };
+                            }
+
+                            create_config = invokeLater('$injector', 'invoke', 'push', configBlocks);
+
+                            moduleInstance = {
+                                // Private state
+                                _invokeQueue: invokeQueue,
+                                _configBlocks: configBlocks,
+                                _runBlocks: runBlocks,
+
+                                info: function (value) {
+                                    if (isDefined(value)) {
+                                        if (!isObject(value)) {
+                                            throw ngMinErr('aobj', 'Argument \'{0}\' must be an object', 'value');
+                                        }
+                                        info = value;
+                                        return this;
+                                    }
+
+                                    return info;
+                                },
+
+                                requires: m_requires,
+                                name: m_name,
+
+                                provider:   invokeLaterAndSetModuleName('$provide', 'provider'),
+                                factory:    invokeLaterAndSetModuleName('$provide', 'factory'),
+                                service:    invokeLaterAndSetModuleName('$provide', 'service'),
+                                value:      invokeLater('$provide', 'value'),
+                                constant:   invokeLater('$provide', 'constant', 'unshift'),
+                                decorator:  invokeLaterAndSetModuleName('$provide', 'decorator', configBlocks),     // configBlocks Added v1.6.0
+                                animation:  invokeLaterAndSetModuleName('$animateProvider', 'register'),
+                                filter:     invokeLaterAndSetModuleName('$filterProvider', 'register'),
+                                controller: invokeLaterAndSetModuleName('$controllerProvider', 'register'),
+                                directive:  invokeLaterAndSetModuleName('$compileProvider', 'directive'),
+                                component:  invokeLaterAndSetModuleName('$compileProvider', 'component'),
+
+                                config: create_config,
+
+                                run: function (block) {
+                                    runBlocks.push(block);
                                     return this;
                                 }
+                            };
 
-                                return info;
-                            },
-
-                            requires: m_requires,
-                            name: m_name,
-
-                            provider:   invokeLaterAndSetModuleName('$provide', 'provider'),
-                            factory:    invokeLaterAndSetModuleName('$provide', 'factory'),
-                            service:    invokeLaterAndSetModuleName('$provide', 'service'),
-                            value:      invokeLater('$provide', 'value'),
-                            constant:   invokeLater('$provide', 'constant', 'unshift'),
-                            decorator:  invokeLaterAndSetModuleName('$provide', 'decorator', configBlocks),     // configBlocks Added v1.6.0
-                            animation:  invokeLaterAndSetModuleName('$animateProvider', 'register'),
-                            filter:     invokeLaterAndSetModuleName('$filterProvider', 'register'),
-                            controller: invokeLaterAndSetModuleName('$controllerProvider', 'register'),
-                            directive:  invokeLaterAndSetModuleName('$compileProvider', 'directive'),
-                            component:  invokeLaterAndSetModuleName('$compileProvider', 'component'),
-
-                            config: create_config,
-
-                            run: function (block) {
-                                runBlocks.push(block);
-                                return this;
+                            if (m_config) {
+                                if (vst) {
+                                    msos_debug(temp_sm + temp_em + ' -> add config function:', m_config);
+                                }
+                                create_config(m_config);
                             }
-                        };
 
-                        if (m_config) {
-                            if (msos_verbose === 'module') {
-                                msos_debug(temp_sm + temp_em + ' -> add config function:', m_config);
+                            if (vst) {
+                                msos_debug(temp_sm + temp_em + ' ->  done: ' + m_name);
                             }
-                            create_config(m_config);
-                        }
 
-                        if (msos_verbose) {
-                            msos_debug(temp_sm + temp_em + ' ->  done: ' + m_name);
-                        }
+                            return moduleInstance;
+                        });
+                    }
 
-                        return moduleInstance;
-                    });
+                    return build_functions[m_name];
                 };
 
                 return ng_module_func;
@@ -2338,35 +2432,6 @@ msos.console.time('ng');
 
     function jqLiteClone(element) {
         return element.cloneNode(true);
-    }
-
-    function jqLiteAddNodes(root, elements) {
-        if (root && elements) {
-
-            if (elements.nodeType) {
-                root[root.length] = elements;
-                root.length += 1;   // Faster than .push(), with pre defined array growth.
-            } else {
-
-                var lngth = elements.length,
-                    i = 0;
-
-                // if an Array or NodeList and not a Window
-                if (typeof lngth === 'number' && elements.window !== elements) {
-                    if (lngth) {
-                        for (i = 0; i < lngth; i += 1) {
-                            root[root.length] = elements[i];
-                            root.length += 1;   // Faster than .push(), with pre defined array growth.
-                        }
-                    }
-                } else {
-                    root[root.length] = elements;
-                    root.length += 1;   // Faster than .push(), with pre defined array growth.
-                }
-            }
-        } else {
-            msos.console.warn('ng - jqLiteAddNodes -> missing input.');
-        }
     }
 
     function jqLiteInheritedData(element, name, value) {
@@ -2478,32 +2543,6 @@ msos.console.time('ng');
         };
     });
 
-    forEach({
-
-        clone: jqLiteClone
-
-    }, function (fn, name) {
-
-        JQLite.prototype[name] = function (arg1, arg2, arg3) {
-            var value,
-                i = 0;
-
-            for (i = 0; i < this.length; i += 1) {
-                if (_.isUndefined(value)) {
-                    value = fn(this[i], arg1, arg2, arg3);
-                    if (isDefined(value)) {
-                        // any function which returns a value needs to be wrapped
-                        value = jqLite(value);
-                    }
-                } else {
-                    jqLiteAddNodes(value, fn(this[i], arg1, arg2, arg3));
-                }
-            }
-            return isDefined(value) ? value : this;
-        };
-
-    });
-
     // Provider for private $$jqLite service
     function $$jqLiteProvider() {
 
@@ -2513,40 +2552,49 @@ msos.console.time('ng');
         }
 
         function jqLiteRemoveClass(element, cssClasses) {
-            if (cssClasses && element.setAttribute) {
-                forEach(
-                    cssClasses.split(' '),
-                    function (cssClass) {
-                        element.setAttribute(
-                            'class',
-                            trim(
-                                (' ' + (element.getAttribute('class') || '') + ' ')
-                                    .replace(/[\n\t]/g, ' ')
-                                    .replace(' ' + trim(cssClass) + ' ', ' ')
-                            )
-                        );
-                    }
-                );
-            }
+			var existingClasses,
+				newClasses;
+
+			if (cssClasses && element.setAttribute) {
+				existingClasses = (' ' + (element.getAttribute('class') || '') + ' ').replace(/[\n\t]/g, ' ');
+				newClasses = existingClasses;
+
+				forEach(
+					cssClasses.split(' '),
+					function (cssClass) {
+						cssClass = trim(cssClass);
+						newClasses = newClasses.replace(' ' + cssClass + ' ', ' ');
+					}
+				);
+
+				if (newClasses !== existingClasses) {
+					element.setAttribute('class', trim(newClasses));
+				}
+			}
         }
 
         function jqLiteAddClass(element, cssClasses) {
-            if (cssClasses && element.setAttribute) {
-                var existingClasses = (' ' + (element.getAttribute('class') || '') + ' ')
-                    .replace(/[\n\t]/g, ' ');
+			var existingClasses,
+				newClasses;
 
-                forEach(
-                    cssClasses.split(' '),
-                    function (cssClass) {
-                        cssClass = trim(cssClass);
-                        if (existingClasses.indexOf(' ' + cssClass + ' ') === -1) {
-                            existingClasses += cssClass + ' ';
-                        }
-                    }
-                );
+			if (cssClasses && element.setAttribute) {
+				existingClasses = (' ' + (element.getAttribute('class') || '') + ' ').replace(/[\n\t]/g, ' ');
+				newClasses = existingClasses;
 
-                element.setAttribute('class', trim(existingClasses));
-            }
+				forEach(
+					cssClasses.split(' '),
+					function (cssClass) {
+						cssClass = trim(cssClass);
+						if (newClasses.indexOf(' ' + cssClass + ' ') === -1) {
+							newClasses += cssClass + ' ';
+						}
+					}
+				);
+
+				if (newClasses !== existingClasses) {
+					element.setAttribute('class', trim(newClasses));
+				}
+			}
         }
 
         this.$get = function $$jqLite() {
@@ -2570,104 +2618,103 @@ msos.console.time('ng');
         };
     }
 
+    function extractArgs(extract_fn) {
+
+        if (typeof extract_fn !== 'function') {
+            msos.console.warn('ng - extractArgs -> input not a function:', extract_fn);
+        }
+
+        var fnText = stringifyFn(extract_fn).replace(STRIP_COMMENTS, ''),
+            args = fnText.match(ARROW_ARG) || fnText.match(FN_ARGS);
+
+        return args;
+    }
+
+    function anonFn(annon_fn) {
+        var anonFn_args = extractArgs(annon_fn);
+
+        if (anonFn_args) {
+            return 'function (' + (anonFn_args[1] || '').replace(/[\s\r\n]+/, ' ') + ')';
+        }
+
+        return 'fn';
+    }
+
     getAnnotation = function (input, name) {
         var temp_a = 'ng - getAnnotation -> ',
+            vi = msos_verbose === 'injector' ? true : false,
             fn,
-            type = '',
+            type = typeof input,
+            last,
             flag = false,
             flag_name = '',
-            $inject_args = [],
+            $inject_ann,
             argDecl;
 
-        function stringifyFn(str_fn) {
-            return Function.prototype.toString.call(str_fn);
-        }
-
-        function extractArgs(extract_fn) {
-            var fnText,
-                args = null;
-
-            if (extract_fn && typeof extract_fn === 'function') {
-                fnText = stringifyFn(extract_fn).replace(STRIP_COMMENTS, '');
-                args = fnText.match(ARROW_ARG) || fnText.match(FN_ARGS);
+        if (vi) {
+            if (!name) {
+                msos.console.warn(temp_a + 'start, undefined name.');
             } else {
-                msos.console.warn('ng - getAnnotation - extractArgs -> input not a function:', extract_fn);
+                msos_debug(temp_a + 'start, name: ' + name);
             }
-
-            return args;
         }
 
-        function anonFn(annon_fn) {
-            var anonFn_args = extractArgs(annon_fn);
+        if (type === 'function') {
 
-            if (anonFn_args) {
-                return 'function (' + (anonFn_args[1] || '').replace(/[\s\r\n]+/, ' ') + ')';
-            }
-
-            return 'anonymous fn';
-        }
-
-        if (msos_verbose === 'injector') {
-            msos_debug(temp_a + 'start.');
-        }
-
-        if (_.isArray(input)) {
-
-            type = 'array';
-            fn = input[input.length -1];
-
-            $inject_args = input.slice(0, input.length - 1);
-
-        } else {
-
-            type = typeof fn;
             fn = input;
+            $inject_ann = fn.$inject;
 
-            if (!fn.$inject) {
+            if (!$inject_ann) {
+                $inject_ann = [];
 
                 if (fn.length) {
-
                     flag = true;
-
                     argDecl = extractArgs(fn);
-
                     forEach(
                         argDecl[1].split(FN_ARG_SPLIT),
                         function (arg) {
                             arg.replace(
                                 FN_ARG,
-                                function (all_na, underscore_na, inj_arg) {
-                                    $inject_args.push(inj_arg);
+                                function (all_na, underscore_na, argname) {
+                                    $inject_ann.push(argname);
                                 }
                             );
                         }
                     );
                 }
 
-                fn.$inject = $inject_args;
+                if (flag) {
 
-            } else {
+                    if (name === '$injector') {
+						flag_name = fn.name || fn.ng_name || anonFn(fn);
+						if (!flag_name) {
+							msos.console.warn(temp_a + 'missing injections args for fn:', fn);
+						}
+					}
 
-                $inject_args = fn.$inject;
+                    msos.console.error(temp_a + $injectorMinErr('strictdi', '{0} is not using explicit injector annotation.', name)  + (flag_name ? msos_indent + '(ref: ' + flag_name + ')' : '') + msos_indent + 'injections args:', $inject_ann);
+                }
+
+                fn.$inject = $inject_ann;
             }
+
+        } else if (_.isArray(input)) {
+
+            type = 'array';
+            last = input.length - 1;
+            assertArgFn(input[last], name, 'failed in getAnnotation (array).');
+            $inject_ann = input.slice(0, last);
+
+        } else {
+
+            assertArgFn(input, name, 'failed in getAnnotation.', true);
         }
 
-        if (!_.isString(name)) { name = fn.name || fn.ng_name || anonFn(fn); }
-
-        assertArgFn(fn, name, 'failed in getAnnotation.');
-
-        if (flag) {
-
-            if (name === '$injector') { flag_name = fn.name || fn.ng_name || anonFn(fn); }
-
-            msos.console.warn(temp_a + $injectorMinErr('strictdi', '{0} is not using explicit injector annotation.', name)  + (flag_name ? ',\n     (ref: ' + flag_name + ')' : ''));
+        if (vi) {
+            msos_debug(temp_a + 'done, for type: ' + type + ', name: ' + name + msos_indent + 'injections args:', $inject_ann);
         }
 
-        if (msos_verbose === 'injector') {
-            msos_debug(temp_a + 'done, for input: ' + type + ', function: ' + name + ',\n     injections args:', $inject_args);
-        }
-
-        return $inject_args;
+        return $inject_ann;
     };
 
     ////////////////////////////////////
@@ -2679,15 +2726,17 @@ msos.console.time('ng');
             run_blocks = [],
             moduleFn;
 
-        msos_debug(temp_lm + ' -> start:', modules_to_load);
+        if (msos_verbose) {
+            msos_debug(temp_lm + ' -> start:', modules_to_load);
+        }
 
         if (!_.isArray(modules_to_load)) {
-            msos.console.warn(temp_lm + ' ->  done: input not array!', modules_to_load);
+            msos.console.warn(temp_lm + ' ->  failed, input not array!', modules_to_load);
             return run_blocks;
         }
 
         if (modules_to_load.length === 0) {
-            msos_debug(temp_lm + ' ->  done, no input.');
+            msos.console.warn(temp_lm + ' -> failed, no input.');
             return run_blocks;
         }
 
@@ -2730,16 +2779,18 @@ msos.console.time('ng');
             modules_to_load,
             function (module) {
                 var module_name,
+                    interim_block,
+                    diff_modules = [],
                     debug_note = [];
 
                 module_name = _.isArray(module) ? module[0] : _.isFunction(module) ? module.name : module;
 
-                if (msos_verbose) {
-                    msos_debug(temp_lm + '(foreach) start, module: ' + module_name);
+                if (msos_verbose === 'module') {
+                    msos_debug(temp_lm + '(foreach) -> start, module: ' + module_name);
                 }
 
                 if (!module_name || !_.isString(module_name)) {
-                    msos.console.error(temp_lm + 'failed, module name:', module_name);
+                    msos.console.error(temp_lm + '(foreach) -> failed, module name:', module_name);
                 }
 
                 if (!angular.loaded_modules.get(module)) {
@@ -2755,36 +2806,48 @@ msos.console.time('ng');
                         _injector.modules[module] = moduleFn;
 
                         if (moduleFn.requires.length) {
-                            run_blocks = run_blocks.concat(loadModules(moduleFn.requires, _injector)).concat(moduleFn._runBlocks);
-                        } else {
-                            run_blocks = run_blocks.concat(moduleFn._runBlocks);
+
+                            // Screen off already loaded modules
+                            diff_modules = _.difference(moduleFn.requires, angular.loaded_modules._keys);
+
+                            if (diff_modules.length) {
+                                run_blocks = run_blocks.concat(loadModules(diff_modules, _injector));
+                            }
                         }
 
-                        runInvokeQueue(moduleFn._invokeQueue);
-                        runInvokeQueue(moduleFn._configBlocks);
+                        run_blocks = run_blocks.concat(moduleFn._runBlocks);
+
+                        if (moduleFn._invokeQueue.length)  { runInvokeQueue(moduleFn._invokeQueue); }
+                        if (moduleFn._configBlocks.length) { runInvokeQueue(moduleFn._configBlocks); }
 
                     } else if (_.isFunction(module)) {
                         debug_note.push('as function');
 
-                        run_blocks.push(
-                            _injector.invoke(
-                                module,
-                                undefined,
-                                undefined,
-                                module_name
-                            )
+                        interim_block = _injector.invoke(
+                            module,
+                            undefined,
+                            undefined,
+                            module_name
                         );
+
+                        if (_.isFunction(interim_block) || _.isArray(interim_block)) {
+                            run_blocks.push(interim_block);
+                        }
+
                     } else if (_.isArray(module)) {
                         debug_note.push('as array');
 
-                        run_blocks.push(
-                            _injector.invoke(
-                                module,
-                                undefined,
-                                undefined,
-                                module_name
-                            )
+                        interim_block = _injector.invoke(
+                            module,
+                            undefined,
+                            undefined,
+                            module_name
                         );
+
+                        if (_.isFunction(interim_block) || _.isArray(interim_block)) {
+                            run_blocks.push(interim_block);
+                        }
+
                     } else {
                         debug_note.push('as arg function');
                         assertArgFn(module, 'module', 'failed in loadModules.');
@@ -2795,8 +2858,8 @@ msos.console.time('ng');
                     debug_note.push('already loaded');
                 }
 
-                if (msos_verbose) {
-                    msos_debug(temp_lm + '(foreach)  done, module: ' + module_name + ', ' + debug_note.join(', '));
+                if (msos_verbose === 'module') {
+                    msos_debug(temp_lm + '(foreach) ->  done, module: ' + module_name + ', ' + debug_note.join(', '));
                 }
             }
         );
@@ -2805,12 +2868,18 @@ msos.console.time('ng');
             forEach(
                 run_blocks,
                 function (fn, idx) {
-                    if (fn) { _instance.invoke(fn, undefined, undefined, 'runBlocks' + idx); }
+                    if (_.isFunction(fn) || _.isArray(fn)) {
+                        _instance.invoke(fn, undefined, undefined, 'runBlocks' + idx);
+                    } else {
+                        msos.console.warn(temp_lm + ' -> (foreach), not an array or function for run_blocks[' + idx + ']: ', fn);
+                    }
                 }
             );
         }
 
-        msos_debug(temp_lm + ' done:', modules_to_load);
+        if (msos_verbose) {
+            msos_debug(temp_lm + ' ->  done:', modules_to_load);
+        }
 
         return run_blocks;
     }
@@ -2981,7 +3050,7 @@ msos.console.time('ng');
             var temp_cii = ' - internal';
 
             function getService(serviceName, caller) {
-                var debug_out = ', name: ' + serviceName;
+                var debug_out = ',\n     name: ' + serviceName;
 
                 if (civ) {
                     msos_debug(temp_ci + temp_cii + ' - getService -> start (' + whichone + ')' + debug_out);
@@ -2989,32 +3058,32 @@ msos.console.time('ng');
 
                 // Already available
                 if (cache.hasOwnProperty(serviceName)) {
-
                     debug_out += ' (exists)';
 
-                // Has proper factory function specified
+                    if (cache[serviceName] === INSTANTIATING) {
+                        throw $injectorMinErr(
+                            'cdep',
+                            'Circular dependency found: {0}',
+                            serviceName + ' <- ' + service_path.join(' <- ')
+                        );
+                    }
+
                 } else if (factory !== noop) {
 
+                    service_path.unshift(serviceName);
                     cache[serviceName] = INSTANTIATING;
+                    debug_out += ' (created for ' + service_path.join(' <- ') + ')';
 
                     try {
                         cache[serviceName] = factory(serviceName, caller);
                     } catch (err) {
+                        if (cache[serviceName] === INSTANTIATING) {
+                            delete cache[serviceName];
+                        }
                         msos.console.error(temp_ci + temp_cii + ' - getService -> failed (' + whichone + ')' + debug_out, err);
+                    } finally {
+                        service_path.shift();
                     }
-
-                    if (cache[serviceName] === INSTANTIATING) {
-                        delete cache[serviceName];
-                        service_path.unshift(serviceName);
-                        debug_out += ' (create failed for ' + service_path.join(' <- ') + ')';
-                    } else {
-                        debug_out += ' (created)';
-                    }
-
-                // F'd up
-                } else {
-                    service_path.unshift(serviceName);
-                    debug_out += ' (skipped for ' + service_path.join(' <- ') + ')';
                 }
 
                 if (civ) {
@@ -3055,13 +3124,43 @@ msos.console.time('ng');
                 return inputs;
             }
 
-            function invoke(fn, self, locals, serviceName) {
+            function isClass(func) {
+                var result;
+
+                if (msie || typeof func !== 'function') {
+                    result = false;
+                } else {
+                    result = func.$$ngIsClass;
+
+                    if (!_.isBoolean(result)) {
+                        result = func.$$ngIsClass = /^(?:class\b|constructor\()/.test(stringifyFn(func));
+                    }
+                }
 
                 if (civ) {
-                    msos_debug(temp_ci + temp_cii + ' - invoke -> start (' + whichone + '), for: ' + serviceName + ', self:', self);
+                    msos_debug(temp_ci + temp_cii + ' - isClass ->  called, result: ' + result);
+                }
+
+                return result;
+            }
+
+            function invoke(fn, self, locals, serviceName) {
+
+                if (typeof locals === 'string') {
+                    msos.console.warn(temp_ci + temp_cii + ' - invoke -> locals to serviceName.');
+                    serviceName = locals;
+                    locals = null;
+                }
+
+                if (civ) {
+                    msos_debug(temp_ci + temp_cii + ' - invoke -> start (' + whichone + '), for serviceName: ' + serviceName + ', self:', self);
+                    if (!serviceName && msos_script) {
+                        msos.console.trace(temp_ci + temp_cii + ' - invoke -> trace for undefined serviceName.');
+                    }
                 }
 
                 var inject = injectionArgs(fn, locals, serviceName),
+                    invoke_name,
                     invoke_out;
 
                 if (_.isArray(fn)) { fn = fn[fn.length - 1]; }
@@ -3072,42 +3171,45 @@ msos.console.time('ng');
                             msos.console.error(temp_ci + temp_cii + ' - invoke -> failed, (injection variable). Was it properly "required"? Ref:', fn);
                             return invoke_out;
                         }
-                        try {
-                            invoke_out = fn.apply(self, inject);
-                        } catch(e) {
-                            msos.console.error(temp_ci + temp_cii + ' - invoke -> failed, for: ' + serviceName, self, inject, e);
-                        }
-                    } else {
-                        invoke_out = fn.apply(self, inject);
                     }
+
+                    if (!isClass(fn)) {
+                        if (civ) {
+                            msos_debug(temp_ci + temp_cii + ' - invoke -> not isClass.');
+                        }
+                        invoke_out = fn.apply(self, inject);
+                    } else {
+                        inject.unshift(null);
+                        invoke_out = new (Function.prototype.bind.apply(fn, inject))();
+                    }
+
                 } else {
                     msos.console.warn(temp_ci + temp_cii + ' - invoke -> noop, for inject:', inject);
                 }
 
                 if (civ) {
-                    msos_debug(temp_ci + temp_cii + ' - invoke ->  done (' + whichone + '), for: ' + serviceName, + ', output:', invoke_out);
+                    if (typeof invoke_out === 'function') {
+                        invoke_name = invoke_out.name || invoke_out.ng_name || '';
+                    }
+                    msos_debug(temp_ci + temp_cii + ' - invoke ->  done (' + whichone + '), for: ' + serviceName + (invoke_name ? ', function: ' + invoke_name : ''));
                 }
 
                 return invoke_out;
             }
 
-            function instantiate(fn, locals, serviceName) {
+            function instantiate(Type, locals, serviceName) {
 
                 if (civ) {
-                    msos_debug(temp_ci + temp_cii + ' - instantiate -> start (' + whichone + '), for: ' + serviceName);
+                    msos_debug(temp_ci + temp_cii + ' - instantiate -> start (' + whichone + '), for serviceName: ' + serviceName);
                 }
 
-                var inject = injectionArgs(fn, locals, serviceName),
-                    FProBA,
+                var ctor = (_.isArray(Type) ? Type[Type.length - 1] : Type),
+                    inject = injectionArgs(Type, locals, serviceName),
                     instan_out;
-
-                if (_.isArray(fn)) { fn = fn[fn.length - 1]; }
 
                 inject.unshift(null);
 
-                FProBA = BIND.apply(fn, inject);
-
-                instan_out = new FProBA();
+                instan_out = new (Function.prototype.bind.apply(ctor, inject))();
 
                 if (civ) {
                     msos_debug(temp_ci + temp_cii + ' - instantiate ->  done (' + whichone + '), for: ' + serviceName);
@@ -3145,7 +3247,13 @@ msos.console.time('ng');
 
         providerCache.$injector = internal(
             providerCache,
-            noop,
+            function unknow_provider(serviceName_na, caller) {
+                if (_.isString(caller)) { service_path.push(caller); }
+                throw $injectorMinErr(
+                    'unpr',
+                    'Unknown provider: {0}',
+                    service_path.join(' <- '));
+            },
             'providerCache'
         );
 
@@ -3157,7 +3265,7 @@ msos.console.time('ng');
 
         instanceCache.protoInstanceInjector = internal(
             instanceCache,
-            function (serviceName, caller) {
+            function create_proto_inst_injec(serviceName, caller) {
                 var temp_pi = ' - instanceCache.protoInstanceInjector',
                     provid_service = serviceName + providerSuffix,
                     provid_inject,
@@ -3183,6 +3291,7 @@ msos.console.time('ng');
                 if (civ) {
                     msos_debug(temp_ci + temp_pi + ' ->  done, for: ' + provid_service);
                 }
+
                 return output;
             },
             'instanceCache'
@@ -3196,6 +3305,15 @@ msos.console.time('ng');
         providerCache.$injector.modules = createMap();
 
         loadModules(modulesToLoad, providerCache.$injector, instanceInjector);
+
+		instanceInjector.loadNewModules = function (mods) {
+			forEach(
+				loadModules(mods),
+				function inst_inj_load_new_modules(fn) {
+					if (fn) instanceInjector.invoke(fn);
+				}
+			);
+		};
 
         msos.console.info(temp_ci + ' ===> done!');
 
@@ -3216,16 +3334,10 @@ msos.console.time('ng');
 
         msos_debug(temp_b + ' 8==> start, config:', bs_config);
 
-        if (bindbootstrapFired) {
-            msos.console.warn(temp_b + ' 8==> done, already fired!');
-            return undefined;
-        }
-
-        bindbootstrapFired = true;
-
         doBootstrap = function () {
 
             var temp_db = ' - doBootstrap',
+                temp_db2 = ' 8==>~ start, attached to:',
                 tag = '',
                 dB_injector = null;
 
@@ -3233,7 +3345,19 @@ msos.console.time('ng');
 
             tag = (bs_element[0] === window.document) ? 'document' : nodeName_(bs_element);
 
-            msos_debug(temp_b + temp_db + ' 8==>~ start, attached to: ' + tag);
+            if (msos_verbose) {
+                msos_debug(temp_b + temp_db + temp_db2, bs_element);
+            } else {
+                msos_debug(temp_b + temp_db + temp_db2 + ' ' + tag);
+            }
+
+            if (bs_element.injector()) {
+                throw ngMinErr(
+                    'btstrpd',
+                    'App already bootstrapped with this element \'{0}\'',
+                    tag
+                );
+            }
 
             bs_modules = bs_modules || [];
             bs_modules.unshift(['$provide', function ($provide) {
@@ -3563,8 +3687,10 @@ msos.console.time('ng');
                                 onAnimationComplete = function (rejected) {
                                     if (!resolved) {
                                         resolved = true;
-                                        (endProgressCb || noop)(rejected);
-                                        runner.complete(!rejected);
+                                        if (endProgressCb && endProgressCb !== noop) { endProgressCb(rejected); }
+                                        if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                            runner.complete(!rejected);
+                                        }
                                     }
                                 };
 
@@ -3685,8 +3811,12 @@ msos.console.time('ng');
                         } else {
                             close();
                             runner = new $$AnimateRunner();
-                            runner.complete(true);
+
+                            if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                runner.complete(true);
+                            }
                         }
+
                         return runner;
                     },
                     start: function () {
@@ -3723,7 +3853,9 @@ msos.console.time('ng');
 
                         function onComplete(success) {
                             close(success);
-                            runner.complete(success);
+                            if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                runner.complete(success);
+                            }
                         }
 
                         function endAnimations(cancelled) {
@@ -3754,7 +3886,7 @@ msos.console.time('ng');
     }];
 
     $$AnimateJsDriverProvider = ['$$animationProvider', function ($$animationProvider) {
-        var temp_aj = 'ng/animate - $$AnimateJsDriverProvider';
+        var temp_aj = 'ng - $$AnimateJsDriverProvider';
 
         msos_debug(temp_aj + ' -> start.');
 
@@ -3774,7 +3906,7 @@ msos.console.time('ng');
             }
 
             function initDriverFn(animationDetails) {
-                var temp_id = temp_aj + ' - $$AnimateJsDriverProvider - initDriverFn -> ',
+                var temp_id = temp_aj + ' - $get - initDriverFn -> ',
                     fromAnimation,
                     toAnimation;
 
@@ -3816,7 +3948,9 @@ msos.console.time('ng');
                             }
 
                             function done(status) {
-                                runner.complete(status);
+                                if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                    runner.complete(status);
+                                }
                             }
 
                             $$AnimateRunner.all(animationRunners, done);
@@ -3943,7 +4077,9 @@ msos.console.time('ng');
             function ($$jqLite, $$rAF, $rootScope, $rootElement, $document, $$Map,
                 $$animation, $$AnimateRunner, $templateRequest, $$isDocumentHidden) {
 
-                var activeAnimationsLookup = new $$Map(),
+                var temp_aq = 'ng - $$AnimateQueueProvider - $get',
+                    va = msos_verbose === 'animate' ? true : false,
+                    activeAnimationsLookup = new $$Map(),
                     disabledElementsLookup = new $$Map(),
                     animationsEnabled = null,
                     deregisterWatch,
@@ -3964,7 +4100,7 @@ msos.console.time('ng');
                         if (postDigestCalled) {
                             fn();
                         } else {
-                            $rootScope.$$postDigest(function () {
+                            $rootScope.$$postDigest(function rs_pd_task_factory() {
                                 postDigestCalled = true;
                                 fn();
                             });
@@ -3981,8 +4117,8 @@ msos.console.time('ng');
 
                         deregisterWatch();
 
-                        $rootScope.$$postDigest(function () {
-                            $rootScope.$$postDigest(function () {
+                        $rootScope.$$postDigest(function rs_pd_deregister_watch1() {
+                            $rootScope.$$postDigest(function rs_pd_deregister_watch2() {
                                 if (animationsEnabled === null) {
                                     animationsEnabled = true;
                                 }
@@ -4065,6 +4201,10 @@ msos.console.time('ng');
                     newValue = oldValue ? extend(oldValue, details) : details;
 
                     activeAnimationsLookup.set(node, newValue);
+
+                    if (va) {
+                        msos_debug(temp_aq + ' - markElementAnimationState -> called, activeAnimationsLookup:', activeAnimationsLookup._keys);
+                    }
                 }
 
                 function closeChildAnimations(node) {
@@ -4087,38 +4227,53 @@ msos.console.time('ng');
                     });
                 }
 
-                function areAnimationsAllowed(node, parentNode) {
-                    var bodyNode = $document[0].body,
-                        rootNode = getDomNode($rootElement),
-                        bodyNodeDetected = (node === bodyNode) || node.nodeName === 'HTML',
-                        rootNodeDetected = (node === rootNode),
+                function areAnimationsAllowed(node_aAA) {
+                    var temp_aa = temp_aq + ' - areAnimationsAllowed -> ',
+                        db_notes = '',
+                        bodyNode_aAA = $document[0].body,
+                        rootNode_aAA = getDomNode($rootElement),
+                        parentNode_aAA = node_aAA.parentNode,
+                        parentHost_aAA = jqLite.data(node_aAA, NG_ANIMATE_PIN_DATA),
+                        bodyNodeDetected = (node_aAA === bodyNode_aAA) || node_aAA.nodeName === 'HTML',
+                        rootNodeDetected = (node_aAA === rootNode_aAA),
                         parentAnimationDetected = false,
-                        elementDisabled = disabledElementsLookup.get(node),
+                        elementDisabled = disabledElementsLookup.get(node_aAA),
                         animateChildren,
-                        parentHost = jqLite.data(node, NG_ANIMATE_PIN_DATA),
                         details,
                         parentNodeDisabled,
                         value,
-                        allowAnimation;
+                        allowAnimation,
+                        bool_out;
 
-                    if (parentHost) {
-                        parentNode = getDomNode(parentHost);
+                    if (msos_verbose) {
+                        msos_debug(temp_aa + 'start, node: ' + nodeDebugName_(node_aAA));
                     }
 
-                    while (parentNode) {
+                    if (parentHost_aAA) {
+                        parentNode_aAA = getDomNode(parentHost_aAA);
+                        if (va) {
+                            msos_debug(temp_aa + 'assigned parent host, new parentNode:' + nodeDebugName_(parentNode_aAA));
+                        }
+                    }
+
+                    while (parentNode_aAA) {
+                        db_notes += '\n     |while|';
+
                         if (!rootNodeDetected) {
-                            rootNodeDetected = (parentNode === rootNode);
+                            rootNodeDetected = (parentNode_aAA === rootNode_aAA);
+                            db_notes += 'no_root1_' + rootNodeDetected + '|';
                         }
 
-                        if (parentNode.nodeType !== NODE_TYPE_ELEMENT) {
+                        if (parentNode_aAA.nodeType !== NODE_TYPE_ELEMENT) {
+                            db_notes += 'parent_not_el_' + parentNode_aAA.nodeType + '|';
                             break;
                         }
 
-                        details = activeAnimationsLookup.get(parentNode) || {};
-
                         if (!parentAnimationDetected) {
 
-                            parentNodeDisabled = disabledElementsLookup.get(parentNode);
+                            parentNodeDisabled = disabledElementsLookup.get(parentNode_aAA);
+
+                            db_notes += 'no_parent_anim_' + parentNodeDisabled + '|';
 
                             if (parentNodeDisabled === true && elementDisabled !== false) {
                                 elementDisabled = true;
@@ -4127,49 +4282,71 @@ msos.console.time('ng');
                                 elementDisabled = false;
                             }
 
+                            details = activeAnimationsLookup.get(parentNode_aAA) || {};
                             parentAnimationDetected = details.structural;
                         }
 
                         if (_.isUndefined(animateChildren) || animateChildren === true) {
-                            value = jqLite.data(parentNode, NG_ANIMATE_CHILDREN_DATA);
+                            db_notes += 'anim_child_undef_true|';
+                            value = jqLite.data(parentNode_aAA, NG_ANIMATE_CHILDREN_DATA);
 
                             if (isDefined(value)) {
+                                db_notes += 'value_defined|';
                                 animateChildren = value;
                             }
                         }
 
-                        if (parentAnimationDetected && animateChildren === false) { break; }
-
-                        if (!bodyNodeDetected) {
-                            bodyNodeDetected = (parentNode === bodyNode);
+                        if (parentAnimationDetected && animateChildren === false) {
+                            db_notes += 'parent_anim_no_child|';
+                            break;
                         }
 
-                        if (bodyNodeDetected && rootNodeDetected) { break; }
+                        if (!bodyNodeDetected) {
+                            bodyNodeDetected = (parentNode_aAA === bodyNode_aAA);
+                            db_notes += 'no_body_' + bodyNodeDetected + '|';
+                        }
+
+                        if (bodyNodeDetected && rootNodeDetected) {
+                            db_notes += 'body_root_detect|';
+                            break;
+                        }
 
                         if (!rootNodeDetected) {
-                            parentHost = jqLite.data(parentNode, NG_ANIMATE_PIN_DATA);
-                            if (parentHost) {
-                                parentNode = getDomNode(parentHost);
+                            db_notes += 'no_root2|';
+                            parentHost_aAA = jqLite.data(parentNode_aAA, NG_ANIMATE_PIN_DATA);
+                            if (parentHost_aAA) {
+                                parentNode_aAA = getDomNode(parentHost_aAA);
+                                db_notes += 'no_root2_parent_host|';
                                 continue;
                             }
                         }
 
-                        parentNode = parentNode.parentNode;
+                        parentNode_aAA = parentNode_aAA.parentNode;
                     }
 
                     allowAnimation = (!parentAnimationDetected || animateChildren) && elementDisabled !== true;
 
-                    return allowAnimation && rootNodeDetected && bodyNodeDetected;
+                    if (va) {
+                        msos_debug(temp_aa + 'flags' + msos_indent + 'allowAnimation: ' + allowAnimation + msos_indent + 'bodyNodeDetected: ' + bodyNodeDetected + msos_indent + 'rootNodeDetected: ' + rootNodeDetected + '\n     parentAnimationDetected: ' + parentAnimationDetected + msos_indent + 'animateChildren: ' + animateChildren + msos_indent + 'elementDisabled: ' + elementDisabled + msos_indent + 'debug notes: ' + db_notes);
+                    }
+
+                    bool_out = allowAnimation && rootNodeDetected && bodyNodeDetected ? true : false;
+
+                    if (msos_verbose) {
+                        msos_debug(temp_aa + ' done, output: ' + bool_out);
+                    }
+
+                    return bool_out;
                 }
 
                 function queueAnimation(originalElement, event, initialOptions) {
-                    var options = copy(initialOptions),
+                    var temp_qa = temp_aq + ' - queueAnimation',
+                        options = copy(initialOptions),
                         element = stripCommentsFromElement(originalElement),
-                        node = getDomNode(element),
-                        parentNode = node && node.parentNode,
+                        node_qA = getDomNode(element),
+                        parentNode_qA = node_qA && node_qA.parentNode,
                         runner,
                         runInNextPostDigestOrNow,
-                        className,
                         isStructural,
                         documentHidden,
                         skipAnimations,
@@ -4181,6 +4358,10 @@ msos.console.time('ng');
                         joinAnimationFlag,
                         isValidAnimation,
                         counter;
+
+                    if (va) {
+                        msos_debug(temp_qa + ' -> start' + msos_indent + 'event: ' + event + msos_indent + 'el:', originalElement);
+                    }
 
                     options = prepareAnimationOptions(options);
 
@@ -4213,49 +4394,61 @@ msos.console.time('ng');
                     }
 
                     function close(reject) {
+                        if (va) {
+                            msos_debug(temp_qa + ' - close -> called.');
+                        }
                         clearGeneratedClasses(element, options);
                         applyAnimationClasses(element, options);
                         applyAnimationStyles(element, options);
                         options.domOperation();
-                        runner.complete(!reject);
+                        if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                            runner.complete(!reject);
+                        }
                     }
 
                     if (!animationsEnabled ||
-                        !node ||
-                        !isAnimatableByFilter(node, event, initialOptions) ||
-                        !isAnimatableClassName(node, options)) {
+                        !node_qA ||
+                        !isAnimatableByFilter(node_qA, event, initialOptions) ||
+                        !isAnimatableClassName(node_qA, options)) {
                             close();
+                            if (va) {
+                                msos_debug(temp_qa + ' ->  done, no animation, node, filter or class' + msos_indent + 'runner:', runner);
+                            }
+
                             return runner;
                     }
 
                     isStructural = ['enter', 'move', 'leave'].indexOf(event) >= 0;
                     documentHidden = $$isDocumentHidden();
-
-                    skipAnimations = documentHidden || disabledElementsLookup.get(node);
-                    existingAnimation = (!skipAnimations && activeAnimationsLookup.get(node)) || {};
+                    skipAnimations = documentHidden || disabledElementsLookup.get(node_qA) || false;
+                    existingAnimation = (!skipAnimations && activeAnimationsLookup.get(node_qA)) || {};
                     hasExistingAnimation = !!existingAnimation.state;
 
                     if (!skipAnimations && (!hasExistingAnimation || existingAnimation.state !== PRE_DIGEST_STATE)) {
-                        skipAnimations = !areAnimationsAllowed(node, parentNode, event);
+                        skipAnimations = !areAnimationsAllowed(node_qA);
+                    }
+
+                    if (va) {
+                        msos_debug(temp_qa + ' -> flags' + msos_indent + 'documentHidden: ' + documentHidden + '\n     skipAnimations: ' + skipAnimations + msos_indent + 'hasExistingAnimation: ' + hasExistingAnimation + msos_indent + 'existingAnimation: ', existingAnimation);
                     }
 
                     function notifyProgress(runner, event, phase, data) {
                         runInNextPostDigestOrNow(function () {
-                            var callbacks = findCallbacks(parentNode, node, event);
+                            var callbacks = findCallbacks(parentNode_qA, node_qA, event);
 
                             if (callbacks.length) {
                                 $$rAF(function () {
                                     forEach(callbacks, function (callback) {
                                         callback(element, phase, data);
                                     });
-                                    cleanupEventListeners(phase, node);
+                                    cleanupEventListeners(phase, node_qA);
                                 });
                             } else {
-                                cleanupEventListeners(phase, node);
+                                cleanupEventListeners(phase, node_qA);
                             }
                         });
 
-                        if (runner.progress !== noop) {     // experimental
+                        if (runner.progress !== noop) {
                             runner.progress(event, phase, data);
                         }
                     }
@@ -4264,11 +4457,14 @@ msos.console.time('ng');
                         if (documentHidden) { notifyProgress(runner, event, 'start'); }
                         close();
                         if (documentHidden) { notifyProgress(runner, event, 'close'); }
+                        if (va) {
+                            msos_debug(temp_qa + ' ->  done, skip animations' + msos_indent + 'runner:', runner);
+                        }
                         return runner;
                     }
 
                     if (isStructural) {
-                        closeChildAnimations(node);
+                        closeChildAnimations(node_qA);
                     }
 
                     newAnimation = {
@@ -4288,10 +4484,17 @@ msos.console.time('ng');
                         if (skipAnimationFlag) {
                             if (existingAnimation.state === RUNNING_STATE) {
                                 close();
+                                if (va) {
+                                    msos_debug(temp_qa + ' ->  done, existing animation' + msos_indent + 'runner:', runner);
+                                }
                                 return runner;
                             }
 
                             mergeAnimationDetails(element, existingAnimation, newAnimation);
+
+                            if (va) {
+                                msos_debug(temp_qa + ' ->  done, merge existing animation' + msos_indent + 'existingAnimation:', existingAnimation);
+                            }
                             return existingAnimation.runner;
                         }
 
@@ -4304,6 +4507,9 @@ msos.console.time('ng');
                                 existingAnimation.close();
                             } else {
                                 mergeAnimationDetails(element, existingAnimation, newAnimation);
+                                if (va) {
+                                    msos_debug(temp_qa + ' ->  done, cancel animation' + msos_indent + 'existingAnimation:', existingAnimation);
+                                }
                                 return existingAnimation.runner;
                             }
                         } else {
@@ -4318,6 +4524,9 @@ msos.console.time('ng');
                                     event = newAnimation.event = existingAnimation.event;
                                     options = mergeAnimationDetails(element, existingAnimation, newAnimation);
 
+                                    if (va) {
+                                        msos_debug(temp_qa + ' ->  done, join animations' + msos_indent + 'existingAnimation:', existingAnimation);
+                                    }
                                     return existingAnimation.runner;
                                 }
                             }
@@ -4334,24 +4543,34 @@ msos.console.time('ng');
 
                     if (!isValidAnimation) {
                         close();
-                        clearElementAnimationState(node);
+                        clearElementAnimationState(node_qA);
+                        if (va) {
+                            msos_debug(temp_qa + ' ->  done, invalid animation' + msos_indent + 'runner:', runner);
+                        }
                         return runner;
                     }
 
                     counter = (existingAnimation.counter || 0) + 1;
                     newAnimation.counter = counter;
 
-                    markElementAnimationState(node, PRE_DIGEST_STATE, newAnimation);
+                    markElementAnimationState(node_qA, PRE_DIGEST_STATE, newAnimation);
 
-                    $rootScope.$$postDigest(function () {
-
-                        element = stripCommentsFromElement(originalElement);
-
-                        var animationDetails = activeAnimationsLookup.get(node),
-                            animationCancelled = !animationDetails,
+                    $rootScope.$$postDigest(function rs_pd_queue_anim() {
+                        var temp_rp = temp_aq + ' - queueAnimation - rs_pd_queue_anim -> ',
+                            animationDetails,
+                            animationCancelled,
                             parentElement,
                             isValidAnimation,
                             realRunner;
+
+                        if (va) {
+                            msos_debug(temp_rp + 'start.');
+                        }
+
+                        element = stripCommentsFromElement(originalElement);
+
+                        animationDetails = activeAnimationsLookup.get(node_qA);
+                        animationCancelled = !animationDetails;
 
                         animationDetails = animationDetails || {};
 
@@ -4371,7 +4590,11 @@ msos.console.time('ng');
                             }
 
                             if (!isValidAnimation) {
-                                clearElementAnimationState(node);
+                                clearElementAnimationState(node_qA);
+                            }
+
+                            if (va) {
+                                msos_debug(temp_rp + ' done, canceled or invalid.');
                             }
 
                             return;
@@ -4379,7 +4602,7 @@ msos.console.time('ng');
 
                         event = !animationDetails.structural && hasAnimationClasses(animationDetails, true) ? 'setClass' : animationDetails.event;
 
-                        markElementAnimationState(node, RUNNING_STATE);
+                        markElementAnimationState(node_qA, RUNNING_STATE);
 
                         realRunner = $$animation(element, event, animationDetails.options);
 
@@ -4390,31 +4613,39 @@ msos.console.time('ng');
     
                             close(!status);
 
-                            var animationDetails = activeAnimationsLookup.get(node);
+                            var animationDetails = activeAnimationsLookup.get(node_qA);
 
                             if (animationDetails && animationDetails.counter === counter) {
-                                clearElementAnimationState(node);
+                                clearElementAnimationState(node_qA);
                             }
 
                             notifyProgress(runner, event, 'close', {});
                         });
+
+                        if (va) {
+                            msos_debug(temp_rp + ' done!');
+                        }
                     });
+
+                    if (va) {
+                        msos_debug(temp_qa + ' ->  done!');
+                    }
 
                     return runner;
                 }
 
                 $animate = {
                     on: function (event, container, callback) {
-                        var node = extractElementNode(container);
+                        var node_anim = extractElementNode(container);
 
                         callbackRegistry[event] = callbackRegistry[event] || [];
                         callbackRegistry[event].push({
-                            node: node,
+                            node: node_anim,
                             callback: callback
                         });
 
                         jqLite(container).on('$destroy', function () {
-                            var animationDetails = activeAnimationsLookup.get(node);
+                            var animationDetails = activeAnimationsLookup.get(node_anim);
 
                             if (!animationDetails) {
                                 $animate.off(event, container, callback);
@@ -4455,27 +4686,35 @@ msos.console.time('ng');
                     },
 
                     enabled: function (element, bool) {
-                        var hasElement,
-                            node;
+                        var argCount = arguments.length,
+                            debug_en = '',
+                            hasElement,
+                            node_en;
 
-                        if (arguments.length === 0) {
+                        if (argCount === 0) {
                             bool = !!animationsEnabled;
+                            debug_en = 'global getter';
                         } else {
                             hasElement = isElement(element);
 
                             if (!hasElement) {
                                 bool = animationsEnabled = !!element;
+                                debug_en = 'global setter';
                             } else {
-                                node = getDomNode(element);
+                                node_en = getDomNode(element);
 
-                                if (arguments.length === 1) {
-                                    // (element) - Element getter
-                                    bool = !disabledElementsLookup.get(node);
+                                if (argCount === 1) {
+                                    bool = !disabledElementsLookup.get(node_en);
+                                    debug_en = 'el getter';
                                 } else {
-                                    // (element, bool) - Element setter
-                                    disabledElementsLookup.set(node, !bool);
+                                    disabledElementsLookup.set(node_en, !bool);
+                                    debug_en = 'el setter';
                                 }
                             }
+                        }
+
+                        if (va) {
+                            msos_debug(temp_aq + ' - $animate.enabled ->  done, output: ' + bool + '\n     for: ' + debug_en + '\n     disabledElementsLookup:', disabledElementsLookup._keys);
                         }
 
                         return bool;
@@ -4507,11 +4746,12 @@ msos.console.time('ng');
         this.$get = ['$$jqLite', '$rootScope', '$injector', '$$AnimateRunner', '$$Map', '$$rAFScheduler',
             function ($$jqLite, $rootScope, $injector, $$AnimateRunner, $$Map, $$rAFScheduler) {
 
-                var temp_ap = 'ng/animate - $$AnimationProvider - $get',
+                var temp_ap = 'ng - $$AnimationProvider - $get',
+                    va = msos_verbose === 'animate' ? true : false,
                     animationQueue = [],
                     applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
 
-                msos_debug(temp_ap + ' -> start, applyAnimationClasses:', applyAnimationClasses);
+                msos_debug(temp_ap + ' -> start, applyAnimationClasses: ' + (applyAnimationClasses.name || 'unknown'));
 
                 function sortAnimations(animations) {
                     var tree = {
@@ -4538,20 +4778,20 @@ msos.console.time('ng');
                         entry.processed = true;
 
                         var elementNode = entry.domNode,
-                            parentNode = elementNode.parentNode,
+                            parentNode_pN = elementNode.parentNode,
                             parentEntry;
 
                         lookup.set(elementNode, entry);
 
-                        while (parentNode) {
-                            parentEntry = lookup.get(parentNode);
+                        while (parentNode_pN) {
+                            parentEntry = lookup.get(parentNode_pN);
                             if (parentEntry) {
                                 if (!parentEntry.processed) {
                                     parentEntry = processNode(parentEntry);
                                 }
                                 break;
                             }
-                            parentNode = parentNode.parentNode;
+                            parentNode_pN = parentNode_pN.parentNode;
                         }
 
                         (parentEntry || tree).children.push(entry);
@@ -4577,6 +4817,11 @@ msos.console.time('ng');
 
                         remainingLevelEntries = queue.length;
 
+                        function add_children(childEntry) {
+                            nextLevelEntries += 1;
+                            queue.push(childEntry);
+                        }
+
                         for (i = 0; i < queue.length; i += 1) {
                             entry = queue[i];
 
@@ -4588,10 +4833,7 @@ msos.console.time('ng');
                             }
 
                             row.push(entry.fn);
-                            entry.children.forEach(function (childEntry) {
-                                nextLevelEntries += 1;
-                                queue.push(childEntry);
-                            });
+                            entry.children.forEach(add_children);
 
                             remainingLevelEntries-= 1;
                         }
@@ -4608,15 +4850,15 @@ msos.console.time('ng');
 
                 function initAnimationProv(element, event, options) {
 
-                    var temp_ia = temp_ap + ' - initAnimationProv -> ',
+                    var temp_ia = temp_ap + ' - initAnimationProv',
                         isStructural = ['enter', 'move', 'leave'].indexOf(event) >= 0,
                         runner,
                         classes,
                         tempClasses,
                         prepareClassName;
 
-                    if (msos_verbose === 'animate') {
-                        msos_debug(temp_ia + 'start.');
+                    if (va) {
+                        msos_debug(temp_ia + ' - > start' + msos_indent + 'options:', options);
                     }
 
                     options = prepareAnimationOptions(options);
@@ -4642,7 +4884,10 @@ msos.console.time('ng');
                         }
 
                         element.removeClass(NG_ANIMATE_CLASSNAME);
-                        runner.complete(!rejected);
+
+                        if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                            runner.complete(!rejected);
+                        }
                     }
 
                     runner = new $$AnimateRunner({
@@ -4656,9 +4901,10 @@ msos.console.time('ng');
 
                     if (!drivers.length) {
                         close();
-                        if (msos_verbose === 'animate') {
-                            msos_debug(temp_ia + ' done, no drivers, runner:', runner);
+                        if (va) {
+                            msos_debug(temp_ia + ' ->  done, no drivers' + msos_indent + 'runner:', runner);
                         }
+
                         return runner;
                     }
 
@@ -4702,8 +4948,8 @@ msos.console.time('ng');
                     element.on('$destroy', handleDestroyedElement);
 
                     if (animationQueue.length > 1) {
-                        if (msos_verbose === 'animate') {
-                            msos_debug(temp_ia + ' done, animationQueue.length > 1, runner:', runner);
+                        if (va) {
+                            msos_debug(temp_ia + ' ->  done, animationQueue.length > 1' + msos_indent + 'runner:', runner);
                         }
                         return runner;
                     }
@@ -4769,16 +5015,16 @@ msos.console.time('ng');
                         return matches.join(' ');
                     }
 
-                    function getAnchorNodes(node) {
+                    function getAnchorNodes(node_gA) {
                         var SELECTOR = '[' + NG_ANIMATE_REF_ATTR + ']',
-                            items = node.hasAttribute(NG_ANIMATE_REF_ATTR) ? [node] : node.querySelectorAll(SELECTOR),
+                            items = node_gA.hasAttribute(NG_ANIMATE_REF_ATTR) ? [node_gA] : node_gA.querySelectorAll(SELECTOR),
                             anchors = [];
 
-                        forEach(items, function (node) {
-                            var attr = node.getAttribute(NG_ANIMATE_REF_ATTR);
+                        forEach(items, function (node_4each) {
+                            var attr = node_4each.getAttribute(NG_ANIMATE_REF_ATTR);
 
                             if (attr && attr.length) {
-                                anchors.push(node);
+                                anchors.push(node_4each);
                             }
                         });
 
@@ -4793,10 +5039,10 @@ msos.console.time('ng');
 
                         forEach(animations, function (animation, index) {
                             var element = animation.element,
-                                node = getDomNode(element),
+                                node_ga = getDomNode(element),
                                 event = animation.event,
                                 enterOrMove = ['enter', 'move'].indexOf(event) >= 0,
-                                anchorNodes = animation.structural ? getAnchorNodes(node) : [],
+                                anchorNodes = animation.structural ? getAnchorNodes(node_ga) : [],
                                 direction;
 
                             if (anchorNodes.length) {
@@ -4876,10 +5122,15 @@ msos.console.time('ng');
                         return preparedAnimations;
                     }
 
-                    $rootScope.$$postDigest(function () {
-                        var animations = [],
+                    $rootScope.$$postDigest(function rs_pd_init_anim_prov() {
+                        var temp_rs = temp_ia + ' - rs_pd_init_anim_prov -> ',
+                            animations = [],
                             groupedAnimations,
                             toBeSortedAnimations;
+
+                        if (va) {
+                            msos_debug(temp_rs + 'start.');
+                        }
 
                         forEach(animationQueue, function (entry) {
                             if (getRunner(entry.element)) {
@@ -4894,10 +5145,10 @@ msos.console.time('ng');
                         groupedAnimations = groupAnimations(animations);
                         toBeSortedAnimations = [];
 
-                        forEach(groupedAnimations, function (animationEntry) {
+                        forEach(groupedAnimations, function post_digest_group_anim(animationEntry) {
                             toBeSortedAnimations.push({
                                 domNode: getDomNode(animationEntry.from ? animationEntry.from.element : animationEntry.element),
-                                fn: function triggerAnimationStart() {
+                                fn: function triggerAnimationStart_rSpD() {
 
                                     animationEntry.beforeStart();
 
@@ -4929,11 +5180,16 @@ msos.console.time('ng');
                         });
 
                         $$rAFScheduler(sortAnimations(toBeSortedAnimations));
+
+                        if (va) {
+                            msos_debug(temp_rs + ' done!');
+                        }
                     });
 
-                    if (msos_verbose === 'animate') {
-                        msos_debug(temp_ia + ' done, runner:', runner);
+                    if (va) {
+                        msos_debug(temp_ia + ' done' + msos_indent + 'runner:', runner);
                     }
+
                     return runner;
                 }
 
@@ -5095,78 +5351,119 @@ msos.console.time('ng');
         }];
     }];
 
-    $$AnimateAsyncRunFactoryProvider = function () {
+    $$AnimateAsyncRunProvider = function () {
+        var va = msos_verbose === 'animate' ? true : false;
+
         this.$get = ['$$rAF', function ($$rAF) {
-            var temp_aa = 'ng - $$AnimateAsyncRunFactoryProvider - $get',
+            var temp_aa = 'ng - $$AnimateAsyncRunProvider - $get',
                 waitQueue = [];
 
-            msos_debug(temp_aa + ' -> start.');
+            if (va) {
+                msos_debug(temp_aa + ' -> start.');
+            }
 
             function waitForTick(fn) {
 
-                waitQueue.push(fn);
-
-                if (waitQueue.length > 1) { // WTF?  " > 1 "
-                    msos_debug(temp_aa + ' - waitForTick -> called, skip for waitQueue.length: ' + waitQueue.length);
-                    return;
+                if (va) {
+                    msos_debug(temp_aa + ' - waitForTick -> start, fn: ' + fn.name);
                 }
 
-                msos_debug(temp_aa + ' - waitForTick -> called, run $$rAF.');
+                waitQueue.push(fn);
 
-                $$rAF(
-                    function animate_async_rAF() {
-                        var i = 0;
+                // Only set this on first call to "waitForTick"
+                if (waitQueue.length === 1) {
 
-                        msos_debug(temp_aa + ' - animate_async_rAF -> called, waitQueue.length:' + waitQueue.length);
+                    $$rAF(
+                        function animate_async_rAF() {
+                            var i = 0;
 
-                        for (i = 0; i < waitQueue.length; i += 1) { waitQueue[i](); }
+                            for (i = 0; i < waitQueue.length; i += 1) {
 
-                        waitQueue = [];
-                    }
-                );
+                                if (va) {
+                                    msos_debug(temp_aa + ' - animate_async_rAF -> run fn: ' + (waitQueue[i].name || 'anonymous'));
+                                }
+
+                                waitQueue[i]();
+                            }
+
+                            waitQueue = [];
+                        }
+                    );
+                }
+
+                if (va) {
+                    msos_debug(temp_aa + ' - waitForTick ->  done, fn: ' + fn.name);
+                }
             }
 
-            msos_debug(temp_aa + ' ->  done!');
+            if (va) {
+                msos_debug(temp_aa + ' ->  done!');
+            }
 
-            return function () {
+            return function anim_async_run_fac() {
                 var passed = false;
 
-                waitForTick(function () { passed = true; });
+                waitForTick(function animate_passed_t_f() { passed = true; });
 
-                return function animate_async_run(callback) {
+                return function async_run(fn) {
+                    var temp_asr = ' - async_run -> ';
 
-                    msos_debug(temp_aa + ' - animate_async_run -> called.');
+                    if (va) {
+                        msos_debug(temp_aa + temp_asr + 'start' + msos_indent + 'fn: ' + (fn.name || 'anonymous'));
+                    }
 
-                    if (passed) { callback(); }
-                    else        { waitForTick(callback); }
+                    if (passed) { fn(); }
+                    else        { waitForTick(fn); }
+
+                    if (va) {
+                        msos_debug(temp_aa + temp_asr + ' done' + msos_indent + 'fn: ' + (fn.name || 'anonymous'));
+                    }
                 };
             };
         }];
     };
 
-    $$AnimateRunnerFactoryProvider = function () {
+    $$AnimateRunProvider = function () {
+        var va = msos_verbose === 'animate' ? true : false,
+            anim_run_cnt = 0;
 
         this.$get = ['$q', '$$animateAsyncRun', '$$isDocumentHidden', '$timeout',
             function ($q,   $$animateAsyncRun,   $$isDocumentHidden,   $timeout) {
-                var INITIAL_STATE = 0,
-                    DONE_PENDING_STATE = 1,
+                var DONE_PENDING_STATE = 1,
                     DONE_COMPLETE_STATE = 2,
-                    temp_ar = 'ng - $$AnimateRunnerFactoryProvider - $get';
+                    temp_ar = 'ng - $$AnimateRunProvider - $get';
 
-                msos_debug(temp_ar + ' -> start.');
+                if (va) {
+                    msos_debug(temp_ar + ' -> start.');
+                }
 
                 function AnimateRunner(host) {
+
                     this.setHost(host);
+                    anim_run_cnt += 1;
+
+                    if (va) {
+                        msos_debug(temp_ar + ' - AnimateRunner -> start, cnt: ' + anim_run_cnt + msos_indent + 'host:', this.host);
+                    }
 
                     var rafTick = $$animateAsyncRun(),
-                        timeoutTick = function (fn) { $timeout(fn, 0, false); };
+                        timeoutTick = function (fn) { $timeout(fn, 10, false); };
 
                     this._doneCallbacks = [];
-                    this._tick = function (fn) {
+                    this._tick = function anim_run_tick(fn) {
+                        if (va) {
+                            msos_debug(temp_ar + ' - AnimateRunner._tick -> called, cnt: ' + anim_run_cnt + msos_indent + 'fn: ' + (fn.name || 'anonymous'));
+                        }
+
                         if ($$isDocumentHidden())   { timeoutTick(fn); }
                         else                        { rafTick(fn); }
                     };
+
                     this._state = 0;
+
+                    if (va) {
+                        msos_debug(temp_ar + ' - AnimateRunner ->  done, cnt: ' + anim_run_cnt);
+                    }
                 }
 
                 AnimateRunner.prototype = {
@@ -5182,31 +5479,31 @@ msos.console.time('ng');
                     },
                     progress: noop,
                     getPromise: function () {
+                        var self = this;
 
-                        if (!this.promise) {
-                            var self = this,
-                                deferred;
+                        if (!self.promise) {
 
-                            deferred = $q.defer('ng_AnimateRunner_getPromise', function (resolve, reject) {
+                            self.promise = $q(
+                                function (resolve, reject) {
                                     self.done(
                                         function (status) {
                                             if (status === false)   { reject();  }
                                             else                    { resolve(); }
                                         }
                                     );
-                                });
-
-                            this.promise = deferred.promise;
+                                },
+                                'ng_AnimateRunner' + anim_run_cnt + '_getPromise'
+                            );
                         }
 
-                        if (msos_verbose === 'animate') {
-                            msos_debug(temp_ar + ' - getPromise -> called, this.promise:', this.promise);
+                        if (va) {
+                            msos_debug(temp_ar + ' - AnimateRunner - getPromise -> called' + msos_indent + 'this.promise:', this.promise);
                         }
 
-                        return this.promise;
+                        return self.promise;
                     },
                     then: function (resolveHandler, rejectHandler) {
-                        msos_debug(temp_ar + ' - then -> called.');
+                        msos_debug(temp_ar + ' - AnimateRunner - then -> called.');
 
                         return this.getPromise().then(resolveHandler, rejectHandler);
                     },
@@ -5233,39 +5530,50 @@ msos.console.time('ng');
                     complete: function (response) {
                         var self = this;
 
-                        if (self._state === INITIAL_STATE) {
+                        if (va) {
+                            msos_debug(temp_ar + ' - AnimateRunner - complete -> start, cnt: ' + anim_run_cnt + ', response:', response);
+                        }
+
+                        // Experimental && self._doneCallbacks.length > 0
+                        if (self._state === ANIMATION_INITIAL_STATE && self._doneCallbacks.length > 0) {
                             self._state = DONE_PENDING_STATE;
                             self._tick(
-                                function tick_fn() {
-                                    if (msos_verbose === 'animate') {
-                                        msos_debug(temp_ar + ' - complete - tick_fn -> called, response:', response);
-                                    }
-
-                                    self._resolve(response);
-                                }
+                                function runner_complete_tick_fn() { self._resolve(response); }
                             );
+                        }
+
+                        if (va) {
+                            msos_debug(temp_ar + ' - AnimateRunner - complete ->  done, cnt: ' + anim_run_cnt);
                         }
                     },
                     _resolve: function (response) {
-                        if (this._state !== DONE_COMPLETE_STATE) {
+                        if (va) {
+                            msos_debug(temp_ar + ' - AnimateRunner - _resolve -> start, cnt: ' + anim_run_cnt + ', response:', response);
+                        }
 
-                            if (msos_verbose === 'animate') {
-                                msos_debug(temp_ar + ' - _resolve -> called, response:', response);
-                            }
+                        if (this._state !== DONE_COMPLETE_STATE) {
 
                             forEach(
                                 this._doneCallbacks,
-                                function (fn) { fn(response); }
+                                function runner_resolve_done_cbs(fn) { fn(response); }
                             );
 
                             this._doneCallbacks.length = 0;
                             this._state = DONE_COMPLETE_STATE;
+                        }
+
+                        if (va) {
+                            msos_debug(temp_ar + ' - AnimateRunner - _resolve ->  done, cnt: ' + anim_run_cnt);
                         }
                     }
                 };
 
                 AnimateRunner.chain = function (chain, callback) {
                     var index = 0;
+
+                    if (va) {
+                        msos_debug(temp_ar + ' - AnimateRunner.chain -> start, cnt: ' + anim_run_cnt);
+                    }
 
                     function next() {
 
@@ -5287,11 +5595,19 @@ msos.console.time('ng');
                     }
 
                     next();
+
+                    if (va) {
+                        msos_debug(temp_ar + ' - AnimateRunner.chain ->  done, cnt: ' + anim_run_cnt);
+                    }
                 };
 
                 AnimateRunner.all = function (runners, callback) {
                     var count = 0,
                         status = true;
+
+                    if (va) {
+                        msos_debug(temp_ar + ' - AnimateRunner.all -> start, cnt: ' + anim_run_cnt);
+                    }
 
                     function onProgress(response) {
                         status = status && response;
@@ -5304,9 +5620,15 @@ msos.console.time('ng');
                         runners,
                         function (runner) { runner.done(onProgress); }
                     );
+
+                    if (va) {
+                        msos_debug(temp_ar + ' - AnimateRunner.all ->  done, cnt: ' + anim_run_cnt);
+                    }
                 };
 
-                msos_debug(temp_ar + ' ->  done!');
+                if (va) {
+                    msos_debug(temp_ar + ' ->  done!');
+                }
 
                 return AnimateRunner;
             }
@@ -5322,18 +5644,17 @@ msos.console.time('ng');
         return url.replace(/(#.+)|#$/, '$1');
     }
 
-    function Browser(window) {
+    function Browser(br_window) {
         var temp_br = 'ng - Browser',
+            vb = msos_verbose === 'browser' ? true : false,
             self = this,
-            location = window.location,
-            history = window.history,
-            set_timeout = window.setTimeout,
-            clearTimeout = window.clearTimeout,
+            location = br_window.location,
+            history = br_window.history,
+            set_timeout = br_window.setTimeout,
+            clearTimeout = br_window.clearTimeout,
             lastBrowserUrl = location.href,
             urlChangeListeners = [],
             urlChangeInit = false,
-            outstandingRequestCount_Br = 0,
-            outstandingRequestCallbacks_Br = [],
             pendingLocation = null,
             sameState,
             sameBase,
@@ -5341,54 +5662,17 @@ msos.console.time('ng');
             lastCachedState = null,
             lastHistoryState;
 
-        self.isMock = false;
+        function completeBrRequest(fn) {
+            var fn_name = fn.name || fn.ng_name || 'anonymous';
 
-        function completeOutstandingRequest_Br(fn) {
-            var temp_co = temp_br + ' - completeOutstandingRequest_Br -> ';
+            msos_debug(temp_br + ' - completeBrRequest -> called, fn: ' + fn_name);
 
-            msos_debug(temp_co + 'start.');
-
-            if (msos_verbose) {
-                try {
-                    // We just want to run "outstandingRequestCallbacks_Br" for noop
-                    if (fn !== noop) {
-                        fn.apply(null, sliceArgs(arguments, 1));
-                    } else {
-                        msos_debug(temp_co + 'fn skipped for noop.');
-                    }
-                } catch (e1) {
-                    msos.console.error(temp_co + 'error (fn.apply):', e1);
-                } finally {
-                    outstandingRequestCount_Br -= 1;
-                    if (outstandingRequestCount_Br === 0) {
-                        while (outstandingRequestCallbacks_Br.length) {
-                            try {
-                                outstandingRequestCallbacks_Br.pop()();
-                            } catch (e2) {
-                                msos.console.error(temp_co + 'error (outstandingRequestCallbacks):', e2);
-                            }
-                        }
-                    }
-                }
-            } else {
-
-                // We just want to run "outstandingRequestCallbacks_Br" for noop
-                if (fn !== noop) { fn.apply(null, sliceArgs(arguments, 1)); }
-
-                outstandingRequestCount_Br -= 1;
-
-                if (outstandingRequestCount_Br === 0) {
-                    while (outstandingRequestCallbacks_Br.length) {
-                        outstandingRequestCallbacks_Br.pop()();
-                    }
-                }
+            if (msos_script && fn_name === 'anonymous') {
+                msos.console.trace(temp_br + ' - completeBrRequest -> for anonymous fn:', fn);
             }
 
-            msos_debug(temp_co + ' done!');
+            fn.apply(null, sliceArgs(arguments, 1));
         }
-
-        self.$$completeOutstandingRequest = completeOutstandingRequest_Br;
-        self.$$incOutstandingRequestCount = function () { outstandingRequestCount_Br += 1; };
 
         function getHash(url) {
             var index = url.indexOf('#');
@@ -5402,7 +5686,7 @@ msos.console.time('ng');
 
         function cacheState() {
             // This should be the only place in $browser where `history.state` is read.
-            cachedState = history_pushstate ? window.history.state : undefined;
+            cachedState = history_pushstate ? br_window.history.state : undefined;
             cachedState = _.isUndefined(cachedState) ? null : cachedState;
 
             // Prevent callbacks fo fire twice if both hashchange & popstate were fired.
@@ -5419,14 +5703,18 @@ msos.console.time('ng');
                 check_url,
                 prevLastHistoryState = lastHistoryState;
 
-            msos_debug(temp_br + temp_fu + 'start.');
+            if (vb) {
+                msos_debug(temp_br + temp_fu + 'start.');
+            }
             
             cacheState();
 
             check_url = self.url();
 
             if (lastBrowserUrl === check_url && prevLastHistoryState === cachedState) {
-                msos_debug(temp_br + temp_fu + ' done, no change!');
+                if (vb) {
+                    msos_debug(temp_br + temp_fu + 'done, no change!');
+                }
                 return;
             }
 
@@ -5442,7 +5730,9 @@ msos.console.time('ng');
                 }
             );
 
-            msos_debug(temp_br + temp_fu + ' done!');
+            if (vb) {
+                msos_debug(temp_br + temp_fu + ' done!');
+            }
         }
 
         cacheState();
@@ -5453,10 +5743,10 @@ msos.console.time('ng');
             if (_.isUndefined(state)) { state = null; }
 
             // Android Browser BFCache causes location, history reference to become stale.
-            if (location !== window.location) { location = window.location; }
-            if (history  !== window.history)  { history  = window.history; }
+            if (location !== br_window.location) { location = br_window.location; }
+            if (history  !== br_window.history)  { history  = br_window.history; }
 
-            if (msos_verbose) {
+            if (vb) {
                 msos_debug(temp_br + ' - url -> ' + (url ? 'setter start,\n     ' + url + ',' : 'getter start.'));
             }
 
@@ -5465,7 +5755,7 @@ msos.console.time('ng');
                 sameState = lastHistoryState === state;
 
                 if (lastBrowserUrl === url && (!history_pushstate || sameState)) {
-                    if (msos_verbose) {
+                    if (vb) {
                         msos_debug(temp_br + ' - url -> setter done, no change!');
                     }
                     return self;
@@ -5485,7 +5775,7 @@ msos.console.time('ng');
                     }
 
                     if (replace) {
-                        if (msos_verbose) {
+                        if (vb) {
                             msos_debug(temp_br + ' - url -> setter done, replace url: ' + url);
                         }
 
@@ -5509,16 +5799,16 @@ msos.console.time('ng');
 
                 if (pendingLocation) { pendingLocation = url; }
       
-                if (msos_verbose) {
+                if (vb) {
                     msos_debug(temp_br + ' - url -> setter done!');
                 }
                 return self;
             }
 
-            out_url = pendingLocation || window.location.href.replace(/%27/g, '\'');
+            out_url = pendingLocation || br_window.location.href.replace(/%27/g, '\'');
 
-            if (msos_verbose) {
-                msos_debug(temp_br + ' - url -> getter done (Larry the Cable Guy),\n     url: ' + out_url);
+            if (vb) {
+                msos_debug(temp_br + ' - url -> getter done (Larry the Cable Guy)' + msos_indent + 'url: ' + out_url);
             }
 
             return out_url;
@@ -5531,23 +5821,27 @@ msos.console.time('ng');
         function cacheStateAndFireUrlChange() {
             var temp_cs = ' - cacheStateAndFireUrlChange -> ';
 
-            msos_debug(temp_br + temp_cs + 'start.');
+            if (vb) {
+                msos_debug(temp_br + temp_cs + 'start.');
+            }
 
             pendingLocation = null;
             fireStateOrUrlChange();
 
-            msos_debug(temp_br + temp_cs + 'done!');
+            if (vb) {
+                msos_debug(temp_br + temp_cs + 'done!');
+            }
         }
 
         self.onUrlChange = function (callback) {
             if (!urlChangeInit) {
                 // html5 history api - popstate event
                 if (history_pushstate) {
-                    jqLite(window).on('popstate', cacheStateAndFireUrlChange);
+                    jqLite(br_window).on('popstate', cacheStateAndFireUrlChange);
                 }
                 // hashchange event
-                jqLite(window).on('hashchange', cacheStateAndFireUrlChange);
-    
+                jqLite(br_window).on('hashchange', cacheStateAndFireUrlChange);
+
                 urlChangeInit = true;
             }
 
@@ -5559,35 +5853,38 @@ msos.console.time('ng');
 
             msos_debug(temp_br + ' - $$applicationDestroyed -> called.');
 
-            jqLite(window).off('hashchange popstate', cacheStateAndFireUrlChange);
+            jqLite(br_window).off('hashchange popstate', cacheStateAndFireUrlChange);
         };
 
         self.$$checkUrlChange = fireStateOrUrlChange;
 
-        self.defer = function (fn, name, delay) {
+        self.defer = function (fn, state, delay) {
             var temp_df = ' - defer -> ',
-                timeout_key;
+                timeout_key = 'brw_defer' + nextBrowserUid(),
+                fn_name = fn.name || 'anonymous';
 
             delay = delay || browser_std_defer;
 
-            msos_debug(temp_br + temp_df + 'start, name: ' + name + ', delay: ' + delay, fn);
+            if (vb) {
+                msos_debug(temp_br + temp_df + 'called' + msos_indent + 'state: ' + state + msos_indent + 'fn: ' + fn_name + msos_indent + 'id: ' + timeout_key + msos_indent + 'delay: ' + delay);
+            }
 
-            timeout_key = 'brw_defer' + nextBrowserUid();
-
-            outstandingRequestCount_Br += 1;
+            if (fn_name === 'anonymous' && msos.config.debug) {
+                msos.console.warn(temp_br + temp_df + 'anonymous fn:', fn);
+            }
 
             browser_defer_ids[timeout_key] = set_timeout(
-                function () {
+                function browser_defer_timeout_fn() {
 
-                    msos_debug(temp_br + ' - defer - set_timeout -> fired, name: ' + name + ', id: ' + timeout_key);
+                    if (vb) {
+                        msos_debug(temp_br + ' - defer - browser_defer_timeout_fn -> fired' + msos_indent + 'id: ' + timeout_key);
+                    }
 
                     delete browser_defer_ids[timeout_key];
-                    completeOutstandingRequest_Br(fn);
+                    completeBrRequest(fn);
                 },
                 delay
             );
-
-            msos_debug(temp_br + temp_df + ' done, name: ' + name);
 
             return timeout_key;
         };
@@ -5598,25 +5895,27 @@ msos.console.time('ng');
             if (browser_defer_ids[defer_to_key]) {
                 clearTimeout(browser_defer_ids[defer_to_key]);
                 delete browser_defer_ids[defer_to_key];
-                completeOutstandingRequest_Br(noop);
                 t_or_f = true;
             }
 
-            msos_debug(temp_br + ' - cancel -> called, id: ' + defer_to_key);
+            if (vb) {
+                msos_debug(temp_br + ' - cancel -> called, id: ' + defer_to_key + ', deleted: ' + t_or_f);
+            }
             return t_or_f;
         };
     }
 
     function $BrowserProvider() {
-        this.$get = ['$window', '$document',
-            function ($window, $document) {
-                return new Browser($window, $document);
+        this.$get = ['$window',
+            function ($window) {
+                return new Browser($window);
             }
         ];
     }
 
     $AnimateCssProvider = function () {
-        var gcsLookup = createLocalCacheLookup(),
+        var va = msos_verbose === 'animate' ? true : false,
+            gcsLookup = createLocalCacheLookup(),
             gcsStaggerLookup = createLocalCacheLookup();
 
         this.$get = ['$window', '$$jqLite', '$$AnimateRunner', '$timeout',
@@ -5625,29 +5924,29 @@ msos.console.time('ng');
                 $$forceReflow,   $$rAFScheduler, $$animateQueue) {
 
                 var applyAnimationClasses = applyAnimationClassesFactory($$jqLite),
-                    temp_ap = 'ng/animate - $AnimateCssProvider - $get',
+                    temp_ap = 'ng - $AnimateCssProvider - $get',
                     parentCounter = 0,
                     rafWaitQueue = [];
 
                 msos_debug(temp_ap + ' -> start.');
 
-                function gcsHashFn(node, extraClasses) {
+                function gcsHashFn(node_gH, extraClasses) {
                     var KEY = '$$ngAnimateParentKey',
-                        parentNode = node.parentNode;
+                        parentNode_gH = node_gH.parentNode;
 
-                    if (!parentNode[KEY]) {
+                    if (!parentNode_gH[KEY]) {
                         parentCounter += 1;
-                        parentNode[KEY] = parentCounter;
+                        parentNode_gH[KEY] = parentCounter;
                     }
 
-                    return parentNode[KEY] + '-' + node.getAttribute('class') + '-' + extraClasses;
+                    return parentNode_gH[KEY] + '-' + node_gH.getAttribute('class') + '-' + extraClasses;
                 }
 
-                function computeCachedCssStyles(node, cacheKey, properties) {
+                function computeCachedCssStyles(node_cC, cacheKey, properties) {
                     var timings = gcsLookup.get(cacheKey);
 
                     if (!timings) {
-                        timings = computeCssStyles($window, node, properties);
+                        timings = computeCssStyles($window, node_cC, properties);
                         if (timings.animationIterationCount === 'infinite') {
                             timings.animationIterationCount = 1;
                         }
@@ -5658,7 +5957,7 @@ msos.console.time('ng');
                     return timings;
                 }
 
-                function computeCachedCssStaggerStyles(node, className, cacheKey, properties) {
+                function computeCachedCssStaggerStyles(node_cSS, className, cacheKey, properties) {
                     var stagger,
                         staggerClassName;
 
@@ -5669,15 +5968,15 @@ msos.console.time('ng');
                         if (!stagger) {
                             staggerClassName = pendClasses(className, '-stagger');
 
-                            $$jqLite.addClass(node, staggerClassName);
+                            $$jqLite.addClass(node_cSS, staggerClassName);
 
-                            stagger = computeCssStyles($window, node, properties);
+                            stagger = computeCssStyles($window, node_cSS, properties);
 
                             // force the conversion of a null value to zero incase not set
                             stagger.animationDuration = Math.max(stagger.animationDuration, 0);
                             stagger.transitionDuration = Math.max(stagger.transitionDuration, 0);
 
-                            $$jqLite.removeClass(node, staggerClassName);
+                            $$jqLite.removeClass(node_cSS, staggerClassName);
 
                             gcsStaggerLookup.put(cacheKey, stagger);
                         }
@@ -5692,28 +5991,28 @@ msos.console.time('ng');
                         rafWaitQueue.push(callback);
                     }
 
-                    $$rAFScheduler.waitUntilQuiet(function () {
+                    $$rAFScheduler.waitUntilQuiet(
+                        function anim_css_prov_wait_quiet() {
 
-                        gcsLookup.flush();
-                        gcsStaggerLookup.flush();
+                            gcsLookup.flush();
+                            gcsStaggerLookup.flush();
 
-                        // DO NOT REMOVE THIS LINE OR REFACTOR OUT THE `pageWidth` variable.
-                        // PLEASE EXAMINE THE `$$forceReflow` service to understand why.
-                        var pageWidth = $$forceReflow(),
-                            i = 0;
+                            var pageWidth = $$forceReflow(),
+                                i = 0;
 
-                        // we use a for loop to ensure that if the queue is changed
-                        // during this looping then it will consider new requests
-                        for (i = 0; i < rafWaitQueue.length; i += 1) {
-                            rafWaitQueue[i](pageWidth);
+                            // we use a for loop to ensure that if the queue is changed
+                            // during this looping then it will consider new requests
+                            for (i = 0; i < rafWaitQueue.length; i += 1) {
+                                rafWaitQueue[i](pageWidth);
+                            }
+
+                            rafWaitQueue.length = 0;
                         }
-
-                        rafWaitQueue.length = 0;
-                    });
+                    );
                 }
 
-                function computeTimings(node, cacheKey) {
-                    var timings = computeCachedCssStyles(node, cacheKey, DETECT_CSS_PROPERTIES),
+                function computeTimings(node_cT, cacheKey) {
+                    var timings = computeCachedCssStyles(node_cT, cacheKey, DETECT_CSS_PROPERTIES),
                         aD = timings.animationDelay,
                         tD = timings.transitionDelay;
 
@@ -5729,11 +6028,11 @@ msos.console.time('ng');
 
                 function AnimateCssProviderGet(element, initialOptions) {
 
-                    var temp_ac = ' - AnimateCssProviderGet -> ',
+                    var temp_ac = ' - ACPGet',
                         options = initialOptions || {},
                         restoreStyles = {},
                         onAnimationProgress,
-                        node = getDomNode(element),
+                        node_ACP = getDomNode(element),
                         classes = element.attr('class'),
                         temporaryStyles = [],
                         styles,
@@ -5771,12 +6070,21 @@ msos.console.time('ng');
                         flags = {},
                         delayStyle;
 
-                    msos_debug(temp_ap + temp_ac + 'start.');
+                    if (va) {
+                        msos_debug(temp_ap + temp_ac + ' -> start' + msos_indent + 'debug name: ' + nodeDebugName_(element) + msos_indent + 'classes:', classes);
+                    }
 
                     function close(rejected) {
                         // if the promise has been called already then we shouldn't close
                         // the animation again
-                        if (animationClosed || (animationCompleted && animationPaused)) { return; }
+                        if (va) {
+                            msos_debug(temp_ap + temp_ac + ' - close -> start' + msos_indent + 'animationClosed: ' + animationClosed + msos_indent + 'animationCompleted: ' + animationCompleted + msos_indent + 'animationPaused: ' + animationPaused);
+                        }
+
+                        if (animationClosed || (animationCompleted && animationPaused)) {
+                            msos_debug(temp_ap + temp_ac + ' - close ->  done, skipped.');
+                            return;
+                        }
 
                         animationClosed = true;
                         animationPaused = false;
@@ -5787,11 +6095,11 @@ msos.console.time('ng');
 
                         $$jqLite.removeClass(element, activeClasses);
 
-                        blockKeyframeAnimations(node, false);
-                        blockTransitions(node, false);
+                        blockKeyframeAnimations(node_ACP, false);
+                        blockTransitions(node_ACP, false);
 
                         forEach(temporaryStyles, function (entry) {
-                            node.style[entry[0]] = '';
+                            node_ACP.style[entry[0]] = '';
                         });
 
                         applyAnimationClasses(element, options);
@@ -5800,9 +6108,9 @@ msos.console.time('ng');
                         if (Object.keys(restoreStyles).length) {
                             forEach(restoreStyles, function (value, prop) {
                                 if (value) {
-                                    node.style.setProperty(prop, value);
+                                    node_ACP.style.setProperty(prop, value);
                                 } else {
-                                    node.style.removeProperty(prop);
+                                    node_ACP.style.removeProperty(prop);
                                 }
                             });
                         }
@@ -5825,8 +6133,12 @@ msos.console.time('ng');
                         }
 
                         // if the preparation function fails then the promise is not setup
-                        if (runner) {
+                        if (runner && runner._state === ANIMATION_INITIAL_STATE) {
                             runner.complete(!rejected);
+                        }
+
+                        if (va) {
+                            msos_debug(temp_ap + temp_ac + ' - close -> done!');
                         }
                     }
 
@@ -5835,10 +6147,20 @@ msos.console.time('ng');
                         event.stopPropagation();
 
                         var ev = event.originalEvent || event,
-                            timeStamp = ev.$manualTimeStamp || Date.now(),
-                            elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
+                            timeStamp,
+                            elapsedTime;
+
+						if (ev.target !== node_ACP) {
+							// Since TransitionEvent / AnimationEvent bubble up,
+							// we have to ignore events by finished child animations
+							return;
+						}
+
+						timeStamp = ev.$manualTimeStamp || Date.now();
+                        elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
 
                         if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
+                            msos_debug(temp_ap + temp_ac + ' - onAnimationProgress -> fired.');
                             animationCompleted = true;
                             close();
                         }
@@ -5875,10 +6197,13 @@ msos.console.time('ng');
                         options = prepareAnimationOptions(copy(options));
                     }
 
-                    if (!node ||
-                        !node.parentNode ||
+                    if (!node_ACP ||
+                        !node_ACP.parentNode ||
                         !$$animateQueue.enabled()) {
-                        msos_debug(temp_ap + temp_ac + ' done, no node, etc.');
+
+                        if (va) {
+                            msos_debug(temp_ap + temp_ac + ' ->  done, no node, etc.');
+                        }
 
                         return closeAndReturnNoopAnimator();
                     }
@@ -5886,7 +6211,10 @@ msos.console.time('ng');
                     styles = packageStyles(options);
 
                     if (options.duration === 0 || (!Modernizr.cssanimations && !Modernizr.csstransitions)) {
-                        msos_debug(temp_ap + temp_ac + ' done, no animations/transitions');
+
+                        if (va) {
+                            msos_debug(temp_ap + temp_ac + ' ->  done, no animations/transitions');
+                        }
 
                         return closeAndReturnNoopAnimator();
                     }
@@ -5924,7 +6252,10 @@ msos.console.time('ng');
 
                     if (!containsKeyframeAnimation && !hasToStyles && !preparationClasses) {
 
-                        msos_debug(temp_ap + temp_ac + ' done, no styles/classes.');
+                        if (va) {
+                            msos_debug(temp_ap + temp_ac + ' ->  done, no styles/classes.');
+                        }
+
                         return closeAndReturnNoopAnimator();
                     }
 
@@ -5937,8 +6268,8 @@ msos.console.time('ng');
                             animationDuration: 0
                         };
                     } else {
-                        cacheKey = gcsHashFn(node, fullClassName);
-                        stagger = computeCachedCssStaggerStyles(node, preparationClasses, cacheKey, DETECT_STAGGER_CSS_PROPERTIES);
+                        cacheKey = gcsHashFn(node_ACP, fullClassName);
+                        stagger = computeCachedCssStaggerStyles(node_ACP, preparationClasses, cacheKey, DETECT_STAGGER_CSS_PROPERTIES);
                     }
 
                     if (!options.$$skipPreparationClasses) {
@@ -5947,22 +6278,22 @@ msos.console.time('ng');
 
                     if (options.transitionStyle) {
                         transitionStyle = [TRANSITION_PROP, options.transitionStyle];
-                        applyInlineStyle(node, transitionStyle);
+                        applyInlineStyle(node_ACP, transitionStyle);
                         temporaryStyles.push(transitionStyle);
                     }
 
                     if (options.duration >= 0) {
-                        applyOnlyDuration = node.style[TRANSITION_PROP].length > 0;
+                        applyOnlyDuration = node_ACP.style[TRANSITION_PROP].length > 0;
                         durationStyle = getCssTransitionDurationStyle(options.duration, applyOnlyDuration);
 
                         // we set the duration so that it will be picked up by getComputedStyle later
-                        applyInlineStyle(node, durationStyle);
+                        applyInlineStyle(node_ACP, durationStyle);
                         temporaryStyles.push(durationStyle);
                     }
 
                     if (options.keyframeStyle) {
                         keyframeStyle = [ANIMATION_PROP, options.keyframeStyle];
-                        applyInlineStyle(node, keyframeStyle);
+                        applyInlineStyle(node_ACP, keyframeStyle);
                         temporaryStyles.push(keyframeStyle);
                     }
 
@@ -5971,10 +6302,10 @@ msos.console.time('ng');
                     isFirst = itemIndex === 0;
 
                     if (isFirst && !options.skipBlocking) {
-                        blockTransitions(node, SAFE_FAST_FORWARD_DURATION_VALUE);
+                        blockTransitions(node_ACP, SAFE_FAST_FORWARD_DURATION_VALUE);
                     }
 
-                    timings = computeTimings(node, cacheKey);
+                    timings = computeTimings(node_ACP, cacheKey);
                     relativeDelay = timings.maxDelay;
 
                     maxDelay = Math.max(relativeDelay, 0);
@@ -5997,7 +6328,7 @@ msos.console.time('ng');
                         if (flags.applyTransitionDuration) {
                             flags.hasTransitions = true;
                             timings.transitionDuration = maxDuration;
-                            applyOnlyDuration = node.style[TRANSITION_PROP + PROPERTY_KEY].length > 0;
+                            applyOnlyDuration = node_ACP.style[TRANSITION_PROP + PROPERTY_KEY].length > 0;
                             temporaryStyles.push(getCssTransitionDurationStyle(maxDuration, applyOnlyDuration));
                         }
 
@@ -6009,11 +6340,13 @@ msos.console.time('ng');
                     }
 
                     if (maxDuration === 0 && !flags.recalculateTimingStyles) {
-                        msos_debug(temp_ap + temp_ac + ' done, duration = 0.');
+                        if (va) {
+                            msos_debug(temp_ap + temp_ac + ' ->  done, duration = 0.');
+                        }
                         return closeAndReturnNoopAnimator();
                     }
 
-                    if (options.delay != null) {        // leave as is (null of undefined)
+                    if (options.delay !== null && options.delay !== undefined) {
                         if (typeof options.delay !== 'boolean') {
                             delayStyle = parseFloat(options.delay);
                             // number in options.delay means we have to recalculate the delay for the closing timeout
@@ -6029,7 +6362,7 @@ msos.console.time('ng');
                         }
                     }
 
-                    if (options.duration == null && timings.transitionDuration > 0) {   // leave as is (null of undefined)
+                    if ((options.duration === null || options.duration === undefined) && timings.transitionDuration > 0) {
                         flags.recalculateTimingStyles = flags.recalculateTimingStyles || isFirst;
                     }
 
@@ -6045,31 +6378,31 @@ msos.console.time('ng');
 
                     if (options.from) {
                         if (options.cleanupStyles) {
-                            registerRestorableStyles(restoreStyles, node, Object.keys(options.from));
+                            registerRestorableStyles(restoreStyles, node_ACP, Object.keys(options.from));
                         }
                         applyAnimationFromStyles(element, options);
                     }
 
                     function applyBlocking(duration) {
                         if (flags.blockTransition) {
-                            blockTransitions(node, duration);
+                            blockTransitions(node_ACP, duration);
                         }
 
                         if (flags.blockKeyframeAnimation) {
-                            blockKeyframeAnimations(node, !!duration);
+                            blockKeyframeAnimations(node_ACP, !!duration);
                         }
                     }
 
                     if (flags.blockTransition || flags.blockKeyframeAnimation) {
                         applyBlocking(maxDuration);
                     } else if (!options.skipBlocking) {
-                        blockTransitions(node, false);
+                        blockTransitions(node_ACP, false);
                     }
 
                     function start() {
                         if (animationClosed) { return; }
 
-                        if (!node.parentNode) {
+                        if (!node_ACP.parentNode) {
                             close();
                             return;
                         }
@@ -6078,7 +6411,7 @@ msos.console.time('ng');
                                 if (!animationCompleted) {
                                     animationPaused = !playAnimation;
                                     if (timings.animationDuration) {
-                                        var value = blockKeyframeAnimations(node, animationPaused);
+                                        var value = blockKeyframeAnimations(node_ACP, animationPaused);
                                         if (animationPaused) {
                                             temporaryStyles.push(value);
                                         } else {
@@ -6109,6 +6442,10 @@ msos.console.time('ng');
                             var animationsData = element.data(ANIMATE_TIMER_KEY),
                                 i = 0;
 
+                            if (va) {
+                                msos_debug(temp_ap + temp_ac + ' - onAnimationExpired -> called' + msos_indent + 'node: ' + nodeDebugName_(element));
+                            }
+
                             if (animationsData) {
                                 for (i = 1; i < animationsData.length; i += 1) {
                                     animationsData[i]();
@@ -6124,8 +6461,11 @@ msos.console.time('ng');
                                 endTime,
                                 animationsData,
                                 setupFallbackTimer,
-                                currentTimerData,
-                                timer;
+                                currentTimerData;
+
+                            if (va) {
+                                msos_debug(temp_ap + temp_ac + ' - triggerAnimationStart -> called' + msos_indent + 'node: ' + nodeDebugName_(element));
+                            }
 
                             if (animationClosed) { return; }
 
@@ -6135,17 +6475,17 @@ msos.console.time('ng');
                                 var key = entry[0],
                                     value = entry[1];
 
-                                node.style[key] = value;
+                                node_ACP.style[key] = value;
                             });
 
                             applyAnimationClasses(element, options);
                             $$jqLite.addClass(element, activeClasses);
 
                             if (flags.recalculateTimingStyles) {
-                                fullClassName = node.getAttribute('class') + ' ' + preparationClasses;
-                                cacheKey = gcsHashFn(node, fullClassName);
+                                fullClassName = node_ACP.getAttribute('class') + ' ' + preparationClasses;
+                                cacheKey = gcsHashFn(node_ACP, fullClassName);
 
-                                timings = computeTimings(node, cacheKey);
+                                timings = computeTimings(node_ACP, cacheKey);
                                 relativeDelay = timings.maxDelay;
                                 maxDelay = Math.max(relativeDelay, 0);
                                 maxDuration = timings.maxDuration;
@@ -6168,7 +6508,7 @@ msos.console.time('ng');
                                 timings.animationDelay = relativeDelay;
                                 delayStyle = getCssDelayStyle(relativeDelay, true);
                                 temporaryStyles.push(delayStyle);
-                                node.style[delayStyle[0]] = delayStyle[1];
+                                node_ACP.style[delayStyle[0]] = delayStyle[1];
                             }
 
                             maxDelayTime = maxDelay * ONE_SECOND;
@@ -6180,12 +6520,12 @@ msos.console.time('ng');
                                 if (flags.hasTransitions) {
                                     easeProp = TRANSITION_PROP + TIMING_KEY;
                                     temporaryStyles.push([easeProp, easeVal]);
-                                    node.style[easeProp] = easeVal;
+                                    node_ACP.style[easeProp] = easeVal;
                                 }
                                 if (flags.hasAnimations) {
                                     easeProp = ANIMATION_PROP + TIMING_KEY;
                                     temporaryStyles.push([easeProp, easeVal]);
-                                    node.style[easeProp] = easeVal;
+                                    node_ACP.style[easeProp] = easeVal;
                                 }
                             }
 
@@ -6217,12 +6557,12 @@ msos.console.time('ng');
                             }
 
                             if (setupFallbackTimer) {
-                                timer = $timeout(onAnimationExpired, timerTime, false);
 
                                 animationsData[0] = {
-                                    timer: timer,
+                                    timer: $timeout(onAnimationExpired, timerTime, false),
                                     expectedEndTime: endTime
                                 };
+
                                 animationsData.push(close);
                                 element.data(ANIMATE_TIMER_KEY, animationsData);
                             }
@@ -6233,22 +6573,26 @@ msos.console.time('ng');
 
                             if (options.to) {
                                 if (options.cleanupStyles) {
-                                    registerRestorableStyles(restoreStyles, node, Object.keys(options.to));
+                                    registerRestorableStyles(restoreStyles, node_ACP, Object.keys(options.to));
                                 }
                                 applyAnimationToStyles(element, options);
                             }
                         }
 
                         if (maxStagger) {
-                            $timeout(triggerAnimationStart,
+                            $timeout(
+                                triggerAnimationStart,
                                 Math.floor(maxStagger * itemIndex * ONE_SECOND),
-                                false);
+                                false
+                            );
                         } else {
                             triggerAnimationStart();
                         }
                     }
 
-                    msos_debug(temp_ap + temp_ac + ' done!');
+                    if (va) {
+                        msos_debug(temp_ap + temp_ac + ' ->  done!');
+                    }
 
                     return {
                         $$willAnimate: true,
@@ -6287,14 +6631,14 @@ msos.console.time('ng');
             NG_OUT_ANCHOR_CLASS_NAME = 'ng-anchor-out',
             NG_IN_ANCHOR_CLASS_NAME = 'ng-anchor-in';
 
-        function isDocumentFragment(node) {
-            return node.parentNode && node.parentNode.nodeType === 11;
+        function isDocumentFragment(node_iD) {
+            return node_iD.parentNode && node_iD.parentNode.nodeType === 11;
         }
 
         this.$get = ['$animateCss', '$$AnimateRunner', '$rootElement', '$document',
             function ($animateCss, $$AnimateRunner, $rootElement, $document) {
 
-                var temp_cd = 'ng/animate - $$AnimateCssDriverProvider - $get',
+                var temp_cd = 'ng - $$AnimateCssDriverProvider - $get',
                     bodyNode,
                     rootNode,
                     rootBodyElement;
@@ -6422,7 +6766,9 @@ msos.console.time('ng');
                                             currentAnimation.done(function () {
                                                 currentAnimation = null;
                                                 end();
-                                                runner.complete();
+                                                if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                                    runner.complete();
+                                                }
                                             });
 
                                             return currentAnimation;
@@ -6430,7 +6776,9 @@ msos.console.time('ng');
                                     }
                                     // in the event that there is no `in` animation
                                     end();
-                                    runner.complete();
+                                    if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                        runner.complete();
+                                    }
 
                                     return undefined;
                                 }
@@ -6523,7 +6871,9 @@ msos.console.time('ng');
                             });
 
                             $$AnimateRunner.all(animationRunners, function (status) {
-                                runner.complete(status);
+                                if (runner && runner._state === ANIMATION_INITIAL_STATE) {
+                                    runner.complete(status);
+                                }
                             });
 
                             return runner;
@@ -6697,7 +7047,12 @@ msos.console.time('ng');
      * @param name Name to normalize
      */
     function directiveNormalize(name) {
-      return name.replace(PREFIX_REGEXP, '').replace(SPECIAL_CHARS_REGEXP, fnCamelCaseReplace);
+		return name.replace(PREFIX_REGEXP, '').replace(
+			SPECIAL_CHARS_REGEXP,
+			function (_, letter, offset) {
+				return offset ? letter.toUpperCase() : letter;
+			}
+		);
     }
 
     function tokenDifference(str1, str2) {
@@ -6722,7 +7077,7 @@ msos.console.time('ng');
         jqNodes = jqLite(jqNodes);
 
         var i = jqNodes.length,
-            node;
+            node_rC;
 
         if (i <= 1) {
             return jqNodes;
@@ -6731,9 +7086,9 @@ msos.console.time('ng');
         while (i) {
 
             i -= 1;
-            node = jqNodes[i];
+            node_rC = jqNodes[i];
 
-            if (node.nodeType === NODE_TYPE_COMMENT || (node.nodeType === NODE_TYPE_TEXT && node.nodeValue.trim() === '')) {
+            if (node_rC.nodeType === NODE_TYPE_COMMENT || (node_rC.nodeType === NODE_TYPE_TEXT && node_rC.nodeValue.trim() === '')) {
                 splice.call(jqNodes, i, 1);
             }
         }
@@ -6755,9 +7110,6 @@ msos.console.time('ng');
             }
 
             msos.console.error(temp_ifc + 'failed, no matching identifiers.', ctrl_expression);
-
-        } else {
-            msos.console.error(temp_ifc + 'failed, input is not a string!', ctrl_expression);
         }
 
         return undefined;
@@ -6777,6 +7129,7 @@ msos.console.time('ng');
     function $CompileProvider($provide, $$sanitizeUriProvider) {
         var hasDirectives = {},
             hasBindings = {},
+            strictComponentBindingsEnabled_CP = false,
             Suffix = 'Directive',
             COMMENT_DIRECTIVE_REGEXP = /^\s*directive:\s*([\w-]+)\s+(.*)$/,
             CLASS_DIRECTIVE_REGEXP = /(([\w-]+)(?::([^;]+))?;?)/,
@@ -7099,14 +7452,6 @@ msos.console.time('ng');
             return debugInfoEnabled_CP;
         };
 
-        /*
-         * If enabled (true), the compiler assigns the value of each of the bindings to the
-         * properties of the controller object before the constructor of this object is called.
-         *
-         * If disabled (false), the compiler calls the constructor first before assigning bindings.
-         *
-         * The default value is true in Angular 1.5.x but will switch to false in Angular 1.6.x.
-         */
         this.preAssignBindingsEnabled = function (enabled) {
             if (isDefined(enabled)) {
                 preAssignBindingsEnabled_CP = enabled;
@@ -7115,6 +7460,15 @@ msos.console.time('ng');
             }
 
             return preAssignBindingsEnabled_CP;
+        };
+
+        this.strictComponentBindingsEnabled = function (enabled) {
+            if (isDefined(enabled)) {
+                strictComponentBindingsEnabled_CP = enabled;
+
+                return this;
+            }
+            return strictComponentBindingsEnabled_CP;
         };
 
         this.onChangesTtl = function (value) {
@@ -7162,7 +7516,7 @@ msos.console.time('ng');
                     },
                 NG_ATTR_BINDING = /^ngAttr[A-Z]/,
                 MULTI_ELEMENT_DIR_RE = /^(.+)Start$/,
-                applyDirectivesToNode = null,
+                applyDirsNode = null,
                 compile = null,
                 compile_nodes_cnt = 0;
 
@@ -7317,7 +7671,7 @@ msos.console.time('ng');
                             msos_debug(temp_cp + temp_st + 'unchecked' + db_name_attr + ': ' + value);
                         }
 
-                        if (!(value === null || value === undefined)) {     // Skip since they null/undef are safe
+                        if (!(value === null || value === undefined)) {     // Skip since null/undef are safe
                             // sanitize a[href] and img[src] values
                             this[key] = value = $$sanitizeUri(value, key === 'src');
                         }
@@ -7328,7 +7682,7 @@ msos.console.time('ng');
                             msos_debug(temp_cp + temp_st + 'unchecked' + db_name_attr + ': ' + value);
                         }
 
-                        if (!(value === null || value === undefined)) {     // Skip since they null/undef are safe
+                        if (!(value === null || value === undefined)) {     // Skip since null/undef are safe
                             // first check if there are spaces because it's not the same pattern
                             trimmedSrcset = trim(value);
 
@@ -7420,7 +7774,7 @@ msos.console.time('ng');
                     listeners.push(fn);
 
                     $rootScope.$evalAsync(
-                        function () {
+                        function observe_rootScope() {
                             if (!listeners.$$inter && attrs.hasOwnProperty(key) && !_.isUndefined(attrs[key])) {
                                 fn(attrs[key]);
                             }
@@ -7452,11 +7806,11 @@ msos.console.time('ng');
 
             function detectNamespaceForChildElements(parentElement) {
 
-                var node = parentElement && parentElement[0];
+                var node_dN = parentElement && parentElement[0];
 
-                if (!node) { return 'html'; }
+                if (!node_dN) { return 'html'; }
 
-                return nodeName_(node) !== 'foreignobject' && ngto_string.call(node).match(/SVG/) ? 'svg' : 'html';
+                return nodeName_(node_dN) !== 'foreignobject' && ngto_string.call(node_dN).match(/SVG/) ? 'svg' : 'html';
             }
 
             function createBoundTranscludeFn(scope, transcludeFn, previousBoundTranscludeFn) {
@@ -7484,7 +7838,7 @@ msos.console.time('ng');
                     slotName;
 
                 // We need to attach the transclusion slots onto the `boundTranscludeFn`
-                // so that they are available inside the `controllersBoundTransclude` function 
+                // so that they are available inside the `ctrlsBndTransclude` function 
                 for (slotName in transcludeFn.$$slots) {    // Leave as is
                     if (transcludeFn.$$slots[slotName]) {   // hasOwnProperty() na in transcludeFn.$$slots
                         boundSlots[slotName] = createBoundTranscludeFn(
@@ -7547,20 +7901,14 @@ msos.console.time('ng');
                                 }
                             }
 
-                            if (!tAdded_directives[directive.name]) {
+                            tDirectives.push(directive);
+                            flag_match = true;
 
-                                tDirectives.push(directive);
-                                flag_match = true;
+                            // Record as an object
+                            tAdded_directives[directive.name] = true;
 
-                                // Record as an object
-                                tAdded_directives[directive.name] = true;
-
-                                if (vc && !directive.$$moduleName) {
-                                    msos.console.warn(temp_cp + temp_ad + 'no $$moduleName, directive:', directive);
-                                }
-
-                            } else {
-                                db_out += ', already assigned.';
+                            if (!directive.$$moduleName) {
+                                msos.console.warn(temp_cp + temp_ad + 'no $$moduleName,' + db_out + ', directive:', directive);
                             }
                         }
                     }
@@ -7597,13 +7945,13 @@ msos.console.time('ng');
                 return false;
             }
 
-            function getTrustedContext(node, attrNormalizedName) {
+            function getTrustedContext(node_gT, attrNormalizedName) {
 
                 if (attrNormalizedName === 'srcdoc') {
                     return $sce.HTML;
                 }
 
-                var tag = nodeName_(node);
+                var tag = nodeName_(node_gT);
 
                 // All tags with src attributes require a RESOURCE_URL value, except for
                 // img and various html5 media tags.
@@ -7627,7 +7975,7 @@ msos.console.time('ng');
                     interpolateFn;
 
                 if (vc) {
-                    msos_debug(temp_cp + temp_ai + 'start, name: ' + name);
+                    msos_debug(temp_cp + temp_ai + 'start, name: ' + name + ', isNgAttr: ' + isNgAttr);
                 }
 
                 trustedContext = getTrustedContext(node, name);
@@ -7690,9 +8038,7 @@ msos.console.time('ng');
 
                                 $$observers[name].$$inter = true;
 
-                                if (attr.$$observers
-                                 && attr.$$observers[name]
-                                 && attr.$$observers[name].$$scope) {
+                                if (attr.$$observers && attr.$$observers[name] && attr.$$observers[name].$$scope) {
                                     watch_scope = attr.$$observers[name].$$scope;
                                 } else {
                                     watch_scope = scope;
@@ -7809,6 +8155,8 @@ msos.console.time('ng');
                     msos_debug(temp_cp + temp_cd + 'start, for: ' + node_norm_name);
                 }
 
+                function at_ng_letter_replace(match_na, letter) { return letter.toUpperCase(); }
+
                 switch (node_type) {
 
                     case NODE_TYPE_ELEMENT:
@@ -7850,17 +8198,19 @@ msos.console.time('ng');
                             if (!at_ignore) {   // Don't bother if ngIgnore
 
                                 at_is_ng = NG_ATTR_BINDING.test(at_ng_name);
-    
+
                                 if (at_is_ng) {
                                     at_name = at_name.replace(
                                         PREFIX_REGEXP,
                                         ''
                                     ).substr(8).replace(
                                         /_(.)/g,
-                                        function (match_na, letter) {
-                                            return letter.toUpperCase();
-                                        }
+                                        at_ng_letter_replace
                                     );
+
+                                    if (vc) {
+                                        msos_debug(temp_cp + temp_cd + 'ngAttr name: ' + at_ng_name + ', attribute name: ' + at_name);
+                                    }
                                 }
 
                                 multiElementMatch = at_ng_name.match(MULTI_ELEMENT_DIR_RE);
@@ -7898,7 +8248,7 @@ msos.console.time('ng');
                         if (!at_ignore) {
 
                             if (vc) {
-                                msos_debug(temp_cp + temp_cd + 'type element, directive check name: ' + node_norm_name);
+                                msos_debug(temp_cp + temp_cd + 'type element, for: ' + node_norm_name + ', ng attributes:', node_ng_attrs_array);
                             }
 
                             addDirective(
@@ -7911,10 +8261,6 @@ msos.console.time('ng');
                             );
 
                             for (j = 0; j < jj; j += 1) {
-
-                                if (vc) {
-                                    msos_debug(temp_cp + temp_cd + 'type element, directive check attribute: ' + at_ng_name_final);
-                                }
 
                                 if (node_ng_attrs_array[j].value && node_ng_attrs_array[j].value.length && NOT_EMPTY.test(node_ng_attrs_array[j].value) === true) {
                                     addAttrInterpolateDirective(
@@ -8079,6 +8425,10 @@ msos.console.time('ng');
             function compilationGenerator(eager, $compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext) {
                 var compiled;
 
+                if (vc) {
+                    msos_debug(temp_cp + ' - $get - compilationGenerator -> called, eager: ', eager);
+                }
+
                 if (eager) {
                     return compile(
                         $compileNodes,
@@ -8090,6 +8440,10 @@ msos.console.time('ng');
                 }
 
                 return function lazyCompilation() {
+                    if (vc) {
+                        msos_debug(temp_cp + ' - $get - compilationGenerator - lazyCompilation -> called, compiled: ', compiled);
+                    }
+
                     if (!compiled) {
                         compiled = compile(
                             $compileNodes,
@@ -8099,8 +8453,6 @@ msos.console.time('ng');
                             previousCompileContext
                         );
 
-                        // Null out all of these references in order to make them eligible for garbage collection
-                        // since this is a potentially long lived closure
                         $compileNodes = transcludeFn = previousCompileContext = null;
                     }
 
@@ -8158,7 +8510,7 @@ msos.console.time('ng');
                     output_err;
 
                 if (msos_verbose) {
-                    msos_debug(temp_cp + temp_an + 'called, directive: ' + directive.name + ' vs. previous: ' + (previousDirective ? previousDirective.name : 'na') + ', for: ' + what);
+                    msos_debug(temp_cp + temp_an + 'called' + msos_indent + 'directive: ' + directive.name + ' vs. previous: ' + (previousDirective ? previousDirective.name : 'na') + msos_indent + 'for: ' + what);
                 }
 
                 function wrapModuleNameIfDefined(moduleName) {
@@ -8181,7 +8533,7 @@ msos.console.time('ng');
                 }
             }
 
-            function replaceWith($rootElement, elementsToRemove, newNode) {
+            function replaceWith($rootElement_rw, elementsToRemove, newNode) {
                 var firstElementToRemove = elementsToRemove[0],
                     removeCount = elementsToRemove.length,
                     parent = firstElementToRemove.parentNode,
@@ -8192,26 +8544,20 @@ msos.console.time('ng');
                     j2 = 0,
                     fragment;
 
-                if ($rootElement) {
-                    for (i = 0, ii = $rootElement.length; i < ii; i += 1) {
-                        if ($rootElement[i] === firstElementToRemove) {
-                            $rootElement[i] = newNode;
+                if ($rootElement_rw) {
+                    for (i = 0, ii = $rootElement_rw.length; i < ii; i += 1) {
+                        if ($rootElement_rw[i] === firstElementToRemove) {
+                            $rootElement_rw[i] = newNode;
                             i += 1;
-                            for (j = i, j2 = j + removeCount - 1, jj = $rootElement.length; j < jj; j += 1, j2 += 1) {
+                            for (j = i, j2 = j + removeCount - 1, jj = $rootElement_rw.length; j < jj; j += 1, j2 += 1) {
                                 if (j2 < jj) {
-                                    $rootElement[j] = $rootElement[j2];
+                                    $rootElement_rw[j] = $rootElement_rw[j2];
                                 } else {
-                                    delete $rootElement[j];
+                                    delete $rootElement_rw[j];
                                 }
                             }
-                            $rootElement.length -= removeCount - 1;
+                            $rootElement_rw.length -= removeCount - 1;
 
-                            // If the replaced element is also the jQuery .context then replace it
-                            // .context is a deprecated jQuery api, so we should set it only when jQuery set it
-                            // http://api.jquery.com/context/
-                            if ($rootElement.context === firstElementToRemove) {
-                                $rootElement.context = newNode;
-                            }
                             break;
                         }
                     }
@@ -8273,7 +8619,7 @@ msos.console.time('ng');
                 }
             }
 
-            function compileNodes(nodeList, transcludeFn, $rootElement, maxPriority, ignoreDirective, previousCompileContext_cn) {
+            function compileNodes(nodeList, transcludeFn, $rootElement_cN, maxPriority, ignoreDirective, previousCompileContext_cn) {
 
                 compile_nodes_cnt += 1;
 
@@ -8314,12 +8660,12 @@ msos.console.time('ng');
                         // since the nodes can be replaced underneath us.
                         directives = collectDirectives(nodeList[l], [], attrs, l === 0 ? maxPriority : undefined, ignoreDirective);
 
-                        nodeLinkFn_cN = (directives.length) ? applyDirectivesToNode(
+                        nodeLinkFn_cN = (directives.length) ? applyDirsNode(
                                 directives,
                                 nodeList[l],
                                 attrs,
                                 transcludeFn,
-                                $rootElement,
+                                $rootElement_cN,
                                 null,
                                 [],
                                 [],
@@ -8354,7 +8700,7 @@ msos.console.time('ng');
                     }
                 }
 
-                function compositeLinkFn(scope, nodeList, $rootElement, parentBoundTranscludeFn) {
+                function compositeLinkFn(scope, nodeList, $rootElement_cL, parentBoundTranscludeFn) {
                     var nodeLinkFn_cLF,
                         childLinkFn_cLF,
                         node,
@@ -8418,7 +8764,7 @@ msos.console.time('ng');
                                 childLinkFn_cLF,
                                 childScope,
                                 node,
-                                $rootElement,
+                                $rootElement_cL,
                                 childBoundTranscludeFn
                             );
 
@@ -8434,14 +8780,14 @@ msos.console.time('ng');
                 }
 
                 if (msos_verbose) {
-                    msos_debug(temp_cp + temp_cn + ' done, iteration: ' + m + (debug_cn.length ? ',\n     ' + debug_cn.join(',\n     ') : ''));
+                    msos_debug(temp_cp + temp_cn + ' done, iteration: ' + m + (debug_cn.length ? msos_indent + debug_cn.join(msos_indent) : ''));
                 }
 
                 // return a linking function if we have found anything, null otherwise
                 return linkFnFound ? compositeLinkFn : null;
             }
 
-            function compileTemplateUrl(directives, $compileNode, tAttrs, $rootElement, childTranscludeFn, preLinkFns_cTU, postLinkFns_cTU, previousCompileContext_url) {
+            function compileTemplateUrl(directives, $compileNode, tAttrs, $rootElement_cT, childTranscludeFn, preLinkFns_cTU, postLinkFns_cTU, previousCompileContext_url) {
                 var temp_ct = ' - $get - compileTemplateUrl',
                     linkQueue = [],
                     afterTemplateNodeLinkFn,
@@ -8458,15 +8804,15 @@ msos.console.time('ng');
                             $$originalDirective: origAsyncDirective
                         }
                     ),
-                    templateUrl = (_.isFunction(origAsyncDirective.templateUrl)) ? origAsyncDirective.templateUrl($compileNode, tAttrs) : origAsyncDirective.templateUrl,
+                    template_url = (_.isFunction(origAsyncDirective.templateUrl)) ? origAsyncDirective.templateUrl($compileNode, tAttrs) : origAsyncDirective.templateUrl,
                     templateNamespace = origAsyncDirective.templateNamespace;
 
                 msos_debug(temp_cp + temp_ct + ' -> start.');
 
                 $compileNode.empty();
 
-                $templateRequest(templateUrl).then(
-                    function (content) {
+                $templateRequest(template_url).then(
+                    function comp_templ_req_then(content) {
                         var compileNode_suc,
                             tempTemplateAttrs,
                             $template_suc = [],
@@ -8479,7 +8825,7 @@ msos.console.time('ng');
                             linkNode,
                             oldClasses;
 
-                        msos_debug(temp_cp + temp_ct + ' - $templateRequest (then) -> start,\n     template: ' + templateUrl);
+                        msos_debug(temp_cp + temp_ct + ' - $templateRequest (then) -> start' + msos_indent + 'template_url: ' + template_url);
 
                         content = denormalizeTemplate(content);
 
@@ -8489,9 +8835,9 @@ msos.console.time('ng');
                             if (jqLiteIsTextNode(content)) {
                                 throw $compileMinErr(
                                     'tplrt',
-                                    'Template for directive \'{0}\' is only text. Ref. templateUrl: {1}',
+                                    'Template for directive \'{0}\' is only text. Ref. template_url: {1}',
                                     origAsyncDirective.name,
-                                    templateUrl
+                                    template_url
                                 );
                             }
 
@@ -8502,19 +8848,19 @@ msos.console.time('ng');
                             if ($template_suc.length !== 1) {
                                 throw $compileMinErr(
                                     'tplrt',
-                                    'Template for directive \'{0}\' must have exactly one root element. Ref. templateUrl: {1}',
+                                    'Template for directive \'{0}\' must have exactly one root element. Ref. template_url: {1}',
                                     origAsyncDirective.name,
-                                    templateUrl
+                                    template_url
                                 );
                             }
 
                             if (compileNode_suc.nodeType !== NODE_TYPE_ELEMENT) {
                                 throw $compileMinErr(
                                     'tplrt',
-                                    'Template for directive \'{0}\' must have root element (nodeType): {1}. Ref. templateUrl: {2}',
+                                    'Template for directive \'{0}\' must have root element (nodeType): {1}. Ref. template_url: {2}',
                                     origAsyncDirective.name,
                                     NODE_TYPE_ELEMENT,
-                                    templateUrl
+                                    template_url
                                 );
                             }
 
@@ -8522,7 +8868,7 @@ msos.console.time('ng');
                                 $attr: {}
                             };
 
-                            replaceWith($rootElement, $compileNode, compileNode_suc);
+                            replaceWith($rootElement_cT, $compileNode, compileNode_suc);
                             templateDirectives_suc = collectDirectives(compileNode_suc, [], tempTemplateAttrs);
 
                             if (_.isObject(origAsyncDirective.scope)) {
@@ -8541,7 +8887,7 @@ msos.console.time('ng');
 
                         directives.unshift(derivedSyncDirective);
 
-                        afterTemplateNodeLinkFn = applyDirectivesToNode(
+                        afterTemplateNodeLinkFn = applyDirsNode(
                             directives,
                             compileNode_suc,
                             tAttrs,
@@ -8553,9 +8899,9 @@ msos.console.time('ng');
                             previousCompileContext_url
                         );
 
-                        forEach($rootElement, function (node, i) {
+                        forEach($rootElement_cT, function (node, i) {
                             if (node === compileNode_suc) {
-                                $rootElement[i] = $compileNode[0];
+                                $rootElement_cT[i] = $compileNode[0];
                             }
                         });
 
@@ -8577,7 +8923,6 @@ msos.console.time('ng');
                                 oldClasses = beforeTemplateLinkNode.className;
 
                                 if (!(previousCompileContext_url.hasElementTranscludeDirective && origAsyncDirective.replace)) {
-                                    // it was cloned therefore we have to clone as well.
                                     linkNode = jqLiteClone(compileNode_suc);
                                 }
 
@@ -8599,14 +8944,14 @@ msos.console.time('ng');
                                 afterTemplateChildLinkFn,
                                 scope,
                                 linkNode,
-                                $rootElement,
+                                $rootElement_cT,
                                 childBoundTranscludeFn
                             );
                         }
 
                         linkQueue = null;
 
-                        msos_debug(temp_cp + temp_ct + ' - $templateRequest (then) ->  done,\n     template: ' + templateUrl);
+                        msos_debug(temp_cp + temp_ct + ' - $templateRequest (then) ->  done' + msos_indent + 'template_url: ' + template_url);
                     }
                 )['catch'](
                     function (error) {
@@ -8652,12 +8997,13 @@ msos.console.time('ng');
                 };
             }
 
-            applyDirectivesToNode = function (directives, compileNode, templateAttrs, transcludeFn, jqCollection, originalReplaceDirective, preLinkFns, postLinkFns, previousCompileContext_apply) {
+            applyDirsNode = function (directives, compileNode, templateAttrs, transcludeFn, jqCollection, originalReplaceDirective, preLinkFns, postLinkFns, previousCompileContext_apply) {
 
                 previousCompileContext_apply = previousCompileContext_apply || {};
 
-                var temp_ap = ' - $get - applyDirectivesToNode',
+                var temp_ap = ' - $get - applyDirsNode',
                     $compileNode = jqLite(compileNode),
+                    nodeLinkFn = null,
                     comp_node_class = compileNode.classList && compileNode.classList.length ? ' (' + compileNode.classList + ')' : '',
                     comp_node_name = lowercase(compileNode.nodeName) + comp_node_class,
                     i = 0,
@@ -8688,13 +9034,13 @@ msos.console.time('ng');
                     newTemplateAttrs,
                     templateDirectives,
                     unprocessedDirectives,
-                    slots,
-                    slotMap,
-                    filledSlots,
+                    slots = createMap(),
+                    slotMap = createMap(),
+                    filledSlots = createMap(),
                     slotName;
 
-                if (msos_verbose) {
-                    msos_debug(temp_cp + temp_ap + ' -> start, node: ' + comp_node_name + ', context:', previousCompileContext_apply);
+                if (vc) {
+                    msos_debug(temp_cp + temp_ap + ' -> start, node: ' + comp_node_name + msos_indent + 'context:', compileNode, previousCompileContext_apply);
                 }
 
                 templateAttrs.$$element = $compileNode;
@@ -8702,7 +9048,7 @@ msos.console.time('ng');
                 // executes all directives on the current element
                 ii = directives.length;
 
-                // Start: defining functions for applyDirectivesToNode
+                // Start: defining functions for applyDirsNode
                 function getControllers(directiveName, require, $element, elementControllers) {
                     var value,
                         match,
@@ -8776,7 +9122,7 @@ msos.console.time('ng');
                         su_controller,
                         su_controllerInstance;
 
-                    msos_debug(temp_cp + temp_ap + ' - setupControllers -> start.', $element);
+                    msos_debug(temp_cp + temp_ap + ' - setupControllers -> start' + msos_indent + '$element:', $element);
 
                     for (controllerKey in su_controller_dirs) {   // hasOwnProperty() na in su_controller_dirs
 
@@ -8792,7 +9138,7 @@ msos.console.time('ng');
 
                         if (su_controller === '@') { su_controller = attrs[directive.name]; }
 
-                        // This noop check is experimental...
+                        // This noop check is experimental
                         if (su_controller !== noop) {
                             su_controllerInstance = $controller(su_controller, locals, true, directive);
 
@@ -8809,6 +9155,17 @@ msos.console.time('ng');
 
                     msos_debug(temp_cp + temp_ap + ' - setupControllers ->  done!');
                     return elementControllers;
+                }
+
+                function strictBindingsCheck(attrName, directiveName) {
+                    if (strictComponentBindingsEnabled_CP) {
+                        throw $compileMinErr(
+                            'missingattr',
+                            'Attribute \'{0}\' of \'{1}\' is non-optional and must be set!',
+                            attrName,
+                            directiveName
+                        );
+                    }
                 }
 
                 // Set up $watches for isolate scope and controller bindings. This process
@@ -8867,6 +9224,7 @@ msos.console.time('ng');
 
                             case '@':
                                 if (!optional && !hasOwnProperty.call(attrs, attrName)) {
+                                    strictBindingsCheck(attrName, directive.name);
                                     destination[scopeName] = attrs[attrName] = undefined;
                                 }
 
@@ -8903,6 +9261,7 @@ msos.console.time('ng');
 
                                 if (!hasOwnProperty.call(attrs, attrName)) {
                                     if (optional) { break; }
+                                    strictBindingsCheck(attrName, directive.name);
                                     attrs[attrName] = undefined;
                                 }
 
@@ -8973,6 +9332,7 @@ msos.console.time('ng');
                             case '<':
                                 if (!hasOwnProperty.call(attrs, attrName)) {
                                     if (optional) { break; }
+                                    strictBindingsCheck(attrName, directive.name);
                                     attrs[attrName] = undefined;
                                 }
 
@@ -9013,6 +9373,9 @@ msos.console.time('ng');
                             break;
 
                             case '&':
+                                if (!optional && !hasOwnProperty.call(attrs, attrName)) {
+                                    strictBindingsCheck(attrName, directive.name);
+                                }
                                 // Don't assign Object.prototype method to scope
                                 parentGet = attrs.hasOwnProperty(attrName) ? $parse(attrs[attrName]) : noop;
 
@@ -9047,7 +9410,7 @@ msos.console.time('ng');
                     };
                 }
 
-                function nodeLinkFn(childLinkFn, scope, linkNode, $rootElement_na, boundTranscludeFn) {
+                nodeLinkFn = function (childLinkFn, scope, linkNode, $rootElement_na, boundTranscludeFn) {
                     var k = 0,
                         kk = 0,
                         linkFn_nLF,
@@ -9067,24 +9430,43 @@ msos.console.time('ng');
 
                     // This is the function that is injected as `$transclude`.
                     // Note: all arguments are optional!
-                    function controllersBoundTransclude(scope, cloneAttachFn, futureParentElement, cbt_slotName) {
-                        var transcludeControllers,
+                    function ctrlsBndTransclude(scope, cloneAttachFn, futureParentElement, cbt_slotName) {
+                        var temp_cbt = ' - nodeLinkFn - ctrlsBndTransclude -> ',
+                            debug_cbt = '',
+                            transcludeControllers,
                             slotTranscludeFn;
+
+                        if (vc) {
+                            msos_debug(temp_cp + temp_ap + temp_cbt + 'start.', scope, cloneAttachFn);
+                        }
 
                         // No scope passed in:
                         if (!isScope(scope)) {
+                            if (_.isFunction(scope)) {
+                                debug_cbt += msos_indent + 'function input: ' + (scope.name || 'anonymous');
+                            } else {
+                                debug_cbt += msos_indent + 'unknown scope input';
+                            }
                             cbt_slotName = futureParentElement;
                             futureParentElement = cloneAttachFn;
                             cloneAttachFn = scope;
                             scope = undefined;
+                        } else {
+                            debug_cbt += msos_indent + 'has scope input';
                         }
 
                         if (hasElementTranscludeDirective) {
+                            debug_cbt += msos_indent + 'has el transclude dir';
                             transcludeControllers = elementControllers;
                         }
 
                         if (!futureParentElement) {
+                            debug_cbt += msos_indent + 'set futureParentElement';
                             futureParentElement = hasElementTranscludeDirective ? $element.parent() : $element;
+                        }
+
+                        if (vc) {
+                            msos_debug(temp_cp + temp_ap + temp_cbt + 'futureParentElement:', futureParentElement);
                         }
 
                         if (cbt_slotName) {
@@ -9093,6 +9475,10 @@ msos.console.time('ng');
                             slotTranscludeFn = boundTranscludeFn.$$slots[cbt_slotName];
 
                             if (slotTranscludeFn) {
+                                if (vc) {
+                                    debug_cbt += msos_indent + 'slotTranscludeFn';
+                                    msos_debug(temp_cp + temp_ap + temp_cbt + ' done' + msos_indent + 'slotName: ' + cbt_slotName + debug_cbt);
+                                }
                                 return slotTranscludeFn(
                                         scope,
                                         cloneAttachFn,
@@ -9112,7 +9498,18 @@ msos.console.time('ng');
                             }
                         }
 
-                        return boundTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
+                        if (vc) {
+                            debug_cbt += msos_indent + 'boundTranscludeFn';
+                            msos_debug(temp_cp + temp_ap + temp_cbt + ' done' + debug_cbt);
+                        }
+
+                        return boundTranscludeFn(
+                            scope,
+                            cloneAttachFn,
+                            transcludeControllers,
+                            futureParentElement,
+                            scopeToChild
+                        );
                     }
 
                     if (compileNode === linkNode) {
@@ -9135,7 +9532,7 @@ msos.console.time('ng');
                     if (boundTranscludeFn) {
                         // track `boundTranscludeFn` so it can be unwrapped if `transcludeFn`
                         // is later passed as `parentBoundTranscludeFn` to `publicLinkFn`
-                        transcludeFn_nLF = controllersBoundTransclude;
+                        transcludeFn_nLF = ctrlsBndTransclude;
                         transcludeFn_nLF.$$boundTransclude = boundTranscludeFn;
                         // expose the slots on the `$transclude` function
                         transcludeFn_nLF.isSlotFilled = function (nLF_slotName) {
@@ -9255,7 +9652,7 @@ msos.console.time('ng');
                     forEach(
                         elementControllers,
                         function (controller) {
-                            var ctrl_instance = controller.instance;
+                            var ctrl_instance = controller.instance || {};
 
                             if (_.isFunction(ctrl_instance.$onChanges)) {
                                 ctrl_instance.$onChanges(controller.bindingInfo.initialChanges);
@@ -9367,7 +9764,7 @@ msos.console.time('ng');
                             }
                         }
                     );
-                }
+                };
 
                 function addLinkFns(pre, post, attrStart, attrEnd) {
                     if (pre) {
@@ -9394,9 +9791,43 @@ msos.console.time('ng');
                         postLinkFns.push(post);
                     }
                 }
-                // End: defining functions for applyDirectivesToNode
 
-                // Start: for loop for applyDirectivesToNode
+                function parse_element_selectors(elementSelector, in_slot_name) {
+                    var optional = (elementSelector.charAt(0) === '?');
+
+                    elementSelector = optional ? elementSelector.substring(1) : elementSelector;
+
+                    slotMap[elementSelector] = in_slot_name;
+
+                    slots[in_slot_name] = null;
+
+                    filledSlots[in_slot_name] = optional;
+                }
+
+                function required_slots(filled, fill_slot_name) {
+                    if (!filled) {
+                        throw $compileMinErr(
+                            'reqslot',
+                            'Required transclusion slot \'{0}\' was not filled.',
+                            fill_slot_name
+                        );
+                    }
+                }
+
+                function add_matching_elements(node) {
+                    var cnc_slot_name = slotMap[directiveNormalize(nodeName_(node))];
+
+                    if (cnc_slot_name) {
+                        filledSlots[cnc_slot_name] = true;
+                        slots[cnc_slot_name] = slots[cnc_slot_name] || [];
+                        slots[cnc_slot_name].push(node);
+                    } else {
+                        $template.push(node);
+                    }
+                }
+                // End: defining functions for applyDirsNode
+
+                // Start: for loop for applyDirsNode
                 for (i = 0; i < ii; i += 1) {
                     directive = directives[i];
                     attrStart = directive.$$start;
@@ -9438,21 +9869,12 @@ msos.console.time('ng');
 
                     directiveName = directive.name;
 
-                    // If we encounter a condition that can result in transclusion on the directive,
-                    // then scan ahead in the remaining directives for others that may cause a multiple
-                    // transclusion error to be thrown during the compilation process.  If a matching directive
-                    // is found, then we know that when we encounter a transcluded directive, we need to eagerly
-                    // compile the `transclude` function rather than doing it lazily in order to throw
-                    // exceptions at the correct time
-                    if (!didScanForMultipleTransclusion
-                     && ((directive.replace && (directive.templateUrl || directive.template))
-                     || (directive.transclude && !directive.$$tlb))) {
+                    if (!didScanForMultipleTransclusion && ((directive.replace && (directive.templateUrl || directive.template)) || (directive.transclude && !directive.$$tlb))) {
 
                         for (scanningIndex = i + 1; scanningIndex < directives.length; scanningIndex += 1) {
                             candidateDirective = directives[scanningIndex];
 
-                            if ((candidateDirective.transclude && !candidateDirective.$$tlb)
-                             || (candidateDirective.replace && (candidateDirective.templateUrl || candidateDirective.template))) {
+                            if ((candidateDirective.transclude && !candidateDirective.$$tlb) || (candidateDirective.replace && (candidateDirective.templateUrl || candidateDirective.template))) {
                                 mightHaveMultipleTransclusionError = true;
                                 break;
                             }
@@ -9524,73 +9946,38 @@ msos.console.time('ng');
 
                             msos_debug(temp_cp + temp_ap + ' -> processing template (contents): ' + directiveName);
 
-                            slots = createMap();
-
                             if (!isObject(directiveValue)) {
                                 $template = jqLite(jqLiteClone(compileNode)).contents();
                             } else {
                                 // We have transclusion slots, collect them up, compile them and store their transclusion functions
                                 $template = [];
 
-                                slotMap = createMap();
-                                filledSlots = createMap();
-
                                 // Parse the element selectors
                                 forEach(
                                     directiveValue,
-                                    function (elementSelector, in_slot_name) {
-                                        // If an element selector starts with a ? then it is optional
-                                        var optional = (elementSelector.charAt(0) === '?');
-
-                                        elementSelector = optional ? elementSelector.substring(1) : elementSelector;
-
-                                        slotMap[elementSelector] = in_slot_name;
-
-                                        // We explicitly assign `null` since this implies that a slot was defined but not filled.
-                                        // Later when calling boundTransclusion functions with a slot name we only error if the
-                                        // slot is `undefined`
-                                        slots[in_slot_name] = null;
-
-                                        // filledSlots contains `true` for all slots that are either optional or have been
-                                        // filled. This is used to check that we have not missed any required slots
-                                        filledSlots[in_slot_name] = optional;
-                                    }
+                                    parse_element_selectors
                                 );
 
                                 // Add the matching elements into their slot
                                 forEach(
                                     $compileNode.contents(),
-                                    function (node) {
-                                        var cnc_slot_name = slotMap[directiveNormalize(nodeName_(node))];
-
-                                        if (cnc_slot_name) {
-                                            filledSlots[cnc_slot_name] = true;
-                                            slots[cnc_slot_name] = slots[cnc_slot_name] || [];
-                                            slots[cnc_slot_name].push(node);
-                                        } else {
-                                            $template.push(node);
-                                        }
-                                    }
+                                    add_matching_elements
                                 );
 
                                 // Check for required slots that were not filled
                                 forEach(
                                     filledSlots,
-                                    function (filled, fill_slot_name) {
-                                        if (!filled) {
-                                            throw $compileMinErr(
-                                                'reqslot',
-                                                'Required transclusion slot \'{0}\' was not filled.',
-                                                fill_slot_name
-                                            );
-                                        }
-                                    }
+                                    required_slots
                                 );
 
                                 for (slotName in slots) {   // hasOwnProperty() na in slots
                                     if (slots[slotName]) {
                                         // Only define a transclusion function if the slot was filled
-                                        slots[slotName] = compilationGenerator(mightHaveMultipleTransclusionError, slots[slotName], transcludeFn);
+                                        slots[slotName] = compilationGenerator(
+                                            mightHaveMultipleTransclusionError,
+                                            slots[slotName],
+                                            transcludeFn
+                                        );
                                     }
                                 }
                             }
@@ -9619,9 +10006,7 @@ msos.console.time('ng');
                             templateDirective = directive;
                         }
 
-                        directiveValue = (_.isFunction(directive.template))
-                            ? directive.template($compileNode, templateAttrs)
-                            : directive.template;
+                        directiveValue = (_.isFunction(directive.template)) ? directive.template($compileNode, templateAttrs) : directive.template;
 
                         directiveValue = denormalizeTemplate(directiveValue);
 
@@ -9729,7 +10114,7 @@ msos.console.time('ng');
                         terminalPriority = Math.max(terminalPriority, directive.priority);
                     }
                 }
-                // End: for loop for applyDirectivesToNode
+                // End: for loop for applyDirsNode
 
                 nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope === true;
                 nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;
@@ -9738,11 +10123,10 @@ msos.console.time('ng');
 
                 previousCompileContext_apply.hasElementTranscludeDirective = hasElementTranscludeDirective;
 
-                if (msos_verbose) {
+                if (vc) {
                     msos_debug(temp_cp + temp_ap + ' ->  done, node: ' + comp_node_name);
                 }
 
-                // might be normal or delayed nodeLinkFn depending on if templateUrl is present
                 return nodeLinkFn;
             };
 
@@ -9750,21 +10134,17 @@ msos.console.time('ng');
                 var temp_c = ' - $get - compile -> ',
                     compositeLinkFn_cpl,
                     namespace = null,
-                    debug_out = [],
+                    prev_repl = previousCompileContext_compile ? _.keys(previousCompileContext_compile) : [],
                     ng_assigned,
                     ng_difference;
-
-                msos.console.info(temp_cp + temp_c + 'start.');
-
-                if (msos_verbose && previousCompileContext_compile) {
-                    msos_debug(temp_cp + temp_c + 'prev. context keys:', _.keys(previousCompileContext_compile));
-                }
 
                 if (!($compileNodes instanceof jqLite)) {
                     $compileNodes = jqLite($compileNodes);
                 }
 
-                msos.console.info(temp_cp + temp_c + 'do node(s): ' + debug_out.join(', '));
+				if (vc) {
+					msos_debug(temp_cp + temp_c + 'start' + (prev_repl.length ? msos_indent + 'previous: ' + prev_repl.join(', ') : '') + msos_indent + '$compileNodes:', $compileNodes);
+				}
 
                 // This is the only one which passes previous context
                 compositeLinkFn_cpl = compileNodes(
@@ -9779,10 +10159,10 @@ msos.console.time('ng');
                 compile.$$addScopeClass($compileNodes);
 
                 if (vc) {
-                    msos.console.info(temp_cp + temp_c + 'custom Html:', customHtml);
-                    msos.console.info(temp_cp + temp_c + 'custom Attr:', customAttr);
-                    msos.console.info(temp_cp + temp_c + 'hasDirectives:', hasDirectives);
-                    msos.console.info(temp_cp + temp_c + 'hasBindings:', hasBindings);
+                    msos_debug(temp_cp + temp_c + 'custom Html:', customHtml);
+                    msos_debug(temp_cp + temp_c + 'custom Attr:', customAttr);
+                    msos_debug(temp_cp + temp_c + 'hasDirectives:', hasDirectives);
+                    msos_debug(temp_cp + temp_c + 'hasBindings:', hasBindings);
                 }
 
                 // This is expensive, so only do it at debugging (no account for specific scope)
@@ -9791,11 +10171,13 @@ msos.console.time('ng');
                     ng_difference = _.difference(ng_assigned, _.keys(hasDirectives).concat(_.keys(hasBindings)));
 
                     if (ng_difference.length) {
-                        msos.console.warn(temp_cp + temp_c + 'missing or unregistered directive references:', ng_difference);
+                        msos.console.warn(temp_cp + temp_c + 'unregistered directive(s):', ng_difference);
                     }
                 }
 
-                msos.console.info(temp_cp + temp_c + 'done!');
+				if (vc) {
+					msos_debug(temp_cp + temp_c + 'done!');
+				}
 
                 return function publicLinkFn(scope, cloneConnectFn, options) {
 
@@ -9808,8 +10190,7 @@ msos.console.time('ng');
 
                     assertArg(scope, 'scope');
 
-                    if (previousCompileContext_compile
-                     && previousCompileContext_compile.needsNewScope) {
+                    if (previousCompileContext_compile && previousCompileContext_compile.needsNewScope) {
                         scope = scope.$parent.$new();
                         scope.$$name += '_publink' + scope.$id;
                     }
@@ -9823,11 +10204,10 @@ msos.console.time('ng');
                         controllerName;
 
                     // When `parentBoundTranscludeFn` is passed, it is a
-                    // `controllersBoundTransclude` function (it was previously passed
+                    // `ctrlsBndTransclude` function (it was previously passed
                     // as `transclude` to directive.link) so we must unwrap it to get
                     // its `boundTranscludeFn`
-                    if (parentBoundTranscludeFn
-                     && parentBoundTranscludeFn.$$boundTransclude) {
+                    if (parentBoundTranscludeFn && parentBoundTranscludeFn.$$boundTransclude) {
                         parentBoundTranscludeFn = parentBoundTranscludeFn.$$boundTransclude;
                     }
 
@@ -9840,11 +10220,14 @@ msos.console.time('ng');
                             wrapTemplate(namespace, jqLite('<div>').append($compileNodes).html())
                         );
 
-                    } else if (cloneConnectFn && cloneConnectFn !== noop) {     // Experimental
-                        // important!!: we must call our jqLite.clone() since the jQuery one is trying to be smart
-                        // and sometimes changes the structure of the DOM.
-                        $linkNode = JQLitePrototype.clone.call($compileNodes);
+                    } else if (cloneConnectFn && cloneConnectFn !== noop) {     // cloneConnectFn !== noop, experimental
+                        // was JQLitePrototype.clone.call($compileNodes), experimental
+                        $linkNode = jQuery($compileNodes).clone();
+
                     } else {
+						if (cloneConnectFn && cloneConnectFn === noop) {
+							msos.console.warn(temp_cp + temp_c + 'experimental, skipped cloning $compileNodes');
+						}
                         $linkNode = $compileNodes;
                     }
 
@@ -9856,13 +10239,13 @@ msos.console.time('ng');
 
                     compile.$$addScopeInfo($linkNode, scope);
 
-                    if (cloneConnectFn && cloneConnectFn !== noop) {        // Experimental
+                    if (cloneConnectFn && cloneConnectFn !== noop) {        // experimental
                         cloneConnectFn($linkNode, scope);
                     }
 
                     if (compositeLinkFn_cpl) { compositeLinkFn_cpl(scope, $linkNode, $linkNode, parentBoundTranscludeFn); }
 
-                    if (!cloneConnectFn || cloneConnectFn === noop) {        // Experimental
+                    if (!cloneConnectFn || cloneConnectFn === noop) {        // experimental
                         $compileNodes = compositeLinkFn_cpl = null;
                         if (msos_verbose && cloneConnectFn === noop) {
                             msos.console.warn(temp_cp + temp_c + 'publicLinkFn (experimental), set $compileNodes = compositeLinkFn_cpl = null for noop!');
@@ -9873,12 +10256,9 @@ msos.console.time('ng');
                 };
             };
 
-            compile.$$addBindingClass = debugInfoEnabled_CP
-                ? function $$addBindingClass($element) { $element.addClass('ng-binding'); }
-                : noop;
+            compile.$$addBindingClass = debugInfoEnabled_CP ? function $$addBindingClass($element) { $element.addClass('ng-binding'); } : noop;
 
-            compile.$$addScopeInfo = debugInfoEnabled_CP
-                ? function $$addScopeInfo($element, scope, isolated, noTemplate) {
+            compile.$$addScopeInfo = debugInfoEnabled_CP ? function $$addScopeInfo($element, scope, isolated, noTemplate) {
                     var dataName = isolated ? (noTemplate ? '$isolateScopeNoTemplate' : '$isolateScope') : '$scope';
 
                     $element.each(
@@ -9891,11 +10271,9 @@ msos.console.time('ng');
                 }
                 : noop;
 
-            compile.$$addScopeClass = debugInfoEnabled_CP
-                ? function $$addScopeClass($element, isolated) {
+            compile.$$addScopeClass = debugInfoEnabled_CP ? function $$addScopeClass($element, isolated) {
                     $element.addClass(isolated ? 'ng-isolate-scope' : 'ng-scope');
-                }
-                : noop;
+                } : noop;
 
             compile.$$createComment = function (directive_name, comment) {
                 var content = '';
@@ -9904,6 +10282,10 @@ msos.console.time('ng');
                     content = ' ' + (directive_name || '') + ': ';
                     if (comment) { content += comment + ' '; }
                 }
+
+				if (vc) {
+					msos_debug(temp_cp + '- $get - compile.$$createComment -> called, content: ' + content);
+				}
 
                 return window.document.createComment(content);
             };
@@ -9927,7 +10309,9 @@ msos.console.time('ng');
             var temp_cr = temp_cp + ' - registerControllers -> ',
                 regis_fn = _.isArray(regis_cnstr) ? regis_cnstr[regis_cnstr.length - 1] : regis_cnstr;
 
-            msos_debug(temp_cr + 'start.');
+            if (vcp) {
+                msos_debug(temp_cr + 'start.');
+            }
 
             assertNotHasOwnProperty(regis_input, 'controller');
 
@@ -9942,7 +10326,9 @@ msos.console.time('ng');
                     controllers[regis_input] = regis_cnstr;
                 }
 
-                msos_debug(temp_cr + ' done, for key: ' + regis_input);
+                if (vcp) {
+                    msos_debug(temp_cr + ' done, for key: ' + regis_input);
+                }
             } else {
                 msos.console.error(temp_cr + 'error, for key:', regis_input);
             }
@@ -9954,26 +10340,35 @@ msos.console.time('ng');
 
         this.register = registerControllers;
 
-        this.$get = ['$injector', function controller_provider($injector) {
+        this.$get = ['$injector', function $controller_provider($injector) {
 
             if (vcp) {
                 msos_debug(temp_cp + ' - $get -> start, $injector:', $injector);
             }
 
-            function addIdentifier(locals, identifier, instance, name) {
+            function addIdentifier(locals, identifier, instance_id, name) {
                 var temp_ai = ' - $get - addIdentifier -> ',
-                    dbg = ', for controller: ' + name + ', identifier: ' + identifier;
+                    dbg = msos_indent + 'for controller: ' + name + msos_indent + 'identifier: ' + identifier;
 
                 msos_debug(temp_cp + temp_ai + 'start' + dbg);
 
+                if (!(locals && _.isObject(locals.$scope))) {
+                    throw minErr('$controller')(
+                        'noscp',
+                        'Cannot export controller \'{0}\' as \'{1}\'! No $scope object provided via `locals`.',
+                        name,
+                        identifier
+                    );
+                }
+
                 if (msos_verbose) {
                     try {
-                        locals.$scope[identifier] = instance;
+                        locals.$scope[identifier] = instance_id;
                     } catch(e) {
                         msos.console.error(temp_cp + temp_ai + 'failed' + dbg, e);
                     }
                 } else {
-                    locals.$scope[identifier] = instance;
+                    locals.$scope[identifier] = instance_id;
                 }
 
                 msos_debug(temp_cp + temp_ai + ' done!');
@@ -9983,8 +10378,8 @@ msos.console.time('ng');
                 msos_debug(temp_cp + ' - $get ->  done!');
             }
 
-            return function controller_inst(expression, locals, later, directive) {
-                var temp_ci = ' - $get - controller_inst',
+            return function $controller_inst(expression, locals, later, directive) {
+                var temp_ci = ' - $get - $controller_inst',
                     debug_ci = '',
                     express_fn,
                     instance_prototype,
@@ -9993,15 +10388,19 @@ msos.console.time('ng');
                     cnstr = '',
                     ctrlAs;
 
-                msos_debug(temp_cp + temp_ci + ' -> start.');
+                if (vcp) {
+                    msos_debug(temp_cp + temp_ci + ' -> start, expression/locals:', expression, locals);
+                }
 
                 if (typeof later !== 'boolean') {
-                    msos.console.warn(temp_cp + temp_ci + ' -> specify \'later\' argument as a boolean.');
-                    if (msos_verbose) {
-                        msos.console.trace(temp_cp + temp_ci + ' -> trace output.');
+                    if (!directive) {
+                        msos.console.error(temp_cp + temp_ci + ' -> missing \'later\' argument (old modules need updating).');
+                    } else {
+                        msos.console.warn(temp_cp + temp_ci + ' -> specify \'later\' argument as a boolean.');
                     }
                 }
 
+				// Just in case...
                 later = (later === true);
 
                 if (directive) {
@@ -10009,7 +10408,7 @@ msos.console.time('ng');
                         ctrlAs = directive.controllerAs;
                     } else if (_.isString(directive)) {
                         ctrlAs = directive;
-                        msos.console.warn(temp_cp + temp_ci + ' -> specify \'directive\' argument as an object.');
+                        msos.console.warn(temp_cp + temp_ci + ' -> better to specify \'directive\' argument as an object in module code, ctrlAs: ' + ctrlAs);
                     }
                 }
 
@@ -10022,10 +10421,10 @@ msos.console.time('ng');
                         cnstr = match[1];
                         ctrlAs = ctrlAs || match[3];
 
-                        expression = controllers[cnstr] || getter(locals.$scope, cnstr, true) || undefined;
+                        expression = controllers.hasOwnProperty(cnstr) ? controllers[cnstr] : getter(locals.$scope, cnstr, true) || undefined;
 
                         if (!expression) {
-                            msos.console.error(temp_cp + temp_ci + ' -> failed for "' + cnstr + '" in controllers: ', controllers);
+                            msos.console.error(temp_cp + temp_ci + ' -> failed for cnstr: "' + cnstr + '" with ctrlAs: "' + ctrlAs + '" in controllers: ', controllers);
                         }
 
                     } else {
@@ -10033,31 +10432,32 @@ msos.console.time('ng');
                         expression = noop;
                     }
 
-                    debug_ci += ', type: string';
+                    debug_ci += msos_indent + 'type: string';
                     express_fn = _.isArray(expression) ? expression[expression.length - 1] : expression;
                 } else if (_.isArray(expression) && _.isFunction(expression[expression.length - 1])) {
-                    debug_ci += ', type: array';
+                    debug_ci += msos_indent + 'type: array';
                     express_fn = expression[expression.length - 1];
                     cnstr = express_fn.name || express_fn.ng_name || 'annonymous';
                 } else if (_.isFunction(expression)) {
-                    debug_ci += ', type: function';
+                    debug_ci += msos_indent + 'type: function';
                     express_fn = expression;
                     cnstr = express_fn.name || express_fn.ng_name || 'annonymous';
                 } else {
                     msos.console.error(temp_cp + temp_ci + ' -> failed for expression input:', expression);
                 }
 
-                debug_ci += (cnstr  ? ', constructor: ' + cnstr     : '') +
-                            (ctrlAs ? ', ctrlAs: ' + ctrlAs    : '') + ', later: ' +
-                            (later ? 'true' : 'false');
-
-                msos_debug(temp_cp + temp_ci + ' -> debugging' + debug_ci);
+                if (vcp) {
+                    debug_ci += (cnstr  ? msos_indent + 'constructor: ' + cnstr     : '') +
+                                (ctrlAs ? msos_indent + 'ctrlAs: ' + ctrlAs    : '') + msos_indent + 'later: ' +
+                                (later ? 'true' : 'false');
+                    msos_debug(temp_cp + temp_ci + ' -> debugging' + debug_ci);
+                }
 
                 if (msos_verbose && cnstr === 'annonymous') {
                     msos.console.warn(temp_cp + temp_ci + ' -> annonymous controllers are hard to debug.', express_fn);
                 }
 
-                assertArgFn(express_fn, cnstr, 'failed in controller_inst' + debug_ci + '.');
+                assertArgFn(express_fn, cnstr, 'failed in $controller_inst' + debug_ci + '.', true);
 
                 if (express_fn === noop) {
                     msos.console.warn(temp_cp + temp_ci + ' -> express_fn === noop' + debug_ci, directive || {});
@@ -10065,32 +10465,52 @@ msos.console.time('ng');
 
                 if (later) {
 
-                    msos_debug(temp_cp + temp_ci + ' -> flagged \'later\'.');
+                    if (vcp) {
+                        msos_debug(temp_cp + temp_ci + ' -> flagged \'later\'.');
+                    }
 
                     instance_prototype = Object.create(express_fn.prototype || null);
 
-                    instance = extend(
-                        function controller_init() {
+                    if (ctrlAs) {
+                        addIdentifier(
+                            locals,
+                            ctrlAs,
+                            instance_prototype,
+                            cnstr
+                        );
+                    }
 
-                            var temp_ii = temp_cp + temp_ci + ' - controller_init -> ',
+                    instance = extend(
+                        function $controller_init() {
+
+                            var temp_ii = temp_cp + temp_ci + ' - $controller_init -> ',
                                 instance_later;
 
-                            msos_debug(temp_ii + 'start' + debug_ci);
-
-                            instance_later = $injector.instantiate(expression, locals, cnstr);
-
-                            if (ctrlAs) {
-                                addIdentifier(
-                                    locals,
-                                    ctrlAs,
-                                    instance_later,
-                                    cnstr
-                                );
+                            if (vcp) {
+                                msos_debug(temp_ii + 'start' + debug_ci + msos_indent + 'expression:', expression);
                             }
 
-                            msos_debug(temp_ii + ' done' + debug_ci);
+                            instance_later = $injector.invoke(expression, instance_prototype, locals, cnstr);
 
-                            return instance_later;
+                            if (instance_later !== instance_prototype && (isObject(instance_later) || _.isFunction(instance_later))) {
+
+                                instance_prototype = instance_later;
+
+                                if (ctrlAs) {
+                                    addIdentifier(
+                                        locals,
+                                        ctrlAs,
+                                        instance_prototype,
+                                        cnstr
+                                    );
+                                }
+                            }
+
+                            if (vcp) {
+                                msos_debug(temp_ii + ' done, instance_prototype:', instance_prototype);
+                            }
+
+                            return instance_prototype;
                         },
                         {
                             instance: instance_prototype,
@@ -10112,7 +10532,9 @@ msos.console.time('ng');
                     }
                 }
 
-                msos_debug(temp_cp + temp_ci + ' ->  done!');
+                if (vcp) {
+                    msos_debug(temp_cp + temp_ci + ' ->  done!');
+                }
                 return instance;
             };
         }];
@@ -10126,21 +10548,31 @@ msos.console.time('ng');
 
     function $$IsDocumentHiddenProvider() {
         this.$get = ['$document', '$rootScope', function ($document, $rootScope) {
-            var doc = $document[0],
+            var temp_id = 'ng - $$IsDocumentHiddenProvider - $get',
+                doc = $document[0],
                 hidden = doc && doc.hidden;
 
             function changeListener() {
-                hidden = doc.hidden;
+                hidden = doc && doc.hidden;
+                msos_debug(temp_id + ' - changeListener -> called, hidden: ' + hidden);
             }
 
             $document.on('visibilitychange', changeListener);
 
             $rootScope.$on(
                 '$destroy',
-                function () { $document.off('visibilitychange', changeListener); }
+                function () {
+                    msos_debug(temp_id + ' - $rootScope.$on - $destroy -> called.');
+                    $document.off('visibilitychange', changeListener);
+                }
             );
 
-            return function () { return hidden; };
+            return function is_doc_hidden_prov() {
+                if (msos_verbose) {
+                    msos_debug(temp_id + ' - is_doc_hidden_prov -> called, hidden: ' + hidden);
+                }
+                return hidden;
+            };
         }];
     }
 
@@ -10184,17 +10616,23 @@ msos.console.time('ng');
 
                 var parts = [];
 
-                forEachSorted(params, function (value, key) {
-                    if (value === null || _.isUndefined(value)) { return; }
+                forEachSorted(
+                    params,
+                    function (value, key) {
+                        if (value === null || _.isUndefined(value) || _.isFunction(value)) { return; }
 
-                    if (_.isArray(value)) {
-                        forEach(value, function (v) {
-                            parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
-                        });
-                    } else {
-                        parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
+                        if (_.isArray(value)) {
+                            forEach(
+                                value,
+                                function (v) {
+                                    parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
+                                }
+                            );
+                        } else {
+                            parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
+                        }
                     }
-                });
+                );
 
                 return parts.join('&');
             };
@@ -10240,6 +10678,7 @@ msos.console.time('ng');
 
     function defaultHttpResponseTransform(data, headers) {
         var contentType,
+            hasJsonContentType,
             tempData;
 
         if (_.isString(data)) {
@@ -10248,8 +10687,22 @@ msos.console.time('ng');
 
             if (tempData) {
                 contentType = headers('Content-Type');
-                if ((contentType && (contentType.indexOf(APPLICATION_JSON) === 0)) || isJsonLike(tempData)) {
-                    data = fromJson(tempData);
+                hasJsonContentType = contentType && (contentType.indexOf(APPLICATION_JSON) === 0);
+
+                if (hasJsonContentType || isJsonLike(tempData)) {
+                    try {
+                        data = fromJson(tempData);
+                    } catch (e) {
+                        if (!hasJsonContentType) {
+                            return data;
+                        }
+                        throw $httpMinErr(
+                            'baddata',
+                            'Data must be a valid JSON object. Received: "{0}". Parse error: "{1}"',
+                            data,
+                            e
+                        );
+                    }
                 }
             }
         }
@@ -10411,7 +10864,7 @@ msos.console.time('ng');
                         );
                     }
 
-                    msos_debug(temp_hp + temp_tt + ' -> start,\n     url: ' + requestConfig.url);
+                    msos_debug(temp_hp + temp_tt + ' -> start' + msos_indent + 'url: ' + requestConfig.url);
 
                     function executeHeaderFns(headers, config) {
                         var headerContent,
@@ -10479,11 +10932,7 @@ msos.console.time('ng');
 
                     config.headers = mergeHeaders(requestConfig);
                     config.method = uppercase(config.method);
-                    config.paramSerializer = _.isString(config.paramSerializer)
-                        ? $injector.get(config.paramSerializer)
-                        : config.paramSerializer;
-
-                    $browser.$$incOutstandingRequestCount();
+                    config.paramSerializer = _.isString(config.paramSerializer) ? $injector.get(config.paramSerializer) : config.paramSerializer;
 
                     function transformResponse(response) {
                         // Make a copy since the response must be cacheable
@@ -10498,7 +10947,12 @@ msos.console.time('ng');
 
                     function serverRequest(config) {
                         var headers = config.headers,
-                            reqData = transformData(config.data, headersGetter(headers), undefined, config.transformRequest);
+                            reqData = transformData(
+								config.data,
+								headersGetter(headers),
+								undefined,
+								config.transformRequest
+							);
 
                         // strip content-type if data is undefined
                         if (_.isUndefined(reqData)) {
@@ -10516,47 +10970,50 @@ msos.console.time('ng');
                             config.withCredentials = defaults.withCredentials;
                         }
 
-                        function sendReq(config, reqData) {
+                        function sendReq(reqConfig, reqData) {
 
                             var deferred = $q.defer('ng_sendReq'),
                                 promise_srq = deferred.promise,
                                 cache,
                                 cachedResp,
-                                reqHeaders = config.headers,
-                                isJsonp = lowercase(config.method) === 'jsonp',
-                                url = config.url,
+                                reqHeaders = reqConfig.headers,
+                                isJsonp = lowercase(reqConfig.method) === 'jsonp',
+                                url = reqConfig.url,
                                 xsrfValue,
                                 temp_sr = temp_tt + ' - serverRequest - sendReq';
 
-                            msos_debug(temp_hp + temp_sr + ' -> start,\n     url: ' + url);
+                            msos_debug(temp_hp + temp_sr + ' -> start' + msos_indent + 'url: ' + url);
 
-                            function sanitizeJsonpCallbackParam(url, key) {
-                                if (/[&?][^=]+=JSON_CALLBACK/.test(url)) {
-                                    // Throw if the url already contains a reference to JSON_CALLBACK
-                                    throw $httpMinErr(
-                                        'badjsonp',
-                                        'Illegal use of JSON_CALLBACK in url, "{0}"',
-                                        url
-                                    );
-                                }
+							function sanitizeJsonpCallbackParam(url, cbKey) {
+								var parts = url.split('?'),
+									params;
 
-                                var callbackParamRegex = new RegExp('[&?]' + key + '=');
+								if (parts.length > 2) {
+									// Throw if the url contains more than one `?` query indicator
+									throw $httpMinErr('badjsonp', 'Illegal use more than one "?", in url, "{1}"', url);
+								}
 
-                                if (callbackParamRegex.test(url)) {
-                                    // Throw if the callback param was already provided
-                                    throw $httpMinErr(
-                                        'badjsonp',
-                                        'Illegal use of callback param, \'{0}\', in url, \'{1}\'',
-                                        key,
-                                        url
-                                    );
-                                }
+								params = parseKeyValue(parts[1]);
 
-                                // Add in the JSON_CALLBACK callback param value
-                                url += ((url.indexOf('?') === -1) ? '?' : '&') + key + '=JSON_CALLBACK';
+								forEach(
+									params,
+									function (value, key) {
+										if (value === 'JSON_CALLBACK') {
+											// Throw if the url already contains a reference to JSON_CALLBACK
+											throw $httpMinErr('badjsonp', 'Illegal use of JSON_CALLBACK in url, "{0}"', url);
+										}
+										if (key === cbKey) {
+											// Throw if the callback param was already provided
+											throw $httpMinErr('badjsonp', 'Illegal use of callback param, "{0}", in url, "{1}"', cbKey, url);
+										}
+									}
+								);
 
-                                return url;
-                            }
+								// Add in the JSON_CALLBACK callback param value
+								url += ((url.indexOf('?') === -1) ? '?' : '&') + cbKey + '=JSON_CALLBACK';
+
+								return url;
+							}
 
                             if (isJsonp) {
                               // JSONP is a pretty sensitive operation where we're allowing a script to have full access to
@@ -10567,14 +11024,14 @@ msos.console.time('ng');
                               url = $sce.valueOf(url);
                             }
 
-                            url = buildUrl(url, config.paramSerializer(config.params));
+                            url = buildUrl(url, reqConfig.paramSerializer(reqConfig.params));
 
                             if (isJsonp) {
                               // Check the url and add the JSONP callback placeholder
-                              url = sanitizeJsonpCallbackParam(url, config.jsonpCallbackParam);
+                              url = sanitizeJsonpCallbackParam(url, reqConfig.jsonpCallbackParam);
                             }
 
-                            function resolvePromise(response, status, headers, statusText) {
+                            function resolvePromise(response, status, headers, statusText, xhrStatus) {
 
                                 msos_debug(temp_hp + temp_sr + ' - resolvePromise -> called.');
 
@@ -10585,8 +11042,9 @@ msos.console.time('ng');
                                     data: response,
                                     status: status,
                                     headers: headersGetter(headers),
-                                    config: config,
-                                    statusText: statusText
+                                    config: reqConfig,
+                                    statusText: statusText,
+                                    xhrStatus: xhrStatus
                                 });
                             }
 
@@ -10597,18 +11055,19 @@ msos.console.time('ng');
                                     result.data,
                                     result.status,
                                     shallowCopy(result.headers()),
-                                    result.statusText
+                                    result.statusText,
+                                    result.xhrStatus
                                 );
                             }
 
-                            function done(status, response, headersString, statusText) {
+                            function done(status, response, headersString, statusText, xhrStatus) {
                                 var db_done = '';
 
-                                msos.console.info(temp_hp + temp_sr + ' - done -> start,\n     url: ' + url + ',\n     phase: ' + $rootScope.$$phase);
+                                msos.console.info(temp_hp + temp_sr + ' - done -> start' + msos_indent + 'url: ' + url + msos_indent + 'phase: ' + $rootScope.$$phase);
 
                                 if (cache) {
                                     if (isSuccess(status)) {
-                                        cache.put(url, [status, response, parseHeaders(headersString), statusText]);
+                                        cache.put(url, [status, response, parseHeaders(headersString), statusText, xhrStatus]);
                                         db_done = ', added to cache';
                                     } else {
                                         // remove promise from the cache
@@ -10618,7 +11077,7 @@ msos.console.time('ng');
                                 }
 
                                 function resolveHttpPromise() {
-                                    resolvePromise(response, status, headersString, statusText);
+                                    resolvePromise(response, status, headersString, statusText, xhrStatus);
                                 }
 
                                 if (useApplyAsync) {
@@ -10631,14 +11090,14 @@ msos.console.time('ng');
                                     if (!$rootScope.$$phase && $rootScope.$apply !== noop) { $rootScope.$apply(); }
                                 }
                                 // Its done...done!
-                                msos.console.info(temp_hp + temp_sr + ' - done ->  done,\n     url: ' + url + ',\n     by: ' + db_done);
+                                msos.console.info(temp_hp + temp_sr + ' - done ->  done' + msos_indent + 'url: ' + url + msos_indent + 'by: ' + db_done);
                             }
 
                             function removePendingReq() {
 
                                 msos_debug(temp_hp + temp_sr + ' - removePendingReq -> called.');
 
-                                var idx = $http.pendingRequests.indexOf(config);
+                                var idx = $http.pendingRequests.indexOf(reqConfig);
 
                                 if (idx !== -1) { $http.pendingRequests.splice(idx, 1); }
                             }
@@ -10676,14 +11135,14 @@ msos.console.time('ng');
                                 return applyHandlers;
                             }
 
-                            $http.pendingRequests.push(config);
+                            $http.pendingRequests.push(reqConfig);
 
                             msos_debug(temp_hp + temp_sr + ' -> set: promise_srq.then');
 
                             promise_srq.then(removePendingReq, removePendingReq);
 
-                            if ((config.cache || defaults.cache) && config.cache !== false && (config.method === 'GET' || config.method === 'JSONP')) {
-                                cache = _.isObject(config.cache) ? config.cache : _.isObject((defaults).cache) ? (defaults).cache : defaultCache;
+                            if ((reqConfig.cache || defaults.cache) && reqConfig.cache !== false && (reqConfig.method === 'GET' || reqConfig.method === 'JSONP')) {
+                                cache = _.isObject(reqConfig.cache) ? reqConfig.cache : _.isObject((defaults).cache) ? (defaults).cache : defaultCache;
                             }
 
                             if (cache) {
@@ -10696,9 +11155,9 @@ msos.console.time('ng');
                                     } else {
                                         // serving from cache
                                         if (_.isArray(cachedResp)) {
-                                            resolvePromise(cachedResp[1], cachedResp[0], shallowCopy(cachedResp[2]), cachedResp[3]);
+                                            resolvePromise(cachedResp[1], cachedResp[0], shallowCopy(cachedResp[2]), cachedResp[3], cachedResp[4]);
                                         } else {
-                                            resolvePromise(cachedResp, 200, {}, 'OK');
+                                            resolvePromise(cachedResp, 200, {}, 'OK', 'complete');
                                         }
                                     }
                                 } else {
@@ -10710,23 +11169,23 @@ msos.console.time('ng');
                             // if we won't have the response in cache, set the xsrf headers and
                             // send the request to the backend
                             if (_.isUndefined(cachedResp)) {
-                                xsrfValue = urlIsSameOrigin(config.url) ? $$cookieReader()[config.xsrfCookieName || defaults.xsrfCookieName] : undefined;
+                                xsrfValue = urlIsSameOrigin(reqConfig.url) ? $$cookieReader()[reqConfig.xsrfCookieName || defaults.xsrfCookieName] : undefined;
 
                                 if (xsrfValue) {
-                                    reqHeaders[(config.xsrfHeaderName || defaults.xsrfHeaderName)] = xsrfValue;
+                                    reqHeaders[(reqConfig.xsrfHeaderName || defaults.xsrfHeaderName)] = xsrfValue;
                                 }
 
                                 $httpBackend(
-                                    config.method,
+                                    reqConfig.method,
                                     url,
                                     reqData,
                                     done,
                                     reqHeaders,
-                                    config.timeout,
-                                    config.withCredentials,
-                                    config.responseType,
-                                    createApplyHandlers(config.eventHandlers),
-                                    createApplyHandlers(config.uploadEventHandlers)
+                                    reqConfig.timeout,
+                                    reqConfig.withCredentials,
+                                    reqConfig.responseType,
+                                    createApplyHandlers(reqConfig.eventHandlers),
+                                    createApplyHandlers(reqConfig.uploadEventHandlers)
                                 );
                             }
 
@@ -10760,8 +11219,8 @@ msos.console.time('ng');
                     }
 
                     function completeOutstandingRequest() {
-                        // Not sure why noop (see also: route.js) ?
-                        $browser.$$completeOutstandingRequest(noop);
+                        // This is needed for some reason???
+                        msos_debug(temp_hp + ' - $get - $http - completeOutstandingRequest -> called.');
                     }
 
                     promise_$http = $q.resolve($q.defer('ng_resolve_$http'), config);
@@ -10778,7 +11237,7 @@ msos.console.time('ng');
                             }
                         }
                     );
-              
+
                     promise_$http = chainInterceptors(promise_$http, requestInterceptors);
                     promise_$http = promise_$http.then(serverRequest);
                     promise_$http = chainInterceptors(promise_$http, responseInterceptors);
@@ -10799,7 +11258,7 @@ msos.console.time('ng');
                 function createShortMethods() {
                     forEach(arguments, function (name) {
                         $http[name] = function (url, config) {
-                            msos.console.info(temp_hp + ' - $get - $http.' + name + ' -> start.');
+                            msos.console.info(temp_hp + ' - $get - $http.' + name + ' -> start, config:', config);
                             var $http_out = $http(
                                 extend(
                                     {},
@@ -10817,7 +11276,7 @@ msos.console.time('ng');
                 function createShortMethodsWithData() {
                     forEach(arguments, function (name) {
                         $http[name] = function (url, data, config) {
-                            msos.console.info(temp_hp + ' - $get - $http.' + name + ' -> start.');
+                            msos.console.info(temp_hp + ' - $get - $http.' + name + ' -> start, config:', config);
                             var $http_out = $http(
                                 extend(
                                     {},
@@ -10836,9 +11295,7 @@ msos.console.time('ng');
                     interceptorFactories,
                     function (interceptorFactory) {
                         reversedInterceptors.unshift(
-                            _.isString(interceptorFactory)
-                                ? $injector.get(interceptorFactory)
-                                : $injector.invoke(
+                            _.isString(interceptorFactory) ? $injector.get(interceptorFactory) : $injector.invoke(
                                     interceptorFactory,
                                     undefined,
                                     undefined,
@@ -10928,14 +11385,16 @@ msos.console.time('ng');
 
         msos_debug(temp_ch + ' -> done.');
 
-        return function (method, url, post, callback, headers, timeout, withCredentials, responseType, eventHandlers, uploadEventHandlers) {
+        return function backend_returned(method, url, post, callback, headers, timeout, withCredentials, responseType, eventHandlers, uploadEventHandlers) {
             var callbackKey,
                 jsonpDone,
                 xhr,
                 timeout_id_HTTPBK,
-                requestError;
+                requestError,
+                requestAborted,
+                requestTimeout;
 
-            msos_debug(temp_ch + ' returned function -> start.');
+            msos_debug(temp_ch + ' - backend_returned -> start.');
 
             url = url || $browser.url();
 
@@ -10944,7 +11403,7 @@ msos.console.time('ng');
                 if (xhr)        { xhr.abort(); }
             }
 
-            function completeRequest(callback, status, response, headersString, statusText) {
+            function completeRequest(callback, status, response, headersString, statusText, xhrStatus) {
                 // cancel timeout and subsequent timeout promise resolution
                 if (isDefined(timeout_id_HTTPBK)) {
                     $browser.cancel(timeout_id_HTTPBK);
@@ -10956,7 +11415,8 @@ msos.console.time('ng');
                     status,
                     response,
                     headersString,
-                    statusText
+                    statusText,
+                    xhrStatus
                 );
             }
 
@@ -10971,7 +11431,7 @@ msos.console.time('ng');
                         // jsonpReq only ever sets status to 200 (OK), 404 (ERROR) or -1 (WAITING)
                         var response = (status === 200) && callbacks.getResponse(callbackKey);
 
-                        completeRequest(callback, status, response, '', text);
+                        completeRequest(callback, status, response, '', text, 'complete');
                         callbacks.removeCallback(callbackKey);
                     }
                 );
@@ -11002,7 +11462,8 @@ msos.console.time('ng');
                         status,
                         response,
                         xhr.getAllResponseHeaders(),
-                        statusText
+                        statusText,
+                        'complete'
                     );
                 };
 
@@ -11012,13 +11473,38 @@ msos.console.time('ng');
                         -1,
                         null,
                         null,
-                        ''
+                        '',
+                        'error'
+                    );
+                };
+
+                requestAborted = function () {
+                    completeRequest(
+                        callback,
+                        -1,
+                        null,
+                        null,
+                        '',
+                        'abort'
+                    );
+                };
+
+                requestTimeout = function () {
+                    // The response is always empty
+                    // See https://xhr.spec.whatwg.org/#request-error-steps and https://fetch.spec.whatwg.org/#concept-network-error
+                    completeRequest(
+                        callback,
+                        -1,
+                        null,
+                        null,
+                        '',
+                        'timeout'
                     );
                 };
 
                 xhr.onerror = requestError;
-                xhr.onabort = requestError;
-                xhr.ontimeout = requestError;
+                xhr.onabort = requestAborted;
+                xhr.ontimeout = requestTimeout;
 
                 forEach(
                     eventHandlers,
@@ -11061,7 +11547,7 @@ msos.console.time('ng');
                 timeout.then(timeoutRequest);
             }
 
-            msos_debug(temp_ch + ' returned function -> done!');
+            msos_debug(temp_ch + ' - backend_returned -> done!');
         };
     }
 
@@ -11178,8 +11664,6 @@ msos.console.time('ng');
                 // Provide a quick exit and simplified result function for text with no interpolation
                 if (!textLength || text.indexOf(startSymbol) === -1) {
 
-                    db_itrp += 'text length: ' + textLength + ', skip constantInterp obj: ' + skip_return_interp_obj;
-
                     if (!skip_return_interp_obj) {
                         unescaped_text = unescapeText(text);
                         constantInterp = valueFn(unescaped_text);
@@ -11189,7 +11673,7 @@ msos.console.time('ng');
                     }
 
                     if (msos_verbose) {
-                        db_itrp += '\n     string: ' + escape_string(text);
+                        db_itrp += '\n     text length: ' + textLength + msos_indent + 'skip obj: ' + skip_return_interp_obj + '\n     string: ' + escape_string(text);
                         msos_debug(temp_ip + temp_it + ' -> done (constantInterp), ' + db_itrp);
                     }
 
@@ -11313,6 +11797,9 @@ msos.console.time('ng');
     }
 
     function markQStateExceptionHandled(state) {
+        if (msos_verbose === 'promise') {
+            msos_debug('ng - markQStateExceptionHandled -> set, state: ' + state.name);
+        }
         state.pur = true;
     }
 
@@ -11340,7 +11827,7 @@ msos.console.time('ng');
 
                 msos.console.info(temp_ipg + temp_in + ' -> start, name: ' + promise.$$prom_state.name + ', delay: ' + delay_in);
 
-                function callback() {
+                function interval_callback() {
                     if (!hasParams) {
                         fn_in(iteration);
                     } else {
@@ -11355,9 +11842,9 @@ msos.console.time('ng');
                         msos_debug(temp_ipg + temp_in + ' - tick -> start' + debug_out);
 
                         if (skipApply) {
-                            $browser.defer(callback, promise.$$prom_state.name);
+                            $browser.defer(interval_callback, promise.$$prom_state.name);
                         } else {
-                            $rootScope.$evalAsync(callback, { directive_name: '$IntervalProvider_tick' });
+                            $rootScope.$evalAsync(interval_callback, { directive_name: '$IntervalProvider_tick' });
                         }
 
                         deferred.notify(iteration);
@@ -11450,10 +11937,11 @@ msos.console.time('ng');
 
     $locationMinErr = minErr('$location');
 
-    function parseAppUrl(url, locationObj) {
+    function parseAppUrl(url, locationObj, html5Mode) {
         var temp_pa = 'ng - parseAppUrl -> ',
             prefixed = (url.charAt(0) !== '/'),
             match,
+			path,
             param;
 
         if (DOUBLE_SLASH_REGEX.test(url)) {
@@ -11472,6 +11960,7 @@ msos.console.time('ng');
         msos_debug(temp_pa + 'start, relative url: ' + url + ', prefixed: ' + prefixed);
 
         match = urlResolve(url, 'parseAppUrl');
+		path = prefixed && match.pathname.charAt(0) === '/' ? match.pathname.substring(1) : match.pathname;
 
         for (param in match.params) {
             if (match.params[param] === "") {
@@ -11479,9 +11968,9 @@ msos.console.time('ng');
             }
         }
 
-        locationObj.$$path = decodeURIComponent(prefixed && match.pathname.charAt(0) === '/' ? match.pathname.substring(1) : match.pathname);
-        locationObj.$$search = match.params;
-        locationObj.$$hash = decodeURIComponent(match.hash);
+		locationObj.$$path = decodePath(path, html5Mode);
+		locationObj.$$search = parseKeyValue(match.search);
+		locationObj.$$hash = decodeURIComponent(match.hash);
 
         // make sure path starts with '/';
         if (locationObj.$$path && locationObj.$$path.charAt(0) !== '/') {
@@ -11518,7 +12007,7 @@ msos.console.time('ng');
 
         var temp_lh5 = 'ng - LocationHtml5Url';
 
-        msos_debug(temp_lh5 + ' -> start,\n     app base: ' + appBase + (basePrefix ? ', base prefix: ' + basePrefix : ''));
+        msos_debug(temp_lh5 + ' -> start' + msos_indent + 'app base: ' + appBase + (basePrefix ? ', base prefix: ' + basePrefix : ''));
 
         this.$$protocol = originUrl.protocol;
         this.$$host = originUrl.hostname;
@@ -11526,7 +12015,7 @@ msos.console.time('ng');
 
         this.$$parse = function (url) {
 
-            msos_debug(temp_lh5 + ' - $$parse -> start,\n     url: ' + url);
+            msos_debug(temp_lh5 + ' - $$parse -> start' + msos_indent + 'url: ' + url);
 
             var pathUrl = stripBaseUrl(appBaseNoFile, url);
 
@@ -11534,7 +12023,7 @@ msos.console.time('ng');
                 throw $locationMinErr('ipthprfx', 'Invalid url "{0}", missing path prefix "{1}".', url, appBaseNoFile);
             }
 
-            parseAppUrl(pathUrl, this);
+            parseAppUrl(pathUrl, this, true);
 
             if (!this.$$path) {
                 this.$$path = '/';
@@ -11604,7 +12093,7 @@ msos.console.time('ng');
 
         var temp_hb = 'ng - LocationHashbangUrl';
 
-        msos_debug(temp_hb + ' -> start,\n     app base: ' + appBase + (hashPrefix ? ', hash prefix: ' + hashPrefix : ''));
+        msos_debug(temp_hb + ' -> start' + msos_indent + 'app base: ' + appBase + (hashPrefix ? ', hash prefix: ' + hashPrefix : ''));
 
         this.$$protocol = originUrl.protocol;
         this.$$host = originUrl.hostname;
@@ -11612,7 +12101,7 @@ msos.console.time('ng');
 
         this.$$parse = function (url) {
 
-            msos_debug(temp_hb + ' - $$parse -> start,\n     url: ' + url);
+            msos_debug(temp_hb + ' - $$parse -> start' + msos_indent + 'url: ' + url);
     
             var withoutBaseUrl = stripBaseUrl(appBase, url) || stripBaseUrl(appBaseNoFile, url),
                 withoutHashUrl;
@@ -11657,7 +12146,7 @@ msos.console.time('ng');
                 return firstPathSegmentMatch ? firstPathSegmentMatch[1] : path;
             }
 
-            parseAppUrl(withoutHashUrl, this);
+            parseAppUrl(withoutHashUrl, this, false);
 
             this.$$path = removeWindowsDriveName(this.$$path, withoutHashUrl, appBase);
 
@@ -11782,8 +12271,8 @@ msos.console.time('ng');
 
             var match = PATH_MATCH.exec(url);
 
-            if (match[1]) { this.path(decodeURIComponent(match[1])); }
-            if (match[2] || match[1]) { this.search(match[3] || ''); }
+			if (match[1] || url === '') { this.path(decodeURI(match[1])); }
+			if (match[2] || match[1] || url === '') { this.search(match[3] || ''); }
 
             this.hash(match[5] || '');
 
@@ -11819,7 +12308,7 @@ msos.console.time('ng');
                 case 1:
                     if (_.isString(srch) || _.isNumber(srch)) {
                         checked_srch = srch.toString();
-                        this.$$search = msos.parse_string(checked_srch);
+                        this.$$search = parseKeyValue(checked_srch);
                     } else if (_.isObject(srch)) {
                         checked_srch = copy(srch, {});
                         // remove object undefined or null properties
@@ -11844,9 +12333,7 @@ msos.console.time('ng');
                         delete this.$$search[srch];
                         msos_debug(temp_sr + 'case: default, delete $$search key: ' + srch);
                     } else {
-                        this.$$search[srch] = typeof paramValue === 'boolean'
-                            ? paramValue === true ? 'true' : 'false'
-                            : paramValue;
+                        this.$$search[srch] = typeof paramValue === 'boolean' ? paramValue === true ? 'true' : 'false' : paramValue;
                         msos_debug(temp_sr + 'case: default, set $$search key:', srch);
                     }
             }
@@ -11953,7 +12440,7 @@ msos.console.time('ng');
                 rewrite_url,
                 location_watch_count = 0;
 
-            msos_debug(temp_lp + ' - $get -> start,\n     initial url: ' + initialUrl);
+            msos_debug(temp_lp + ' - $get -> start' + msos_indent + 'initial url: ' + initialUrl);
 
             if (html5Mode.enabled) {
                 if (!baseHref && html5Mode.requireBase) {
@@ -12126,7 +12613,7 @@ msos.console.time('ng');
                             $location_LP.$$parse(newUrl);
                             $location_LP.$$loc_state = newState;
 
-                            msos_debug(temp_lp + temp_bo + 'start,\n     new url: ' + newUrl + '\n     new state:', newState);
+                            msos_debug(temp_lp + temp_bo + 'start' + msos_indent + 'new url: ' + newUrl + '\n     new state:', newState);
 
                             defaultPrevented = $rootScope.$broadcast(
                                 '$locationChangeStart',
@@ -12181,7 +12668,7 @@ msos.console.time('ng');
 
                     location_watch_count += 1;
 
-                    msos_debug(temp_lp + temp_lw + ' -> start (' + location_watch_count + '),\n     url: ' + newUrl);
+                    msos_debug(temp_lp + temp_lw + ' -> start (' + location_watch_count + ').');
 
                     if (initializing || $location_LP.$$urlUpdatedByLocation) {
                         $location_LP.$$urlUpdatedByLocation = false;
@@ -12192,13 +12679,13 @@ msos.console.time('ng');
                         currentReplace = $location_LP.$$replace;
                         urlOrStateChanged = oldUrl !== newUrl || ($location_LP.$$html5 && history_pushstate && oldState !== $location_LP.$$loc_state);
 
-                        msos_debug(temp_lp + temp_lw + ' -> update (' + location_watch_count + '),\n     url: ' + newUrl);
+                        msos_debug(temp_lp + temp_lw + ' -> update (' + location_watch_count + ')' + msos_indent + 'url: ' + newUrl);
 
                         if (initializing || urlOrStateChanged) {
                             initializing = false;
     
                             $rootScope.$evalAsync(
-                                function location_watch_rootScope_evalAsync() {
+                                function location_watch_rootScope() {
                                     var temp_ea = temp_lp + temp_lw + ' - location_watch_rootScope_evalAsync -> ',
                                         newUrl = $location_LP.absUrl(),
                                         defaultPrevented = $rootScope.$broadcast(
@@ -12392,10 +12879,7 @@ msos.console.time('ng');
             cp1 = ch.charCodeAt(0);
             cp2 = peek.charCodeAt(0);
 
-            if (cp1 >= 0xD800
-             && cp1 <= 0xDBFF
-             && cp2 >= 0xDC00
-             && cp2 <= 0xDFFF) {
+            if (cp1 >= 0xD800 && cp1 <= 0xDBFF && cp2 >= 0xDC00 && cp2 <= 0xDFFF) {
                 return ch + peek;
             }
 
@@ -12409,10 +12893,7 @@ msos.console.time('ng');
         throwError: function (error, start, end) {
             end = end || this.index;
 
-            var colStr = (isDefined(start)
-                    ? 's ' + start +  '-' + this.index + ' [' + this.text.substring(start, end) + ']'
-                    : ' ' + end
-                );
+            var colStr = (isDefined(start) ? 's ' + start +  '-' + this.index + ' [' + this.text.substring(start, end) + ']' : ' ' + end);
 
             throw $parseMinErr(
                 'lexerr',
@@ -12437,14 +12918,9 @@ msos.console.time('ng');
                     peekCh = this.peek();
                     if (ch === 'e' && this.isExpOperator(peekCh)) {
                         number += ch;
-                    } else if (this.isExpOperator(ch)
-                            && peekCh
-                            && this.isNumber(peekCh)
-                            && number.charAt(number.length - 1) === 'e') {
+                    } else if (this.isExpOperator(ch) && peekCh && this.isNumber(peekCh) && number.charAt(number.length - 1) === 'e') {
                         number += ch;
-                    } else if (this.isExpOperator(ch)
-                           && (!peekCh || !this.isNumber(peekCh))
-                           && number.charAt(number.length - 1) === 'e') {
+                    } else if (this.isExpOperator(ch) && (!peekCh || !this.isNumber(peekCh)) && number.charAt(number.length - 1) === 'e') {
                         this.throwError('Invalid exponent');
                     } else {
                         break;
@@ -13032,7 +13508,7 @@ msos.console.time('ng');
                     findConstantAndWatchExpressions(ast.property, $filter, astIsPure);
                 }
                 ast.constant = ast.object.constant && (!ast.computed || ast.property.constant);
-                ast.toWatch = [ast];
+                ast.toWatch = ast.constant ? [] : [ast];
             break;
             case AST.CallExpression:
                 isStatelessFilter = ast.filter ? isStateless($filter, ast.callee.name) : false;
@@ -13044,9 +13520,7 @@ msos.console.time('ng');
                     function (expr) {
                         findConstantAndWatchExpressions(expr, $filter, astIsPure);
                         allConstants = allConstants && expr.constant;
-                        if (!expr.constant) {
-                            argsToWatch.push.apply(argsToWatch, expr.toWatch);
-                        }
+                        argsToWatch.push.apply(argsToWatch, expr.toWatch);
                     }
                 );
 
@@ -13067,9 +13541,7 @@ msos.console.time('ng');
                     function (expr) {
                         findConstantAndWatchExpressions(expr, $filter, astIsPure);
                         allConstants = allConstants && expr.constant;
-                        if (!expr.constant) {
-                            argsToWatch.push.apply(argsToWatch, expr.toWatch);
-                        }
+                        argsToWatch.push.apply(argsToWatch, expr.toWatch);
                     }
                 );
                 ast.constant = allConstants;
@@ -13082,15 +13554,14 @@ msos.console.time('ng');
                     ast.properties,
                     function (property) {
                         findConstantAndWatchExpressions(property.value, $filter, astIsPure);
-                        allConstants = allConstants && property.value.constant && !property.computed;
-                        if (!property.value.constant) {
-                            argsToWatch.push.apply(argsToWatch, property.value.toWatch);
-                        }
+                        allConstants = allConstants && property.value.constant;
+                        argsToWatch.push.apply(argsToWatch, property.value.toWatch);
+
                         if (property.computed) {
-                            findConstantAndWatchExpressions(property.key, $filter, astIsPure);
-                            if (!property.key.constant) {
-                                argsToWatch.push.apply(argsToWatch, property.key.toWatch);
-                            }
+                            //`{[key]: value}` implicitly does `key.toString()` which may be non-pure
+                            findConstantAndWatchExpressions(property.key, $filter, false);
+                            allConstants = allConstants && property.key.constant;
+                            argsToWatch.push.apply(argsToWatch, property.key.toWatch);
                         }
                     }
                 );
@@ -13133,8 +13604,7 @@ msos.console.time('ng');
     }
 
     function isLiteral(ast) {
-        return ast.body.length === 0
-            || (ast.body.length === 1 && (ast.body[0].expression.type === AST.Literal || ast.body[0].expression.type === AST.ArrayExpression || ast.body[0].expression.type === AST.ObjectExpression));
+        return ast.body.length === 0 || (ast.body.length === 1 && (ast.body[0].expression.type === AST.Literal || ast.body[0].expression.type === AST.ArrayExpression || ast.body[0].expression.type === AST.ObjectExpression));
     }
 
     function isConstant(ast) {
@@ -13257,9 +13727,7 @@ msos.console.time('ng');
                         right = ast.property.name;
                     }
                     if (ast.computed) { right = this.recurse(ast.property); }
-                    return ast.computed
-                        ? this.computedMember(left, right, context, create)
-                        : this.nonComputedMember(left, right, context, create);
+                    return ast.computed ? this.computedMember(left, right, context, create) : this.nonComputedMember(left, right, context, create);
                 case AST.CallExpression:
                     args = [];
 
@@ -13273,8 +13741,7 @@ msos.console.time('ng');
                     if (ast.filter) { right = this.$filter(ast.callee.name); }
                     if (!ast.filter) { right = this.recurse(ast.callee, true); }
 
-                    return ast.filter
-                        ? function (scope, locals, assign, inputs) {
+                    return ast.filter ? function ast_filter_true(scope, locals, assign, inputs) {
                             var values = [],
                                 i = 0,
                                 value;
@@ -13286,14 +13753,13 @@ msos.console.time('ng');
                             value = right.apply(undefined, values, inputs);
 
                             return context ? { context: undefined, name: undefined, value: value } : value;
-                        }
-                        : function (scope, locals, assign, inputs) {
+                        } : function ast_filter_false(scope, locals, assign, inputs) {
                             var rhs = right(scope, locals, assign, inputs),
                                 values = [],
                                 i = 0,
                                 value;
 
-                            if (rhs.value != null) {    // Leave as is
+                            if (rhs.value !== null && rhs.value !== undefined) {
 
                                 for (i = 0; i < args.length; i += 1) {
                                     values.push(args[i](scope, locals, assign, inputs));
@@ -13588,7 +14054,7 @@ msos.console.time('ng');
                     value;
 
                 if (create && create !== 1) {
-                    if (lhs && lhs[right] == null) {
+                    if (lhs && (lhs[right] === null || lhs[right] === undefined)) {
                         lhs[right] = {};
                     }
                 }
@@ -13617,7 +14083,7 @@ msos.console.time('ng');
     function Parser(lexer_P, $filter_P, options_P) {
         this.ast = new AST(lexer_P, options_P);
         this.astCompiler = new ASTInterpreter($filter_P);   // We only do csp() expensive checks
-    };
+    }
 
     Parser.prototype = {
 
@@ -13966,7 +14432,7 @@ msos.console.time('ng');
             checkQueue = [],
             count = 0,
             pq_cnt = 0,
-            s_schedule_qF = null,
+            schedulePQueue_qF = null,
             defer_qf,
             reject_qf,
             when_qf,
@@ -13987,23 +14453,29 @@ msos.console.time('ng');
                 pur: false
             };
 
-            if (msos_verbose) {
-                msos_debug(temp_qf + ' - Promise ++++> created: ' + this.$$prom_state.name);
+            if (vip) {
+                msos_debug(temp_qf + ' - Promise ++++> created' + msos_indent + 'state: ' + this.$$prom_state.name);
             }
         }
 
         function processChecks_qF() {
-            var toCheck;
+            var toCheck,
+                temp_pc = ' - processChecks_qF -> ';
 
             while (!queueSize && checkQueue.length) {
+
                 toCheck = checkQueue.shift();
+
+                if (vip) {
+                    msos_debug(temp_qf + temp_pc + 'check state:' + toCheck.name);
+                }
 
                 if (!isStateExceptionHandled(toCheck)) {
                     markQStateExceptionHandled(toCheck);
                     if (isError(toCheck.value)) {
-                        msos.console.error(temp_qf + ' - processChecks_qF -> error:', toCheck.value);
+                        msos.console.error(temp_qf + temp_pc + 'error:', toCheck.value);
                     } else {
-                        msos.console.warn(temp_qf + ' - processChecks_qF -> Possible unhandled rejection for:', toCheck);
+                        msos.console.warn(temp_qf + temp_pc + 'Possible unhandled rejection for:', toCheck);
                     }
                 }
             }
@@ -14013,13 +14485,13 @@ msos.console.time('ng');
             var temp_rj = ' - $$reject_qF -> ',
                 ps = promise.$$prom_state;
 
-            if (vip) { msos_debug(temp_qf + temp_rj + 'start, name: ' + ps.name + ', status: ' + ps.status); }
+            if (vip) { msos_debug(temp_qf + temp_rj + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
 
             promise.$$prom_state.value = reason;
             promise.$$prom_state.status = 2;
-            s_schedule_qF(promise.$$prom_state);
+            schedulePQueue_qF(promise.$$prom_state);
 
-            if (vip) { msos_debug(temp_qf + temp_rj + ' done, name: ' + ps.name + ', status: ' + ps.status); }
+            if (vip) { msos_debug(temp_qf + temp_rj + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
         }
 
         function notifyPromise_qF(promise, progress) {
@@ -14027,7 +14499,7 @@ msos.console.time('ng');
 
             if ((promise.$$prom_state.status <= 0) && callbacks && callbacks.length) {
                 next_tick(
-                    function () {
+                    function notifyPromise_qF_next_tick() {
                         var callback,
                             result,
                             i = 0;
@@ -14050,11 +14522,14 @@ msos.console.time('ng');
 
         function $$resolve_qF(promise, val) {
             var temp_rs = ' - $$resolve_qF -> ',
+                type_val = typeof val,
                 ps = promise.$$prom_state,
                 then,
                 done = false;
 
-            if (vip) { msos_debug(temp_qf + temp_rs + 'start, name: ' + ps.name + ', status: ' + ps.status); }
+            if (vip) {
+                msos_debug(temp_qf + temp_rs + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status + msos_indent + 'val type:' + type_val);
+            }
 
             function doResolve(val) {
                 if (done) { return; }
@@ -14094,23 +14569,23 @@ msos.console.time('ng');
 
                 ps.value = val;
                 ps.status = 1;
-                s_schedule_qF(ps);
+                schedulePQueue_qF(ps);
 
             }
 
-            if (vip) { msos_debug(temp_qf + temp_rs + ' done, name: ' + ps.name + ', status: ' + ps.status); }
+            if (vip) { msos_debug(temp_qf + temp_rs + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
         }
 
-        function ss_resolve_qF(promise, val) {
-            var temp_rp = ' - ss_resolve_qF -> ',
+        function resolvePromise_qF(promise, val) {
+            var temp_rp = ' - resolvePromise_qF -> ',
                 ps = promise.$$prom_state;
 
             if (vip) {
-                msos_debug(temp_qf + temp_rp + 'start, name: ' + ps.name + ', status: ' + ps.status);
+                msos_debug(temp_qf + temp_rp + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status);
             }
 
             if (ps.status) {
-                msos_debug(temp_qf + temp_rp + ' done, name: ' + ps.name + ', status: ' + ps.status + ' (skipped)');
+                msos_debug(temp_qf + temp_rp + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status + ' (skipped)');
                 return;
             }
 
@@ -14128,31 +14603,31 @@ msos.console.time('ng');
             }
 
             if (vip) {
-                msos_debug(temp_qf + temp_rp + ' done, name: ' + ps.name + ', status: ' + ps.status);
+                msos_debug(temp_qf + temp_rp + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status);
             }
         }
 
-        function ss_reject_qF(promise, reason) {
-            var temp_rj = ' - ss_reject_qF -> ',
+        function rejectPromise_qF(promise, reason) {
+            var temp_rj = ' - rejectPromise_qF -> ',
                 ps = promise.$$prom_state;
 
-            if (vip) { msos_debug(temp_qf + temp_rj + 'start, name: ' + ps.name + ', status: ' + ps.status); }
+            if (vip) { msos_debug(temp_qf + temp_rj + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
     
             if (promise.$$prom_state.status) {
 
-                if (vip) { msos_debug(temp_qf + temp_rj + ' done, name: ' + ps.name + ', status: ' + ps.status + ' (skipped)'); }
+                if (vip) { msos_debug(temp_qf + temp_rj + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status + ' (skipped)'); }
                 return;
             }
 
             $$reject_qF(promise, reason);
 
             if (vip) {
-                msos_debug(temp_qf + temp_rj + ' done, name: ' + ps.name + ', status: ' + ps.status);
+                msos_debug(temp_qf + temp_rj + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status);
             }
         }
 
-        function $$process_qF(state) {
-            var temp_pq = temp_qf + ' - $$process_qF -> ',
+        function processQueue_qF(state) {
+            var temp_pq = temp_qf + ' - processQueue_qF -> ',
                 fn,
                 promise,
                 pending = state.pending,
@@ -14161,13 +14636,15 @@ msos.console.time('ng');
                 pq_debug = '';
 
             if (vip) {
-                msos_debug(temp_pq + 'start, name: ' + state.name + ', status: ' + state.status);
+                msos_debug(temp_pq + 'start, state: ', state);
             }
 
             pq_cnt += 1;
 
             state.processScheduled = false;
             state.pending = undefined;
+
+            if (!pending.length) { pq_debug = ', no pendings'; }
 
             try {
 
@@ -14177,44 +14654,52 @@ msos.console.time('ng');
                     promise = pending[i][0];
                     fn = pending[i][state.status];
 
-                    pq_debug += ', index: ' + i + ', ';
+                    pq_debug += msos_indent + 'index: ' + i + msos_indent;
 
                     try {
                         if (_.isFunction(fn)) {
                             pq_debug += 'for a function (' + (fn.name || 'annonymous') + ')';
-                            ss_resolve_qF(promise, fn === noop ? undefined : fn(state.value));
+                            resolvePromise_qF(promise, fn === noop ? undefined : fn(state.value));
                         } else if (state.status === 1) {
                             pq_debug += 'for status: resolve (status ' + state.status + ')';
-                            ss_resolve_qF(promise, state.value);
+                            resolvePromise_qF(promise, state.value);
                         } else {
                             pq_debug += 'for status: reject (status ' + state.status + ')';
-                            ss_reject_qF(promise, state.value);
+                            rejectPromise_qF(promise, state.value);
                         }
                     } catch (e) {
-                        msos.console.error(temp_pq + 'error' + pq_debug + ' 8===> ', e, fn);
-                        ss_reject_qF(promise, e);
+						msos.console.error(temp_pq + 'error' + pq_debug + ' 8===> ', e, fn);
+                        rejectPromise_qF(promise, e);
                     }
                 }
 
             } finally {
+
                 queueSize -= 1;
 
                 if (error_on_unhandled_rejects && queueSize === 0) {
+
+                    if (vip) {
+                        msos_debug(temp_pq + 'run finally, state: ', state);
+                    }
+
                     next_tick(
                         processChecks_qF,
                         state.name
                     );
                 }
+
+                pq_debug += msos_indent + 'error_on_unhandled_rejects: ' + error_on_unhandled_rejects + msos_indent + 'queueSize: ' + queueSize;
             }
 
             if (vip) {
-                msos_debug(temp_pq + ' done, name: ' + state.name + pq_debug);
+                msos_debug(temp_pq + ' done' + pq_debug + msos_indent + 'state: ', state);
             }
         }
 
-        s_schedule_qF = function (state) {
-            var temp_sp = temp_qf + ' - s_schedule_qF',
-                debug_out = ', name: ' + state.name + ', status: ' + state.status;
+        schedulePQueue_qF = function (state) {
+            var temp_sp = temp_qf + ' - schedulePQueue_qF',
+                debug_out = msos_indent + 'name: ' + state.name + msos_indent + 'status: ' + state.status;
 
             if (vip) { msos_debug(temp_sp + ' -> start' + debug_out); }
 
@@ -14237,7 +14722,7 @@ msos.console.time('ng');
             queueSize += 1;
 
             next_tick(
-                function () { $$process_qF(state); },
+                function s_schedule_qF_next_tick() { processQueue_qF(state); },
                 state.name
             );
 
@@ -14249,23 +14734,21 @@ msos.console.time('ng');
             {
                 'set': false,
                 'then': function (onFulfilled, onRejected, progressBack) {
-                    var temp_t = ' - Promise.then -> ',
+                    var temp_t = ' - Promise.then ++++> ',
                         t_name = this.$$prom_state.name,
                         result;
 
-                    if (msos_verbose) {
-                        msos_debug(temp_qf + temp_t + 'start: ' + t_name);
+                    if (vip) {
+                        msos_debug(temp_qf + temp_t + 'start' + msos_indent + 'state: ' + t_name);
                     }
 
-                    if (_.isUndefined(onFulfilled)
-                     && _.isUndefined(onRejected)
-                     && _.isUndefined(progressBack)) {
-                        msos.console.warn(temp_qf + temp_t + ' done: ' + t_name + ', no inputs!');
+                    if (_.isUndefined(onFulfilled) && _.isUndefined(onRejected) && _.isUndefined(progressBack)) {
+                        msos.console.warn(temp_qf + temp_t + ' done' + msos_indent + 'state: ' + t_name + ', no inputs!');
                         return this;
                     }
 
                     if (vip) {
-                        msos_debug(temp_qf + temp_t + ' checked for ' + t_name + ', inputs:', onFulfilled, onRejected, progressBack);
+                        msos_debug(temp_qf + temp_t + ' checked' + msos_indent + 'state: ' + t_name + msos_indent + 'onFulfilled: ' + (onFulfilled && onFulfilled.name || 'na') + msos_indent + 'onRejected: ' + (onRejected && onRejected.name || 'na') + msos_indent + 'progressBack: ' + (progressBack && progressBack.name || 'na'));
                     }
 
                     result = new Promise(t_name);
@@ -14274,10 +14757,10 @@ msos.console.time('ng');
                     this.$$prom_state.pending = this.$$prom_state.pending || [];
                     this.$$prom_state.pending.push([result, onFulfilled, onRejected, progressBack]);
 
-                    if (this.$$prom_state.status > 0) { s_schedule_qF(this.$$prom_state); }
+                    if (this.$$prom_state.status > 0) { schedulePQueue_qF(this.$$prom_state); }
 
-                    if (msos_verbose) {
-                        msos_debug(temp_qf + temp_t + ' done: ' + t_name);
+                    if (vip) {
+                        msos_debug(temp_qf + temp_t + ' done' + msos_indent + 'state: ' + t_name);
                     }
 
                     return result;
@@ -14289,24 +14772,24 @@ msos.console.time('ng');
                     var t_name = this.$$prom_state.name;
 
                     function resolve(value) {
-                        var result = new Promise('finally_resolve' + t_name);
+                        var result = new Promise('finally_resolve_' + t_name);
 
-                        ss_resolve_qF(result, value);
+                        resolvePromise_qF(result, value);
                         return result;
                     }
 
                     function reject(reason) {
-                        var result = new Promise('finally_reject' + t_name);
+                        var result = new Promise('finally_reject_' + t_name);
 
-                        ss_reject_qF(result, reason);
+                        rejectPromise_qF(result, reason);
                         return result;
                     }
 
                     function handleCallback(value, resolver) {
                         var callbackOutput = null;
 
-                        if (msos_verbose) {
-                            msos_debug(temp_qf + ' - handleCallback -> called, for ' + t_name);
+                        if (vip) {
+                            msos_debug(temp_qf + ' - handleCallback -> called' + msos_indent + 'state: ' + t_name);
                         }
 
                         try {
@@ -14330,10 +14813,10 @@ msos.console.time('ng');
                     }
 
                     return this.then(
-                        function (value) {
+                        function final_resolve_then(value) {
                             return handleCallback(value, resolve);
                         },
-                        function (error) {
+                        function final_reject_then(error) {
                             return handleCallback(error, reject);
                         },
                         progressBack
@@ -14349,10 +14832,10 @@ msos.console.time('ng');
 
             // Non prototype methods necessary to support unbound execution :/
             this.resolve = function (val) {
-                ss_resolve_qF(promise, val);
+                resolvePromise_qF(promise, val);
             };
             this.reject = function (reason) {
-                ss_reject_qF(promise, reason);
+                rejectPromise_qF(promise, reason);
             };
             this.notify = function (progress) {
                 notifyPromise_qF(promise, progress);
@@ -14360,11 +14843,8 @@ msos.console.time('ng');
         }
 
         function isDeferredLike(in_d) {
-            if (!_.isObject(in_d)
-             || !_.isFunction(in_d.resolve)
-             || !_.isFunction(in_d.reject)
-             || !_.isFunction(in_d.notify)) {
-                msos.console.error(temp_qf + ' - isDeferredLike -> failed, NgM requires $q.defer(\'module_name_for debugging\') input.');
+            if (!_.isObject(in_d) || !_.isFunction(in_d.resolve) || !_.isFunction(in_d.reject) || !_.isFunction(in_d.notify)) {
+                msos.console.warn(temp_qf + ' - isDeferredLike -> missing, NgM uses $q.defer(\'module_name_for debugging\') input for debugging.');
                 return false;
             }
             return true;
@@ -14376,26 +14856,33 @@ msos.console.time('ng');
 
         reject_qf = function (d, reason) {
 
-            isDeferredLike(d);
+            if (!isDeferredLike(d)) {
+                d = defer_qf('reject_w_missing_origin');
+            }
 
-            ss_reject_qF(d.promise, reason);
+            rejectPromise_qF(d.promise, reason);
 
             return d.promise;
         };
 
         when_qf = function (d, value, callback, errback, progressBack) {
 
-            isDeferredLike(d);
+            if (!isDeferredLike(d)) {
+                d = defer_qf('when_w_missing_origin');
+            }
 
-            var d_prom_out = d.promise,
-                ps = d_prom_out.$$prom_state;
+            var ps = d.promise.$$prom_state,
+                d_prom_out;
 
             if (vip) { msos_debug(temp_qf + ' - when_qf -> start, name: ' + ps.name); }
 
-            ss_resolve_qF(d_prom_out, value);
+            resolvePromise_qF(d.promise, value);
 
-            if (callback || errback || progressBack) {      // Skip if none are defined (does nothing)
-                d.promise.then(callback, errback, progressBack);
+            // Experimental, Skip if none are defined (does nothing)
+            if (callback || errback || progressBack) {
+                d_prom_out = d.promise.then(callback, errback, progressBack);
+            } else {
+                d_prom_out = d.promise;
             }
 
             if (vip) { msos_debug(temp_qf + ' - when_qf ->  done, name: ' + ps.name); }
@@ -14411,7 +14898,9 @@ msos.console.time('ng');
 
             if (vip) { msos_debug(temp_qf + ' - all_qf -> start.'); }
 
-            isDeferredLike(d);
+            if (!isDeferredLike(d)) {
+                d = defer_qf('all_w_missing_origin');
+            }
 
             forEach(
                 in_promises,
@@ -14426,19 +14915,19 @@ msos.console.time('ng');
                             results[key] = value;
                             counter -= 1;
                             if (!counter) {
-                                ss_resolve_qF(d.promise, results);
+                                resolvePromise_qF(d.promise, results);
                             }
                         },
                         function (reason) {
                             if (results.hasOwnProperty(key)) { return; }
-                            ss_reject_qF(d.promise, reason);
+                            rejectPromise_qF(d.promise, reason);
                         }
                     );
                 }
             );
 
             if (counter === 0) {
-                ss_resolve_qF(d.promise, results);
+                resolvePromise_qF(d.promise, results);
             }
 
             if (vip) { msos_debug(temp_qf + ' - all_qf ->  done!'); }
@@ -14450,7 +14939,9 @@ msos.console.time('ng');
 
             if (vip) { msos_debug(temp_qf + ' - race_qf -> start.'); }
 
-            isDeferredLike(d);
+            if (!isDeferredLike(d)) {
+                d = defer_qf('race_w_missing_origin');
+            }
 
             forEach(
                 in_promises,
@@ -14471,7 +14962,7 @@ msos.console.time('ng');
 
         function $Q(q_resolver, org) {
 
-            if (msos_verbose && !org) {
+            if (!org || typeof org !== 'string') {
                 msos.console.warn(temp_qf + ' - $Q -> no module origin entered!');
             }
 
@@ -14490,11 +14981,11 @@ msos.console.time('ng');
             var promise = new Promise(org);
 
             function resolveFn_Q(value) {
-                ss_resolve_qF(promise, value);
+                resolvePromise_qF(promise, value);
             }
 
             function rejectFn_Q(reason) {
-                ss_reject_qF(promise, reason);
+                rejectPromise_qF(promise, reason);
             }
 
             q_resolver(resolveFn_Q, rejectFn_Q);
@@ -14521,21 +15012,21 @@ msos.console.time('ng');
         var temp_qp = 'ng - $QProvider',
             errorOnUnhandledRejections_Qp = true;
 
-        msos_debug(temp_qp + ' -> start');
+        msos_debug(temp_qp + ' -> start.');
 
         this.$get = ['$rootScope', function ($rootScope) {
             return qFactory(
                     function $Q_nextTick(callback, state_name) {
                         var temp_rs = ' - $Q_nextTick -> ';
 
-                        if (msos_verbose) { msos_debug(temp_qp + temp_rs + 'start: ' + state_name); }
-    
+                        if (msos_verbose === 'promise') { msos_debug(temp_qp + temp_rs + 'start' + msos_indent + 'state: ' + state_name + msos_indent + 'fn: ' + (callback.name || 'anonymous')); }
+
                         $rootScope.$evalAsync(
                             callback,
                             { directive_name: '$Q_' + state_name }
                         );
 
-                        if (msos_verbose) { msos_debug(temp_qp + temp_rs + ' done: ' + state_name); }
+                        if (msos_verbose === 'promise') { msos_debug(temp_qp + temp_rs + ' done' + msos_indent + 'state: ' + state_name); }
                     },
                     '$q',
                     errorOnUnhandledRejections_Qp
@@ -14558,22 +15049,22 @@ msos.console.time('ng');
     function $$QProvider() {
         var temp_qqp = 'ng - $$QProvider',
             errorOnUnhandledRejections_Qpp = true;
-        
-        msos_debug(temp_qqp + ' -> start');
+
+        msos_debug(temp_qqp + ' -> start.');
 
         this.$get = ['$browser', function ($browser) {
             return qFactory(
                     function $$Q_nextTick(callback, state_name) {
                         var temp_bd = ' - $$Q_nextTick -> ';
 
-                        if (msos_verbose) {
-                            msos_debug(temp_qqp + temp_bd + 'start: ' + state_name);
+                        if (msos_verbose === 'promise') {
+                            msos_debug(temp_qqp + temp_bd + 'start' + msos_indent + 'state: ' + state_name + msos_indent + 'fn: ' + (callback.name || 'anonymous'));
                         }
 
                         $browser.defer(callback, state_name);
 
-                        if (msos_verbose) {
-                            msos_debug(temp_qqp + temp_bd + ' done: ' + state_name);
+                        if (msos_verbose === 'promise') {
+                            msos_debug(temp_qqp + temp_bd + ' done' + msos_indent + 'state: ' + state_name);
                         }
                     },
                     '$$q',
@@ -14596,26 +15087,21 @@ msos.console.time('ng');
 
     function $$RAFProvider() { //rAF
         this.$get = ['$window', '$timeout', function ($window, $timeout) {
-            var requestAnimationFrame = $window.requestAnimationFrame
-                                    || $window.webkitRequestAnimationFrame,
-                cancelAnimationFrame = $window.cancelAnimationFrame
-                                    || $window.webkitCancelAnimationFrame
-                                    || $window.webkitCancelRequestAnimationFrame,
+            var requestAnimationFrame = $window.requestAnimationFrame || $window.webkitRequestAnimationFrame,
+                cancelAnimationFrame = $window.cancelAnimationFrame || $window.webkitCancelAnimationFrame || $window.webkitCancelRequestAnimationFrame,
                 rafSupported = !!requestAnimationFrame,
                 raf;
 
             msos_debug('ng - $$RAFProvider - $get -> called, animation frame support: ' + rafSupported);
 
-            raf = rafSupported
-                ? function (fn) {
+            raf = rafSupported ? function raf_prov_true(fn) {
                     var id = requestAnimationFrame(fn);
-                    return function () {
+                    return function raf_prov_true_ret() {
                         cancelAnimationFrame(id);
                     };
-                }
-                : function (fn) {
+                } : function raf_prov_false(fn) {
                     var timer = $timeout(fn, 16.66, false); // 1000 / 60 = 16.666
-                    return function () {
+                    return function raf_prov_false_ret() {
                         $timeout.cancel(timer);
                     };
                 };
@@ -14627,7 +15113,8 @@ msos.console.time('ng');
     }
 
     function $$rAFSchedulerFactory($$rAF) {
-        var queue,
+        var temp_sf = 'ng - $$rAFSchedulerFactory',
+            queue,
             cancelFn;
 
         function nextTick() {
@@ -14637,7 +15124,7 @@ msos.console.time('ng');
                 i = 0;
 
             if (msos_verbose === 'animate') {
-                msos_debug('ng - $$rAFSchedulerFactory - nextTick -> called, queue.length: ' + queue.length);
+                msos_debug(temp_sf + ' - nextTick -> called, queue.length: ' + queue.length);
             }
 
             for (i = 0; i < items.length; i += 1) {
@@ -14645,7 +15132,7 @@ msos.console.time('ng');
             }
 
             if (!cancelFn) {
-                $$rAF(function () {
+                $$rAF(function sched_next_tick_raf() {
                     if (!cancelFn) { nextTick(); }
                 });
             }
@@ -14661,11 +15148,16 @@ msos.console.time('ng');
         scheduler.waitUntilQuiet = function (fn) {
             if (cancelFn) { cancelFn(); }
 
-            cancelFn = $$rAF(function () {
-                cancelFn = null;
-                fn();
-                nextTick();
-            });
+            cancelFn = $$rAF(
+                function sched_cancel_raf() {
+                    if (msos_verbose === 'animate') {
+                        msos_debug(temp_sf + ' - scheduler.waitUntilQuiet - sched_cancel_raf -> called, fn: ' + (fn.name || 'anonymous'));
+                    }
+                    cancelFn = null;
+                    fn();
+                    nextTick();
+                }
+            );
         };
 
         return scheduler;
@@ -14719,12 +15211,6 @@ msos.console.time('ng');
             }
 
             function cleanUpScope($scope) {
-                if (msie === 9) {
-                    // See issue https://github.com/angular/angular.js/issues/10706
-                    if ($scope.$$childHead)     { cleanUpScope($scope.$$childHead); }
-                    if ($scope.$$nextSibling)   { cleanUpScope($scope.$$nextSibling); }
-                }
-
                 $scope.$parent = $scope.$$nextSibling = $scope.$$prevSibling = $scope.$$childHead =
                     $scope.$$childTail = $scope.$root = $scope.$$watchers = null;
             }
@@ -14748,7 +15234,7 @@ msos.console.time('ng');
 
                 var temp_dl = temp_rsp + '$get - decrementListenerCount -> ';
 
-                msos_debug(temp_dl + 'called, event: ' + ev_name + ', increment: ' + increment + ', scope: ' + current.$$name);
+                msos_debug(temp_dl + 'called' + msos_indent + 'event: ' + ev_name + ', increment: ' + increment + ', scope: ' + current.$$name);
 
                 do {
 
@@ -14841,12 +15327,9 @@ msos.console.time('ng');
                         child = new Scope();
                         child.$root = this.$root;
                     } else {
-                        // Only create a child scope class if somebody asks for one,
-                        // but cache it to allow the VM to optimize lookups.
                         if (!this.$$ChildScope) {
                             this.$$ChildScope = createChildScopeClass(this);
                         }
-
                         child = new this.$$ChildScope();
                     }
 
@@ -14860,11 +15343,6 @@ msos.console.time('ng');
                         parent.$$childHead = parent.$$childTail = child;
                     }
 
-                    // When the new scope is not isolated or we inherit from `this`, and
-                    // the parent scope is destroyed, the property `$$destroyed` is inherited
-                    // prototypically. In all other cases, this property needs to be set
-                    // when the parent scope is destroyed.
-                    // The listener needs to be added after the parent is set
                     if (isolate || parent != this) { child.$on('$destroy', destroyChildScope); }    // Leave as is.
 
                     return child;
@@ -14970,7 +15448,7 @@ msos.console.time('ng');
                     if (!watchExpressions.length) {
                         // No expressions means we call the listener ASAP
                         self.$evalAsync(
-                            function () {
+                            function watchGroup_no_expressions() {
                                 if (shouldCall) { listener(newValues, newValues, self); }
                             },
                             { directive_name: '$RootScopeProvider_$watchGroup' }
@@ -15163,7 +15641,7 @@ msos.console.time('ng');
                 },
 
                 $digest: function () {
-                    var temp_dg = '$get - Scope - $digest ~~~> ',
+                    var temp_dg = '$get - Scope.$digest ~~~~~> ',
                         db_note = '',
                         watch,
                         value,
@@ -15217,6 +15695,9 @@ msos.console.time('ng');
                                 try {
 
                                     fn = asyncTask.fn;
+
+                                    msos_debug(temp_rsp + temp_dg + 'run: ' + fn.name);
+
                                     fn(asyncTask.scope, asyncTask.locals);
 
                                 } catch (e) {
@@ -15264,14 +15745,7 @@ msos.console.time('ng');
                                         last = watch.last;
                                         value = get !== noop ? get(current) : undefined;
 
-                                        if (value !== last
-                                         && fn !== noop     // Non-standard to AngularJS
-                                         && !(
-                                               watch.eq
-                                                   ? equals(value, last)
-                                                   : (_.isNaN(value) && _.isNaN(last))
-                                            )
-                                         ) {
+                                        if (value !== last && fn !== noop && !(watch.eq ? equals(value, last) : (_.isNaN(value) && _.isNaN(last)))) {
 
                                             dirty = true;
                                             lastDirtyWatch = watch;
@@ -15289,9 +15763,7 @@ msos.console.time('ng');
 
                                                         watchLog[logIdx].push(
                                                             {
-                                                                msg: _.isFunction(watch.exp)
-                                                                    ? 'fn: ' + (watch.exp.name || watch.exp.toString())
-                                                                    : watch.exp,
+                                                                msg: _.isFunction(watch.exp) ? 'fn: ' + (watch.exp.name || watch.exp.toString()) : watch.exp,
                                                                 newVal: value,
                                                                 oldVal: last
                                                             }
@@ -15335,7 +15807,7 @@ msos.console.time('ng');
                             if (!next) {
                                 while (current !== target && !current.$$nextSibling) {
                                     current = current.$parent;
-                                    next = current.$$nextSibling;
+                                    next = _.isObject(current) ? current.$$nextSibling : null;
                                 }
                             }
 
@@ -15418,7 +15890,7 @@ msos.console.time('ng');
                 $destroy: function () {
 
                     if (msos_verbose) {
-                        msos_debug(temp_rsp + '$get - Scope - $destroy -> called.');
+                        msos_debug(temp_rsp + '$get - Scope.$destroy -> called.');
                     }
 
                     // we can't destroy the root scope or a scope that has been already destroyed
@@ -15461,12 +15933,12 @@ msos.console.time('ng');
                 },
 
                 $eval: function (expr, locals) {
-                    var temp_ev = '$get - Scope - $eval -> ',
+                    var temp_ev = '$get - Scope.$eval -> ',
                         type_of = typeof expr,
                         flag_parse = true,
                         parse_expr;
 
-                    // Quick short-circuit (ie: $parse(expr) returns noop)
+                    // Experimental: Quick short-circuit (ie: $parse(expr) returns noop)
                     if (expr === undefined || expr === null || expr === '') { flag_parse = false; }
                     if (type_of === 'function' && expr === noop)            { flag_parse = false; }
 
@@ -15485,33 +15957,25 @@ msos.console.time('ng');
                     return parse_expr;
                 },
 
-                $evalAsyncSet: false,
-
                 $evalAsync: function (expr, locals) {
-                    var temp_sy = '$get - Scope - $evalAsync -> ',
+                    var temp_sy = '$get - Scope.$evalAsync -> ',
                         queue_obj = {};
 
                     if (msos_verbose) {
-                        msos_debug(temp_rsp + temp_sy + 'start, asyncQueue: ' + asyncQueue.length + ', $$phase: ' + $rootScope_P.$$phase);
+                        msos.console.debug(temp_rsp + temp_sy + 'start' + msos_indent + 'asyncQueue: ' + asyncQueue.length + msos_indent + '$$phase: ' + $rootScope_P.$$phase);
                     }
 
-                    // Experimental: start
                     queue_obj = {
                         scope: this,
                         fn: $parse(expr),
                         locals: locals || { directive_name: 'unknown' }
                     };
 
-                    // We try to do this as little as possible, without causing missed digest updates
-                    if ($rootScope_P.$evalAsyncSet === false
-                     && $rootScope_P.$$phase === null
-                     && asyncQueue.length === 0) {
-                        $rootScope_P.$evalAsyncSet = true;
+                    if ($rootScope_P.$$phase === null && asyncQueue.length === 0) {
                         $browser.defer(
-                            function evalasync_browser_defer() {
+                            function eval_async_browser_defer() {
                                 if (asyncQueue.length) {
                                     $rootScope_P.$digest();
-                                    $rootScope_P.$evalAsyncSet = false;
                                 }
                             },
                             '$evalAsync'
@@ -15519,24 +15983,33 @@ msos.console.time('ng');
                     }
 
                     asyncQueue.push(queue_obj);
-                    // Experimental: end
 
                     if (msos_verbose) {
-                        msos_debug(temp_rsp + temp_sy + ' done, asyncQueue: ' + asyncQueue.length + ', added: ' + queue_obj.locals.directive_name);
+                        msos_debug(temp_rsp + temp_sy + ' done' + msos_indent + 'asyncQueue: ' + asyncQueue.length + msos_indent + 'added: ' + queue_obj.locals.directive_name + msos_indent + 'fn: ' + queue_obj.fn.name);
                     }
                 },
 
                 $$postDigest: function (fn) {
+                    var temp_pd = temp_rsp + '$get - Scope.$$postDigest -> called, added ';
+
+                    if (msos_verbose) {
+                        if (!fn.name && msos_script) {
+                            msos.console.trace(temp_pd + 'an anonymous fn!');
+                        } else {
+                            msos_debug(temp_pd + 'fn: ' + (fn.name || 'anonymous'));
+                        }
+                    }
+
                     postDigestQueue.push(fn);
                 },
 
                 $apply: function (expr) {
-                    var temp_ap = '$get - Scope - $apply #==> ',
-                        dbug_app = ', for phase: ';
+                    var temp_ap = '$get - Scope.$apply #==> ',
+                        dbug_app = ', phase: ';
 
                     if (!$rootScope_P.$$phase) {
                         $rootScope_P.$$phase = '$apply';
-                        dbug_app = ', initiated phase: ';
+                        dbug_app = ', initiated: ';
                     }
 
                     dbug_app += $rootScope_P.$$phase;
@@ -15565,7 +16038,7 @@ msos.console.time('ng');
                 },
 
                 $applyAsync: function (expr) {
-                    var temp_aa = '$get - Scope - $applyAsync -> ',
+                    var temp_aa = '$get - Scope.$applyAsync #==> ',
                         scope = this;
 
                     msos_debug(temp_rsp + temp_aa + 'start.');
@@ -15585,9 +16058,12 @@ msos.console.time('ng');
                 },
 
                 $on: function (name, listener) {
-                    var namedListeners = this.$$listeners[name],
+                    var temp_on = '$get - Scope.$on -> ',
+                        namedListeners = this.$$listeners[name],
                         current,
                         self;
+
+                    msos_debug(temp_rsp + temp_on + 'called, for: ' + name);
 
                     if (!namedListeners) {
                         this.$$listeners[name] = namedListeners = [];
@@ -15609,18 +16085,19 @@ msos.console.time('ng');
 
                     self = this;
 
-                    return function () {
+                    return function null_on_listener() {
                         var indexOfListener = namedListeners.indexOf(listener);
 
                         if (indexOfListener !== -1) {
-                            namedListeners[indexOfListener] = null;
+                            delete namedListeners[indexOfListener];
                             decrementListenerCount(self, 1, name);
                         }
                     };
                 },
 
                 $emit: function (name) {
-                    var empty = [],
+                    var temp_et = '$get - Scope.$emit -> ',
+                        empty = [],
                         namedListeners,
                         scope = this,
                         stopPropagation = false,
@@ -15647,6 +16124,7 @@ msos.console.time('ng');
                             // if listeners were deregistered, defragment the array
                             if (!namedListeners[i]) {
                                 namedListeners.splice(i, 1);
+                                msos_debug(temp_rsp + temp_et + 'removed index: ' + i + ', for: ' + name);
                                 i -= 1;
                                 length -= 1;
                                 continue;
@@ -15656,8 +16134,9 @@ msos.console.time('ng');
                                 try {
                                     // allow all listeners attached to the current scope to run
                                     namedListeners[i].apply(null, listenerArgs);
+                                    msos_debug(temp_rsp + temp_et + 'applied, for: ' + name);
                                 } catch (e) {
-                                    msos.console.error(temp_rsp + '$get - Scope - $emit -> failed:', e);
+                                    msos.console.error(temp_rsp + temp_et + 'failed:', e);
                                 }
                             } else {
                                 namedListeners[i].apply(null, listenerArgs);
@@ -15665,8 +16144,7 @@ msos.console.time('ng');
                         }
                         //if any listener on the current scope stops propagation, prevent bubbling
                         if (stopPropagation) {
-                            event.currentScope = null;
-                            return event;
+                            break;
                         }
                         //traverse upwards
                         scope = scope.$parent;
@@ -15678,7 +16156,8 @@ msos.console.time('ng');
                 },
 
                 $broadcast: function (name) {
-                    var target = this,
+                    var temp_bc = '$get - Scope.$broadcast -> ',
+                        target = this,
                         current = target,
                         next = target,
                         event = {
@@ -15708,6 +16187,7 @@ msos.console.time('ng');
                             // if listeners were deregistered, defragment the array
                             if (!listeners[i]) {
                                 listeners.splice(i, 1);
+                                msos_debug(temp_rsp + temp_bc + 'remove index: ' + i + ', for: ' + name);
                                 i -= 1;
                                 length -= 1;
                                 continue;
@@ -15716,8 +16196,9 @@ msos.console.time('ng');
                             if (msos_verbose) {
                                 try {
                                     listeners[i].apply(null, listenerArgs);
+                                    msos_debug(temp_rsp + temp_bc + 'applied, for: ' + name);
                                 } catch (e) {
-                                    msos.console.error(temp_rsp + '$get - Scope - $broadcast -> failed:', e, listenerArgs);
+                                    msos.console.error(temp_rsp + temp_bc + 'failed:', e, listenerArgs);
                                 }
                             } else {
                                 listeners[i].apply(null, listenerArgs);
@@ -15725,8 +16206,7 @@ msos.console.time('ng');
                         }
 
                         next = (
-                            (current.$$listenerCount[name] && current.$$childHead)
-                         || (current !== target && current.$$nextSibling)
+                            (current.$$listenerCount[name] && current.$$childHead) || (current !== target && current.$$nextSibling)
                         );
 
                         if (!next) {
@@ -15756,7 +16236,7 @@ msos.console.time('ng');
     }
 
     function $$SanitizeUriProvider() {
-        var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
+        var aHrefSanitizationWhitelist = /^\s*(https?|s?ftp|mailto|tel|file):/,
             imgSrcSanitizationWhitelist = /^\s*((https?|ftp|file|blob):|data:image\/)/,
             temp_su = 'ng - $$SanitizeUriProvider';
 
@@ -15786,7 +16266,7 @@ msos.console.time('ng');
                 msos_debug(temp_su + ' - $get - sanitizeUri -> start, uri: ' + uri);
 
                 var regex = isImage ? imgSrcSanitizationWhitelist : aHrefSanitizationWhitelist,
-                    normalizedVal = urlResolve(uri, '$$SanitizeUriProvider - $get').href;
+                    normalizedVal = urlResolve(uri && uri.trim(), '$$SanitizeUriProvider - $get').href;
 
                 if (normalizedVal !== '' && !normalizedVal.match(regex)) {
                     msos.console.warn(temp_su + ' - $get - sanitizeUri -> unsafe done, normalized: ' + normalizedVal);
@@ -15973,7 +16453,7 @@ msos.console.time('ng');
                 var temp_gt = ' - $get - getTrusted -> ',
                     constructor;
 
-                msos_debug(temp_sd + temp_gt + 'start,\n     type: ' + type + (maybeTrusted ? ', context: ' + maybeTrusted : ''));
+                msos_debug(temp_sd + temp_gt + 'start' + msos_indent + 'type: ' + type + (maybeTrusted ? ', context: ' + maybeTrusted : ''));
 
                 if (maybeTrusted === null || _.isUndefined(maybeTrusted) || maybeTrusted === '') {
                     msos_debug(temp_sd + temp_gt + 'done, for: ' + (maybeTrusted === null ? 'null' : 'undefined'));
@@ -16172,17 +16652,23 @@ msos.console.time('ng');
 
                 function timeout(fn_to, delay_to, invokeApply_to) {
                     var temp_to = ' - $get - timeout -> ',
+                        fn_to_name = fn_to.name || 'anonymous',
                         args = sliceArgs(arguments, 3),
                         skipApply = (isDefined(invokeApply_to) && !invokeApply_to),
                         deferred = (skipApply ? $$q : $q).defer('ng_$TimeoutProvider_$get'),
                         promise = deferred.promise,
                         timeout_id_TP;
 
-                    msos_debug(temp_tp + temp_to + 'start, name: ' + promise.$$prom_state.name + ', delay: ' + delay_to + ', skip apply:', skipApply);
+                    msos_debug(temp_tp + temp_to + 'start' + msos_indent + 'state: ' + promise.$$prom_state.name + msos_indent + 'fn: ' + fn_to_name + msos_indent + 'delay: ' + delay_to + msos_indent + 'skip apply:', skipApply);
+
+                    if (msos_script && fn_to_name === 'anonymous') {
+                        msos.console.trace(temp_tp + temp_to + 'trace anonymous fn:' + msos_indent + 'state:', promise.$$prom_state);
+                    }
 
                     if (_.isFunction(fn_to)) {
                         timeout_id_TP = $browser.defer(
-                            function () {
+                            function timeout_browser_def_fn() {
+                                msos_debug(temp_tp + temp_to + 'called, fn: ' + fn_to_name);
                                 if (msos_verbose) {
                                     try {
                                         if (fn_to === noop) {
@@ -16191,7 +16677,7 @@ msos.console.time('ng');
                                             deferred.resolve(fn_to.apply(null, args));
                                         }
                                     } catch (e) {
-                                        msos.console.error(temp_tp + temp_to + 'failed:', e);
+                                        msos.console.error(temp_tp + temp_to + 'failed, fn: ' + fn_to_name, e);
                                         deferred.reject(e);
                                     } finally {
                                         delete deferreds[promise.$$timeoutId];
@@ -16217,12 +16703,13 @@ msos.console.time('ng');
                         msos.console.error(temp_tp + temp_to + 'error: no longer compatible with those inputs.');
                     }
 
-                    msos_debug(temp_tp + temp_to + ' done, name: ' + promise.$$prom_state.name);
+                    msos_debug(temp_tp + temp_to + ' done' + msos_indent + 'state:', promise.$$prom_state);
                     return promise;
                 }
 
                 timeout.cancel = function (promise) {
-                    var promise_to_id;
+                    var promise_to_id,
+                        canceled = false;
 
                     if (promise && promise.$$timeoutId in deferreds) {
                         promise_to_id = promise.$$timeoutId || '';
@@ -16230,12 +16717,16 @@ msos.console.time('ng');
                         markQExceptionHandled(deferreds[promise_to_id].promise);
                         deferreds[promise_to_id].reject('canceled');
                         delete deferreds[promise_to_id];
-                        return $browser.cancel(promise_to_id);
+                        canceled = $browser.cancel(promise_to_id);
                     }
 
-                    return false;
+                    if (msos_verbose) {
+                        msos_debug(temp_tp + ' - $get - timeout.cancel -> called' + msos_indent + 'canceled: ' + canceled + msos_indent + 'state:', (promise ? promise.$$prom_state : {}));
+                    }
+
+                    return canceled;
                 };
-    
+
                 return timeout;
             }
         ];
@@ -16839,9 +17330,7 @@ msos.console.time('ng');
             }
 
             // if null or undefined pass it through
-            return (amount == null)     // jshint ignore:line
-                ? amount
-                : formatNumber(
+            return (amount === null || amount === undefined) ? amount : formatNumber(
                     amount,
                     formats.PATTERNS[1],
                     formats.GROUP_SEP,
@@ -16858,9 +17347,7 @@ msos.console.time('ng');
         return function (number, fractionSize) {
 
             // if null or undefined pass it through
-            return (number == null)     // jshint ignore:line
-                ? number
-                : formatNumber(
+            return (number === null || number === undefined) ? number : formatNumber(
                     number,
                     formats.PATTERNS[0],
                     formats.GROUP_SEP,
@@ -17116,9 +17603,7 @@ msos.console.time('ng');
 
             forEach(parts, function (value) {
                 fn = DATE_FORMATS[value];
-                text += fn
-                    ? fn(date, $locale.DATETIME_FORMATS, dateTimezoneOffset)
-                    : value === '\'\'' ? '\'' : value.replace(/(^'|'$)/g, '').replace(/''/g, '\'');
+                text += fn ? fn(date, $locale.DATETIME_FORMATS, dateTimezoneOffset) : value === '\'\'' ? '\'' : value.replace(/(^'|'$)/g, '').replace(/''/g, '\'');
             });
 
             return text;
@@ -17245,31 +17730,40 @@ msos.console.time('ng');
                 link: linkFn
             };
         };
+
+        // Record these as from NgMomentum core file
+        ngAttributeAliasDirectives[normalized].$$moduleName = 'ng';
     });
 
     // aliased input attrs are evaluated
-    forEach(ALIASED_ATTR, function (htmlAttr_na, ngAttr) {
-        ngAttributeAliasDirectives[ngAttr] = function () {
-            return {
-                priority: 100,
-                link: function (scope, element_na, attr) {
-                    //special case ngPattern when a literal regular expression value
-                    //is used as the expression (this way we don't have to watch anything).
-                    if (ngAttr === 'ngPattern' && attr.ngPattern.charAt(0) === '/') {
-                        var match = attr.ngPattern.match(REGEX_STRING_REGEXP);
-                        if (match) {
-                            attr.$set('ngPattern', new RegExp(match[1], match[2]));
-                            return;
+    forEach(
+        ALIASED_ATTR,
+        function (htmlAttr_na, ngAttr) {
+            ngAttributeAliasDirectives[ngAttr] = function () {
+                return {
+                    priority: 100,
+                    link: function (scope, element_na, attr) {
+                        //special case ngPattern when a literal regular expression value
+                        //is used as the expression (this way we don't have to watch anything).
+                        if (ngAttr === 'ngPattern' && attr.ngPattern.charAt(0) === '/') {
+                            var match = attr.ngPattern.match(REGEX_STRING_REGEXP);
+                            if (match) {
+                                attr.$set('ngPattern', new RegExp(match[1], match[2]));
+                                return;
+                            }
                         }
+    
+                        scope.$watch(attr[ngAttr], function ngAttrAliasWatchAction(value) {
+                            attr.$set(ngAttr, value);
+                        });
                     }
-
-                    scope.$watch(attr[ngAttr], function ngAttrAliasWatchAction(value) {
-                        attr.$set(ngAttr, value);
-                    });
-                }
+                };
             };
-        };
-    });
+
+            // Record these as from NgMomentum core file
+            ngAttributeAliasDirectives[ngAttr].$$moduleName = 'ng';
+        }
+    );
 
     forEach(['src', 'srcset', 'href'], function (attrName) {
         var normalized = directiveNormalize('ng-' + attrName);
@@ -17297,19 +17791,30 @@ msos.console.time('ng');
 
                         attr.$set(name, value);
 
-                        // on IE, if "ng:src" directive declaration is used and "src" attribute doesn't exist
-                        // then calling element.setAttribute('src', 'foo') doesn't do anything, so we need
-                        // to set the property as well to achieve the desired effect.
-                        // we use attr[attrName] value since $set can sanitize the url.
                         if (msie && propName) { element.prop(propName, attr[name]); }
                     });
                 }
             };
         };
+
+        // Record these as from NgMomentum core file
+        ngAttributeAliasDirectives[normalized].$$moduleName = 'ng';
     });
 
-    if (msos_verbose) {
-        msos_debug('ng - ngAttributeAliasDirectives -> created,\n     directives:', _.keys(ngAttributeAliasDirectives));
+    forEach(
+        ['title', 'color'],
+        function (attrName) {
+            var normalized = directiveNormalize('ng-attr-' + attrName);
+
+            ngAttributeAliasDirectives[normalized] = restrict_a_dir;
+
+            // Record these as from NgMomentum core file
+            ngAttributeAliasDirectives[normalized].$$moduleName = 'ng';
+        }
+    );
+
+    if (msos_verbose === 'module') {
+        msos_debug('ng - ngAttributeAliasDirectives -> created' + msos_indent + 'directives:', _.keys(ngAttributeAliasDirectives));
     }
 
     function isObjectEmpty(obj) {
@@ -17745,8 +18250,7 @@ msos.console.time('ng');
                 origBadInput = validity.badInput,
                 origTypeMismatch = validity.typeMismatch;
 
-            if (validity.badInput !== origBadInput
-             || validity.typeMismatch !== origTypeMismatch) { listener(); }
+            if (validity.badInput !== origBadInput || validity.typeMismatch !== origTypeMismatch) { listener(); }
         };
 
         if (!android) {
@@ -17765,9 +18269,7 @@ msos.console.time('ng');
 
         element.on('change', listener);
 
-        if (PARTIAL_VALIDATION_TYPES[type]
-         && ctrl.$$hasNativeValidators
-         && type === attr.type) {
+        if (PARTIAL_VALIDATION_TYPES[type] && ctrl.$$hasNativeValidators && type === attr.type) {
             element.on(
                 PARTIAL_VALIDATION_EVENTS,
                 _.throttle(partial_listener, 100)
@@ -17845,8 +18347,7 @@ msos.console.time('ng');
                 // When a date is JSON'ified to wraps itself inside of an extra
                 // set of double quotes. This makes the date parsing code unable
                 // to match the date string and parse it as a date.
-                if (iso.charAt(0) === '"'
-                 && iso.charAt(iso.length - 1) === '"') {
+                if (iso.charAt(0) === '"' && iso.charAt(iso.length - 1) === '"') {
                     iso = iso.substring(1, iso.length - 1);
                 }
 
@@ -18248,19 +18749,15 @@ msos.console.time('ng');
 
         // Browsers that implement range will set these values automatically, but reading the adjusted values after
         // $render would cause the min / max validators to be applied with the wrong value
-        ctrl.$render = supportsRange && isDefined(validity.rangeUnderflow) && isDefined(validity.rangeOverflow)
-            ?   function rangeRender() {
+        ctrl.$render = supportsRange && isDefined(validity.rangeUnderflow) && isDefined(validity.rangeOverflow) ? function rangeRender() {
                     originalRender();
                     ctrl.$setViewValue(element.val());
-                }
-            : originalRender;
+                } : originalRender;
 
         if (hasMinAttr) {
-            ctrl.$validators.min = supportsRange
-                ?   function noopMinValidator() {
+            ctrl.$validators.min = supportsRange ? function noopMinValidator() {
                         return true;
-                    }
-                :   function minValidator(modelValue_na, viewValue) {
+                    } : function minValidator(modelValue_na, viewValue) {
                         return ctrl.$isEmpty(viewValue) || _.isUndefined(minVal) || viewValue >= minVal;
                     };
 
@@ -18268,11 +18765,9 @@ msos.console.time('ng');
         }
 
         if (hasMaxAttr) {
-            ctrl.$validators.max = supportsRange
-                ?   function noopMaxValidator() {
+            ctrl.$validators.max = supportsRange ? function noopMaxValidator() {
                         return true;
-                    }
-                :   function maxValidator(modelValue_na, viewValue) {
+                    } : function maxValidator(modelValue_na, viewValue) {
                         return ctrl.$isEmpty(viewValue) || _.isUndefined(maxVal) || viewValue <= maxVal;
                     };
 
@@ -18280,11 +18775,9 @@ msos.console.time('ng');
         }
 
         if (hasStepAttr) {
-            ctrl.$validators.step = supportsRange
-                ?   function nativeStepValidator() {
+            ctrl.$validators.step = supportsRange ? function nativeStepValidator() {
                         return !validity.stepMismatch;
-                    }
-                :   function stepValidator(modelValue_na, viewValue) {
+                    } : function stepValidator(modelValue_na, viewValue) {
                         return ctrl.$isEmpty(viewValue) || _.isUndefined(stepVal) || isValidForStep(viewValue, minVal || 0, stepVal);
                     };
 
@@ -18472,40 +18965,14 @@ msos.console.time('ng');
         ctrl.$$scope.$watch(
             function ngModelWatch(scope) {
                 var temp_nmw = 'ng - ngModelWatch -> ',
-                    modelValue = ctrl.$$ngModelGet(scope),
-                    formatters,
-                    idx,
-                    viewValue;
+                    modelValue = ctrl.$$ngModelGet(scope);
 
                 if (modelValue !== ctrl.$modelValue) {
 
                     if (ctrl.$modelValue === ctrl.$modelValue || modelValue === modelValue) {
-                        ctrl.$modelValue = ctrl.$$rawModelValue = modelValue;
-                        ctrl.$$parserValid = undefined;
 
-                        formatters = ctrl.$formatters;
-                        idx = formatters.length;
-                        viewValue = modelValue;
+						ctrl.$$setModelValue(modelValue);
 
-                        while (idx) {
-                            idx -= 1;
-                            viewValue = formatters[idx](viewValue);
-                        }
-
-                        if (ctrl.$viewValue !== viewValue) {
-
-                            ctrl.$$updateEmptyClasses(viewValue);
-                            ctrl.$viewValue = ctrl.$$lastCommittedViewValue = viewValue;
-
-                            if (ctrl.$render !== noop) {
-                                ctrl.$render();
-                            } else {
-                                msos_debug(temp_nmw + 'ctrl.$render skipped for noop.');
-                            }
-
-                            // It is possible that model and view value have been updated during render
-                            ctrl.$$runValidators(ctrl.$modelValue, ctrl.$viewValue, noop);
-                        }
                     } else {
                         // NaN checking
                         msos_debug(temp_nmw + 'NaN detected.');
@@ -18521,8 +18988,8 @@ msos.console.time('ng');
 
     function NgModelController($scope, $attr, $element, $parse, $animate, $timeout, $q, $interpolate) {
 
-        this.$viewValue = Number['NaN'];
-        this.$modelValue = Number['NaN'];
+        this.$viewValue = Number.NaN;
+        this.$modelValue = Number.NaN;
         this.$$rawModelValue = undefined;   // stores the parsed modelValue / model set from scope regardless of validity.
         this.$validators = {};
         this.$asyncValidators = {};
@@ -18813,8 +19280,7 @@ msos.console.time('ng');
 
             this.$$timeout.cancel(this.$$pendingDebounce);
 
-            if (this.$$lastCommittedViewValue === viewValue
-             && (viewValue !== '' || !this.$$hasNativeValidators)) {
+            if (this.$$lastCommittedViewValue === viewValue && (viewValue !== '' || !this.$$hasNativeValidators)) {
                 return;
             }
 
@@ -18931,7 +19397,43 @@ msos.console.time('ng');
                     }
                 );
             }
-        }
+        },
+		$overrideModelOptions: function (options) {
+			this.$options = this.$options.createChild(options);
+		},
+		$processModelValue: function () {
+			var viewValue = this.$$format();
+
+			if (this.$viewValue !== viewValue) {
+				this.$$updateEmptyClasses(viewValue);
+				this.$viewValue = this.$$lastCommittedViewValue = viewValue;
+
+                if (this.$render !== noop) {
+					this.$render();
+                } else {
+					msos_debug(this.$$ctrlName + ' - $processModelValue -> this.$render skipped for noop.');
+                }
+				// It is possible that model and view value have been updated during render
+				this.$$runValidators(this.$modelValue, this.$viewValue, noop);
+			}
+		},
+		$$format: function () {
+			var formatters = this.$formatters,
+				idx = formatters.length,
+				viewValue = this.$modelValue;
+
+			while (idx) {
+				idx -= 1;
+				viewValue = formatters[idx](viewValue);
+			}
+
+			return viewValue;
+		},
+		$$setModelValue: function (modelValue) {
+			this.$modelValue = this.$$rawModelValue = modelValue;
+			this.$$parserValid = undefined;
+			this.$processModelValue();
+		}
     };
 
     NgModelController.$inject = ['$scope', '$attrs', '$element', '$parse', '$animate', '$timeout', '$q', '$interpolate'];
@@ -19158,6 +19660,8 @@ msos.console.time('ng');
         };
     };
 
+    ngModelOptionsDirective.$$moduleName = 'ng';
+
     ngChangeDirective = valueFn({
         restrict: 'A',
         require: 'ngModel',
@@ -19167,6 +19671,8 @@ msos.console.time('ng');
             });
         }
     });
+
+    ngChangeDirective.$$moduleName = 'ng';
 
     requiredDirective = function () {
             return {
@@ -19189,6 +19695,8 @@ msos.console.time('ng');
                 }
             };
         };
+
+    requiredDirective.$$moduleName = 'ng';
 
     patternDirective = function () {
         return {
@@ -19227,6 +19735,8 @@ msos.console.time('ng');
         };
     };
 
+    patternDirective.$$moduleName = 'ng';
+
     maxlengthDirective = function () {
         return {
             restrict: 'A',
@@ -19253,6 +19763,8 @@ msos.console.time('ng');
         };
     };
 
+    maxlengthDirective.$$moduleName = 'ng';
+
     minlengthDirective = function () {
             return {
                 restrict: 'A',
@@ -19276,6 +19788,8 @@ msos.console.time('ng');
                 }
             };
         };
+
+    minlengthDirective.$$moduleName = 'ng';
 
     ngListDirective = function () {
         return {
@@ -19318,6 +19832,8 @@ msos.console.time('ng');
         };
     };
 
+    ngListDirective.$$moduleName = 'ng';
+
     ngAttrDivective = function () {
 
         return {
@@ -19326,6 +19842,8 @@ msos.console.time('ng');
         };
     };
 
+    ngAttrDivective.$$moduleName = 'ng';
+    
     ngValueDirective = function () {
 
         function updateElementValue(element, attr, value) {
@@ -19359,14 +19877,15 @@ msos.console.time('ng');
         };
     };
 
-    ngBindDirective = ['$compile', function ($compile) {
+    ngValueDirective.$$moduleName = 'ng';
+
+    function ng_bind_dir($compile) {
         return {
             restrict: 'AC',
             compile: function ngBindCompile(templateElement) {
                 $compile.$$addBindingClass(templateElement);
 
                 return function ngBindLink(scope, element, attr) {
-                    $compile.$$addBindingInfo(element, attr.ngBind);
 
                     element = element[0];
 
@@ -19379,9 +19898,13 @@ msos.console.time('ng');
                 };
             }
         };
-    }];
+    }
 
-    ngBindTemplateDirective = ['$compile', function ($compile) {
+    ng_bind_dir.$$moduleName = 'ng';
+
+    ngBindDirective = ['$compile', ng_bind_dir];
+
+    function ng_bind_template_dir($compile) {
         return {
             compile: function ngBindTemplateCompile(templateElement) {
 
@@ -19389,7 +19912,6 @@ msos.console.time('ng');
 
                 return function ngBindTemplateLink(scope_na, element, attr) {
 
-                    // Experimental: removed $compile.$$addBindingInfo stuff
                     element = element[0];
 
                     attr.$observe(
@@ -19401,9 +19923,13 @@ msos.console.time('ng');
                 };
             }
         };
-    }];
+    }
 
-    ngBindHtmlDirective = ['$sce', '$parse', '$compile', function ($sce, $parse, $compile) {
+    ng_bind_template_dir.$$moduleName = 'ng';
+
+    ngBindTemplateDirective = ['$compile', ng_bind_template_dir];
+
+    function ng_bind_html_dir($sce, $parse, $compile) {
         return {
             restrict: 'A',
             compile: function ngBindHtmlCompile(tElement, tAttrs) {
@@ -19432,7 +19958,11 @@ msos.console.time('ng');
                 };
             }
         };
-    }];
+    }
+
+    ng_bind_html_dir.$$moduleName = 'ng';
+
+    ngBindHtmlDirective = ['$sce', '$parse', '$compile', ng_bind_html_dir];
 
     function classDirective(name, selector) {
         name = 'ngClass' + name;
@@ -19653,42 +20183,44 @@ msos.console.time('ng');
             'focus', 'blur', 'copy', 'cut', 'paste'
         ],
         function (eventName) {
-            var vb = msos_verbose,
+            var vb = msos_verbose === 'event' ? true : false,
                 directiveName = directiveNormalize('ng-' + eventName);
 
             function ng_event_dir($parse, $rootScope) {
                 return {
                     restrict: 'A',
                     compile: function ($element_na, attr) {
-                        var temp_ev = directiveName + ' - compile - ngEventHandler',
+                        var temp_ev = 'ng - ' + eventName + ' - compile - ngEventHandler',
                             fn = $parse(attr[directiveName]);
+
+                        if (vb) {
+                            msos_debug(temp_ev + ' -> called.', $element_na);
+                        }
 
                         return function ngEventHandler(scope, element) {
                             element.on(
                                 eventName,
-                                function (event) {
+                                function compile_on_event(event) {
                                     var callback = function ngEventHandlerCB() {
-                                            if (vb === 'events') {
-                                                msos.console.info(temp_ev + ' - CB -> called, for:' + event.type);
-                                            }
+                                            msos.console.info(temp_ev + ' - CB -> called, for: ' + event.type);
                                             fn(scope, { $event: event });
                                         };
 
-                                    if (vb === 'events') {
-                                        msos.console.info(temp_ev + ' -> start.');
+                                    if (vb) {
+                                        msos_debug(temp_ev + ' -> start, callback: ' + directiveName + 'CB');
                                     }
 
                                     if (forceAsyncEvents[eventName] && $rootScope.$$phase) {
                                         scope.$evalAsync(
                                             callback,
-                                            { directive_name: 'ngEventDirectives_' + directiveName }
+                                            { directive_name: directiveName + 'Dir' }
                                         );
                                     } else {
                                         scope.$apply(callback);
                                     }
 
-                                    if (vb === 'events') {
-                                        msos.console.info(temp_ev + ' ->  done!');
+                                    if (vb) {
+                                        msos_debug(temp_ev + ' ->  done!');
                                     }
                                 }
                             );
@@ -19703,8 +20235,8 @@ msos.console.time('ng');
         }
     );
 
-    if (msos_verbose) {
-        msos_debug('ng - ngEventDirectives -> created,\n     directives:', _.keys(ngEventDirectives));
+    if (msos_verbose === 'module') {
+        msos_debug('ng - ngEventDirectives -> created' + msos_indent + 'directives:', _.keys(ngEventDirectives));
     }
 
     function ng_if_dir($animate, $compile) {
@@ -19724,10 +20256,8 @@ msos.console.time('ng');
                             $transclude(function (clone, newScope) {
                                 childScope = newScope;
                                 clone[clone.length] = $compile.$$createComment('end ngIf', $attr.ngIf);
-                                clone.length += 1;   // Faster than .push(), with pre defined array growth.
-                                // Note: We only need the first/last node of the cloned nodes.
-                                // However, we need to keep the reference to the jqlite wrapper as it might be changed later
-                                // by a directive with templateUrl when its template arrives.
+                                clone.length += 1;
+
                                 block = {
                                     clone: clone
                                 };
@@ -19812,9 +20342,7 @@ msos.console.time('ng');
                         var thisChangeId = changeCounter,
                             temp_sw = ' - compile - scope.$watch - ngIncludeWatchAction -> ',
                             afterAnimation = function (response) {
-                                if (response !== false
-                                 && isDefined(autoScrollExp)
-                                 && (autoScrollExp !== false || scope.$eval(autoScrollExp))) {
+                                if (response !== false && isDefined(autoScrollExp) && (autoScrollExp !== false || scope.$eval(autoScrollExp))) {
                                     msos_debug(temp_id + temp_sw + 'afterAnimation fired.');
                                     $anchorScroll();
                                 }
@@ -20033,8 +20561,8 @@ msos.console.time('ng');
             compile: function ngRepeatCompile($element_na, $attr) {
 
                 var expression = $attr.ngRepeat,
-                    ngRepeatEndComment = $compile.$$createComment('end ngRepeat', expression),
-                    match = expression.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+track\s+by\s+([\s\S]+?))?\s*$/),
+                    ngRepeatEndComment,
+                    match,
                     lhs,
                     rhs,
                     aliasAs,
@@ -20046,6 +20574,9 @@ msos.console.time('ng');
                     trackByIdArrayFn,
                     trackByIdObjFn,
                     hashFnLocals = {};
+
+                ngRepeatEndComment = $compile.$$createComment('end ngRepeat', expression);
+                match = expression.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+track\s+by\s+([\s\S]+?))?\s*$/);
 
                 if (!match) {
                     throw ngRepeatMinErr(
@@ -20108,24 +20639,12 @@ msos.console.time('ng');
                         };
                     }
 
-                    // Store a list of elements from previous run. This is a hash where key is the item from the
-                    // iterator, and the value is objects with following properties.
-                    //   - scope: bound scope
-                    //   - element: previous element.
-                    //   - index: position
-                    //
-                    // We are using no-proto object so that we don't need to guard against inherited props via
-                    // hasOwnProperty.
                     var lastBlockMap = createMap();
 
                     //watch props
                     $scope.$watchCollection(rhs, function ngRepeatAction(collection) {
                         var index, length, previousNode = $element[0],
-                            // node that cloned nodes should be inserted after
-                            // initialized to the comment node anchor
                             nextNode,
-                            // Same as lastBlockMap but it has the current state. It will become the
-                            // lastBlockMap on the next iteration.
                             nextBlockMap = createMap(),
                             collectionLength, key, value, // key/value of iteration
                             trackById, trackByIdFn, collectionKeys, block, // last object information {scope, element, id}
@@ -20235,8 +20754,6 @@ msos.console.time('ng');
                                 previousNode = getBlockEnd(block);
                                 updateScope(block.scope, index, valueIdentifier, value, keyIdentifier, key, collectionLength);
                             } else {
-                                // new item which we don't know about
-                                /* jshint ignore:start */
                                 $transclude(
                                     function ngRepeatTransclude(clone, scope) {
                                         block.scope = scope;
@@ -20244,19 +20761,15 @@ msos.console.time('ng');
                                         var endNode = ngRepeatEndComment.cloneNode(false);
 
                                         clone[clone.length] = endNode;
-                                        clone.length += 1;   // Faster than .push(), with pre defined array growth.
+                                        clone.length += 1;   // Faster than .push(), with pre-defined array growth.
 
                                         $animate.enter(clone, null, previousNode);
                                         previousNode = endNode;
-                                        // Note: We only need the first/last node of the cloned nodes.
-                                        // However, we need to keep the reference to the jqlite wrapper as it might be changed later
-                                        // by a directive with templateUrl when its template arrives.
                                         block.clone = clone;
                                         nextBlockMap[block.id] = block;
                                         updateScope(block.scope, index, valueIdentifier, value, keyIdentifier, key, collectionLength);
                                     }
                                 );
-                                /* jshint ignore:end */
                             }
                         }
                         lastBlockMap = nextBlockMap;
@@ -20278,8 +20791,13 @@ msos.console.time('ng');
                 scope.$watch(
                     attr.ngShow,
                     function ngShowWatchAction(value) {
-                        msos_debug('ng - ngShowDirective - ngShowWatchAction -> for: ' + value);
-                        $animate[value ? 'removeClass' : 'addClass'](
+                        var class_action = value ? 'removeClass' : 'addClass';
+
+                        if (msos_verbose) {
+                            msos_debug('ng - ngShowDirective - ngShowWatchAction -> do: ' + class_action + ', el:', element);
+                        }
+
+                        $animate[class_action](
                             element,
                             NG_HIDE_CLASS,
                             { tempClasses: NG_HIDE_IN_PROGRESS_CLASS }
@@ -20477,100 +20995,115 @@ msos.console.time('ng');
 
     ngTranscludeMinErr = minErr('ngTransclude');
 
+    function ng_transclude_dir($compile) {
+        return {
+            restrict: 'EAC',
+            terminal: true,
+            compile: function ngTranscludeCompile(tElement) {
+
+                // Remove and cache any original content to act as a fallback
+                var fallbackLinkFn = $compile(tElement.contents()),
+                    slotName;
+
+                tElement.empty();
+
+                return function ngTranscludePostLink($scope, $element, $attrs, controller_na, $transclude) {
+
+                    if (!$transclude) {
+                        throw ngTranscludeMinErr(
+                            'orphan',
+                            'Illegal use: ngTransclude dir. (template)! NA parent dir. that requires a transclusion, in element: {0}',
+                            startingTag($element)
+                        );
+                    }
+
+                    function useFallbackContent() {
+                        fallbackLinkFn(
+                            $scope,
+                            function (clone) { $element.append(clone); }
+                        );
+                    }
+
+                    function notWhitespace(nodes) {
+                        var i = 0,
+                            node;
+
+                        for (i = 0; i < nodes.length; i += 1) {
+                            node = nodes[i];
+
+                            if (node.nodeType !== NODE_TYPE_TEXT || node.nodeValue.trim()) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+
+                    function ngTranscludeCloneAttachFn(clone, transcludedScope) {
+
+                        if (clone.length && notWhitespace(clone)) {
+                            $element.append(clone);
+                        } else {
+                            useFallbackContent();
+                            transcludedScope.$destroy();
+                        }
+                    }
+
+                    // If the attribute is of the form: `ng-transclude="ng-transclude"` then treat it like the default
+                    if ($attrs.ngTransclude === $attrs.$attr.ngTransclude) {
+                        $attrs.ngTransclude = '';
+                    }
+
+                    slotName = $attrs.ngTransclude || $attrs.ngTranscludeSlot;
+
+                    $transclude(ngTranscludeCloneAttachFn, null, slotName);
+
+                    if (slotName && !$transclude.isSlotFilled(slotName)) {
+                        useFallbackContent();
+                    }
+                };
+            }
+        };
+    }
+
+    ng_transclude_dir.$$moduleName = 'ng';
+
     ngTranscludeDirective = [
         '$compile',
-        function ($compile) {
-            return {
-                restrict: 'EAC',
-                terminal: true,
-                compile: function ngTranscludeCompile(tElement) {
-
-                    // Remove and cache any original content to act as a fallback
-                    var fallbackLinkFn = $compile(tElement.contents()),
-                        slotName;
-
-                    tElement.empty();
-
-                    return function ngTranscludePostLink($scope, $element, $attrs, controller_na, $transclude) {
-
-                        if (!$transclude) {
-                            throw ngTranscludeMinErr(
-                                'orphan',
-                                'Illegal use: ngTransclude dir. (template)! NA parent dir. that requires a transclusion, in element: {0}',
-                                startingTag($element)
-                            );
-                        }
-
-                        function useFallbackContent() {
-                            fallbackLinkFn(
-                                $scope,
-                                function (clone) { $element.append(clone); }
-                            );
-                        }
-
-                        function notWhitespace(nodes) {
-                            var i = 0,
-                                node;
-
-                            for (i = 0; i < nodes.length; i += 1) {
-                                node = nodes[i];
-
-                                if (node.nodeType !== NODE_TYPE_TEXT
-                                 || node.nodeValue.trim()) {
-                                    return true;
-                                }
-                            }
-
-                            return false;
-                        }
-
-                        function ngTranscludeCloneAttachFn(clone, transcludedScope) {
-
-                            if (clone.length && notWhitespace(clone)) {
-                                $element.append(clone);
-                            } else {
-                                useFallbackContent();
-                                transcludedScope.$destroy();
-                            }
-                        }
-
-                        // If the attribute is of the form: `ng-transclude="ng-transclude"` then treat it like the default
-                        if ($attrs.ngTransclude === $attrs.$attr.ngTransclude) {
-                            $attrs.ngTransclude = '';
-                        }
-
-                        slotName = $attrs.ngTransclude || $attrs.ngTranscludeSlot;
-
-                        $transclude(ngTranscludeCloneAttachFn, null, slotName);
-
-                        if (slotName && !$transclude.isSlotFilled(slotName)) {
-                            useFallbackContent();
-                        }
-                    };
-                }
-            };
-        }
+        ng_transclude_dir
     ];
 
-    scriptDirective = ['$templateCache', function ($templateCache) {
+    function script_dir($templateCache) {
+		var temp_sd = 'ng - scriptDirective';
+
         return {
             restrict: 'E',
             terminal: true,
             compile: function (element, attr) {
+				msos_debug(temp_sd + ' - compile -> called.');
                 if (attr.type === 'text/ng-template') {
-                    var templateUrl = attr.id,
-                        // IE is not consistent, in scripts we have to read .text but in other nodes we have to read .textContent
-                        text = element[0].text;
+                    var template_url = attr.id,
 
-                    $templateCache.put(templateUrl, text);
+                    text = element[0].text;
+
+                    $templateCache.put(template_url, text);
+
+					msos_debug(temp_sd + ' - compile -> found template_url: ' + template_url);
                 }
             }
         };
-    }];
+    }
+
+    script_dir.$$moduleName = 'ng';
+
+    scriptDirective = [
+		'$templateCache',
+		script_dir
+	];
 
     $ngOptionsMinErr = minErr('ngOptions');
 
-    ngOptionsDirective = ['$compile', '$document', '$parse', function ($compile, $document, $parse) {
+    function ng_options_dir($compile, $document, $parse) {
         var optionTemplate = window.document.createElement('option'),
             optGroupTemplate = window.document.createElement('optgroup');
 
@@ -20585,19 +21118,15 @@ msos.console.time('ng');
                 selectAsFn = selectAs && $parse(selectAs),
                 viewValueFn = selectAsFn || valueFn,
                 trackByFn = trackBy && $parse(trackBy),
-                getLocals = keyName
-                    ? function (value, key) {
+                getLocals = keyName ? function (value, key) {
                         locals[keyName] = key;
                         locals[valueName] = value;
                         return locals;
-                    }
-                    : function (value) {
+                    } : function (value) {
                         locals[valueName] = value;
                         return locals;
                     },
-                getTrackByValueFn = trackBy
-                    ? function (value_na, locals) { return trackByFn(scope, locals); }
-                    : function getHashOfValue(value) { return hashKey(value); },
+                getTrackByValueFn = trackBy ? function (value_na, locals) { return trackByFn(scope, locals); } : function getHashOfValue(value) { return hashKey(value); },
                 getTrackByValue = function (value, key) {
                     return getTrackByValueFn(value, getLocals(value, key));
                 },
@@ -21051,7 +21580,11 @@ msos.console.time('ng');
                 post: ngOptionsPostLink
             }
         };
-    }];
+    }
+
+    ng_options_dir.$$moduleName = 'ng';
+
+    ngOptionsDirective = ['$compile', '$document', '$parse', ng_options_dir];
 
     noopNgModelController = {
         $setViewValue: noop,
@@ -21063,8 +21596,7 @@ msos.console.time('ng');
         optionEl.attr('selected', value);
     }
 
-    SelectController = ['$element', '$scope', function ($element, $scope) {
-
+    function select_ctrl($element, $scope) {
         var self = this,
             optionsMap = new NgMap(),
             renderScheduled = false,
@@ -21169,7 +21701,7 @@ msos.console.time('ng');
         };
 
         self.selectUnknownOrEmptyOption = function (value) {
-            if (value == null && self.emptyOption) {
+            if ((value === null || value === undefined) && self.emptyOption) {
                 self.removeUnknownOption();
                 self.selectEmptyOption();
             } else if (self.unknownOption.parent().length) {
@@ -21369,14 +21901,17 @@ msos.console.time('ng');
                     self.removeOption(removeValue);
                     scheduleRender();
 
-                    if ((self.multiple && currentValue && (currentValue.indexOf(removeValue) !== -1))
-                     || currentValue === removeValue) {
+                    if ((self.multiple && currentValue && (currentValue.indexOf(removeValue) !== -1)) || currentValue === removeValue) {
                         scheduleViewValueUpdate(true);
                     }
                 }
             );
         };
-    }];
+    }
+
+    select_ctrl.$$moduleName = 'ng';
+
+    SelectController = ['$element', '$scope', select_ctrl];
 
     selectDirective = function () {
 
@@ -21486,7 +22021,9 @@ msos.console.time('ng');
         };
     };
 
-    optionDirective = ['$interpolate', function ($interpolate) {
+    selectDirective.$$moduleName = 'ng';
+
+    function option_dir($interpolate) {
 
         return {
             restrict: 'E',
@@ -21526,7 +22063,11 @@ msos.console.time('ng');
                 };
             }
         };
-    }];
+    }
+
+    option_dir.$$moduleName = 'ng';
+
+    optionDirective = ['$interpolate', option_dir];
 
     function publishExternalAPI(angular) {
 
@@ -21569,6 +22110,8 @@ msos.console.time('ng');
             'extractElementNode': extractElementNode,
             'isPromiseLike': isPromiseLike,
             'splitClasses': splitClasses,
+            'ngnodeName': nodeName_,
+            'restrictADir':restrict_a_dir,
             'callbacks': {
                 $$counter: 0
             },
@@ -21824,8 +22367,8 @@ msos.console.time('ng');
                 $$animateJs: $$AnimateJsProvider,
                 $$animateJsDriver: $$AnimateJsDriverProvider,
                 $$animateQueue: $$AnimateQueueProvider,
-                $$AnimateRunner: $$AnimateRunnerFactoryProvider,
-                $$animateAsyncRun: $$AnimateAsyncRunFactoryProvider,
+                $$AnimateRunner: $$AnimateRunProvider,
+                $$animateAsyncRun: $$AnimateAsyncRunProvider,
                 $browser: $BrowserProvider,
                 $cacheFactory: $CacheFactoryProvider,
                 $controller: $ControllerProvider,
@@ -21920,11 +22463,14 @@ msos.console.time('ng');
                                             }
                                         );
 
-                                        // Load and ready our newly received modules
-                                        loadModules(_.uniq(angl_modules), $injector, $injectorProvider.$get());
+										// Skip if no new modules
+										if (angl_modules.length > 0) {
+											// Load and ready our newly received modules
+											loadModules(_.uniq(angl_modules), $injector, $injectorProvider.$get());
+										}
 
-                                        defer.resolve();
-                                        $rootScope.$apply();
+										defer.resolve();
+										$rootScope.$apply();
 
                                         // Reset for next round...
                                         msos_prev_modules = curr_modules;
@@ -21964,11 +22510,12 @@ msos.console.time('ng');
                 $location.path('/');
                 // Reset $location, which updates page content (just like internal link routing)
                 $timeout(
-                    function () {
+                    function ng_postloader_run() {
                         msos.console.info(temp_rn + 'do $location replace.');
                         $location.path(org_location).replace();
                     },
-                    100
+                    100,
+                    false
                 );
             }
 
@@ -22179,7 +22726,7 @@ msos.console.time('ng');
                     nextNode = getNonDescendant('nextSibling', node);
 
                     if (!nextNode) {
-                        while (nextNode == null) {      // Leave as is (undefined or null)
+                        while (nextNode === null || nextNode === undefined) {
                             node = getNonDescendant('parentNode', node);
                             if (node === inertBodyElement_hP) { break; }
                             nextNode = getNonDescendant('nextSibling', node);
@@ -22223,8 +22770,7 @@ msos.console.time('ng');
                                 var lkey = lowercase(key),
                                     isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
 
-                                if (validAttrs[lkey] === true
-                                  && (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
+                                if (validAttrs[lkey] === true && (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
                                     out(' ');
                                     out(key);
                                     out('="');
@@ -22322,12 +22868,18 @@ msos.console.time('ng');
             return buf.join('');
         }
 
-        angular.module('ngSanitize', ['ng']).provider('$sanitize', $SanitizeProvider);
+        angular.module(
+			'ngSanitize',
+			['ng']
+		).provider(
+			'$sanitize',
+			$SanitizeProvider
+		);
 
         angular.module('ngSanitize').filter(
             'linky',
             ['$sanitize', function ($sanitize) {
-                var LINKY_URL_REGEXP = /((ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+\-]+@)\S*[^\s.;,(){}<>"\u201d\u2019]/i,
+                var LINKY_URL_REGEXP = /((s?ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+-]+@)\S*[^\s.;,(){}<>"\u201d\u2019]/i,
                     MAILTO_REGEXP = /^mailto:/i,
                     linkyMinErr = minErr('linky');
 
@@ -22528,7 +23080,9 @@ msos.console.time('ng');
                                                 fn(scope, { $event: data });
                                             }
                                         );
-                                    }
+                                    },
+                                    100,
+                                    false
                                 );
                             }
                         );
@@ -22544,5 +23098,5 @@ msos.console.time('ng');
 }(window));
 
 
-msos.console.info('ng/v165_msos -> done!');
+msos.console.info('ng/v167_msos -> done!');
 msos.console.timeEnd('ng');

@@ -1,168 +1,167 @@
-<section id="popover">
-    <div data-ng-ignore class="page-header">
-        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
-        <h1>Popover
-            <small>(
-                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.popover</a>)</small>
-        </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-6 show-grid">
-            <div ng-controller="demo.bootstrap.controllers.popover.ctrl">
-                <h4>Dynamic</h4>
-                <div class="form-group">
-                    <label>Popup Text:</label>
-                    <input type="text" ng-model="dynamicPopover.content" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Popup Title:</label>
-                    <input type="text" ng-model="dynamicPopover.title" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Popup Template:</label>
-                    <input type="text" ng-model="dynamicPopover.templateUrl" class="form-control">
-                </div>
-                <button uib-popover="{{dynamicPopover.content}}" popover-title="{{dynamicPopover.title}}" type="button" class="btn btn-default">Dynamic Popover</button>
 
-                <button uib-popover-template="dynamicPopover.templateUrl" popover-title="{{dynamicPopover.title}}" type="button" class="btn btn-default">Popover With Template</button>
+<div data-ng-ignore class="page-header">
+	<h1>Popover
+		<small>(
+			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.popover</a>)</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-md-6 show-grid">
+		<div ng-controller="demo.bootstrap.controllers.popover.ctrl">
+			<h4>Dynamic</h4>
+			<div class="form-group">
+				<label>Popup Text:</label>
+				<input type="text" ng-model="dynamicPopover.content" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Popup Title:</label>
+				<input type="text" ng-model="dynamicPopover.title" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Popup Template:</label>
+				<input type="text" ng-model="dynamicPopover.templateUrl" class="form-control">
+			</div>
+			<button uib-popover="{{dynamicPopover.content}}" popover-title="{{dynamicPopover.title}}" type="button" class="btn btn-default">Dynamic Popover</button>
 
-                <script type="text/ng-template" id="myPopoverTemplate.html">
-                    <div>{{dynamicPopover.content}}</div>
-                    <div class="form-group">
-                        <label>Popup Title:</label>
-                        <input type="text" ng-model="dynamicPopover.title" class="form-control">
-                    </div>
-                </script>
-                <hr />
-                <h4>Positional</h4>
-                <div class="form-group">
-                    <label>Popover placement</label>
-                    <select class="form-control" ng-model="placement.selected" ng-options="o as o for o in placement.options"></select>
-                </div>
-                <button popover-placement="{{placement.selected}}" uib-popover="On the {{placement.selected}}" type="button" class="btn btn-default">Popover {{placement.selected}}</button>
+			<button uib-popover-template="dynamicPopover.templateUrl" popover-title="{{dynamicPopover.title}}" type="button" class="btn btn-default">Popover With Template</button>
 
-                <hr />
-                <h4>Triggers</h4>
-                <p>
-                    <button uib-popover="I appeared on mouse enter!" popover-trigger="'mouseenter'" type="button" class="btn btn-default">Mouseenter</button>
-                </p>
-                <input type="text" value="Click me!" uib-popover="I appeared on focus! Click away and I'll vanish..." popover-trigger="'focus'" class="form-control">
+			<script type="text/ng-template" id="myPopoverTemplate.html">
+				<div>{{dynamicPopover.content}}</div>
+				<div class="form-group">
+					<label>Popup Title:</label>
+					<input type="text" ng-model="dynamicPopover.title" class="form-control">
+				</div>
+			</script>
+			<hr />
+			<h4>Positional</h4>
+			<div class="form-group">
+				<label>Popover placement</label>
+				<select class="form-control" ng-model="placement.selected" ng-options="o as o for o in placement.options"></select>
+			</div>
+			<button popover-placement="{{placement.selected}}" uib-popover="On the {{placement.selected}}" type="button" class="btn btn-default">Popover {{placement.selected}}</button>
 
-                <hr />
-                <h4>Other</h4>
-                <button popover-animation="true" uib-popover="I fade in and out!" type="button" class="btn btn-default">fading</button>
-                <button uib-popover="I have a title!" popover-title="The title." type="button" class="btn btn-default">title</button>
-                <button uib-popover="I am activated manually" popover-is-open="popoverIsOpen" ng-click="popoverIsOpen = !popoverIsOpen" type="button" class="btn btn-default">Toggle popover</button>
-                <button uib-popover-html="htmlPopover" class="btn btn-default">HTML Popover</button>
-                <button uib-popover-html="'<b>HTML</b>, <i>inline</i>'" class="btn btn-default">HTML Popover (inline)</button>
+			<hr />
+			<h4>Triggers</h4>
+			<p>
+				<button uib-popover="I appeared on mouse enter!" popover-trigger="'mouseenter'" type="button" class="btn btn-default">Mouseenter</button>
+			</p>
+			<input type="text" value="Click me!" uib-popover="I appeared on focus! Click away and I'll vanish..." popover-trigger="'focus'" class="form-control">
 
-            </div>
-        </div>
-        <div data-ng-ignore class="col-md-6">
-            <p>A lightweight, extensible directive for fancy popover creation. The popover directive supports multiple placements, optional transition animation, and more.</p>
-            <p>Like the Bootstrap jQuery plugin, the popover <strong>requires</strong> the tooltip module.
-            </p>
-            <p><strong>Note to mobile developers</strong>: Please note that while popovers may work correctly on mobile devices (including tablets), we have made the decision to not officially support such a use-case because it does not make sense from a UX perspective.</p>
-            <p>There are three versions of the popover: <code>uib-popover</code> and <code>uib-popover-template</code>, and <code>uib-popover-html</code>:</p>
-            <ul>
-                <li><code>uib-popover</code> - Takes text only and will escape any HTML provided for the popover body.</li>
-                <li><code>uib-popover-html</code>
-                    <small class="badge">$</small> - Takes an expression that evaluates to an HTML string. Note that this HTML is not compiled. If compilation is required, please use the <code>uib-popover-template</code> attribute option instead. <em>The user is responsible for ensuring the content is safe to put into the DOM!</em></li>
-                <li><code>uib-popover-template</code>
-                    <small class="badge">$</small> - A URL representing the location of a template to use for the popover body. Note that the contents of this template need to be wrapped in a tag, e.g., <code>&lt;div&gt;&lt;/div&gt;</code>.</li>
-            </ul>
-            <h3 id="uib-popover-settings">uib-popover-* settings</h3>
-            <p>All these settings are available for the three types of popovers.</p>
-            <ul>
-                <li>
-                    <p><code>popover-animation</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>, Config: <code>animation</code>)</em> - Should it fade in and out?</p>
-                </li>
-                <li>
-                    <p><code>popover-append-to-body</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>false</code>, Config: <code>appendToBody</code>)</em> - Should the popover be appended to &#39;$body&#39; instead of the parent element?</p>
-                </li>
-                <li>
-                    <p><code>popover-enable</code>
-                        <small class="badge">$</small>
-                        <em>(Default: <code>true</code>)</em> - Is it enabled? It will enable or disable the configured popover-trigger.</p>
-                </li>
-                <li>
-                    <p><code>popover-is-open</code>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>false</code>)</em> - Whether to show the popover.</p>
-                </li>
-                <li>
-                    <p><code>popover-placement</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>top</code>, Config: <code>placement</code>)</em> - Passing in &#39;auto&#39; separated by a space before the placement will enable auto positioning, e.g: &quot;auto bottom-left&quot;. The popover will attempt to position where it fits in the closest scrollable ancestor. Accepts:</p>
-                    <ul>
-                        <li><code>top</code> - popover on top, horizontally centered on host element.</li>
-                        <li><code>top-left</code> - popover on top, left edge aligned with host element left edge.</li>
-                        <li><code>top-right</code> - popover on top, right edge aligned with host element right edge.</li>
-                        <li><code>bottom</code> - popover on bottom, horizontally centered on host element.</li>
-                        <li><code>bottom-left</code> - popover on bottom, left edge aligned with host element left edge.</li>
-                        <li><code>bottom-right</code> - popover on bottom, right edge aligned with host element right edge.</li>
-                        <li><code>left</code> - popover on left, vertically centered on host element.</li>
-                        <li><code>left-top</code> - popover on left, top edge aligned with host element top edge.</li>
-                        <li><code>left-bottom</code> - popover on left, bottom edge aligned with host element bottom edge.</li>
-                        <li><code>right</code> - popover on right, vertically centered on host element.</li>
-                        <li><code>right-top</code> - popover on right, top edge aligned with host element top edge.</li>
-                        <li><code>right-bottom</code> - popover on right, bottom edge aligned with host element bottom edge.</li>
-                    </ul>
-                </li>
-                <li>
-                    <p><code>popover-popup-close-delay</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>0</code>, Config: <code>popupCloseDelay</code>)</em> - For how long should the popover remain open after the close trigger event?</p>
-                </li>
-                <li>
-                    <p><code>popover-popup-delay</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>0</code>, Config: <code>popupDelay</code>)</em> - Popup delay in milliseconds until it opens.</p>
-                </li>
-                <li>
-                    <p><code>popover-title</code> - A string to display as a fancy title.</p>
-                </li>
-                <li>
-                    <p><code>popover-trigger</code>
-                        <small class="badge">$</small>
-                        <em>(Default: <code>&#39;click&#39;</code>)</em> - What should trigger a show of the popover? Supports a space separated list of event names, or objects (see below).</p>
-                </li>
-            </ul>
-            <p><strong>Note:</strong> To configure the tooltips, you need to do it on <code>$uibTooltipProvider</code> (also see below).</p>
-            <h3 id="triggers">Triggers</h3>
-            <p>The following show triggers are supported out of the box, along with their provided hide triggers:</p>
-            <ul>
-                <li><code>mouseenter</code>: <code>mouseleave</code></li>
-                <li><code>click</code>: <code>click</code></li>
-                <li><code>outsideClick</code>: <code>outsideClick</code></li>
-                <li><code>focus</code>: <code>blur</code></li>
-                <li><code>none</code></li>
-            </ul>
-            <p>The <code>outsideClick</code> trigger will cause the popover to toggle on click, and hide when anything else is clicked.</p>
-            <p>For any non-supported value, the trigger will be used to both show and hide the popover. Using the &#39;none&#39; trigger will disable the internal trigger(s), one can then use the <code>popover-is-open</code> attribute exclusively to show and hide the popover.</p>
-            <h3 id="-uibtooltipprovider">$uibTooltipProvider</h3>
-            <p>Through the <code>$uibTooltipProvider</code>, you can change the way tooltips and popovers behave by default; the attributes above always take precedence. The following methods are available:</p>
-            <ul>
-                <li>
-                    <p><code>setTriggers(obj)</code>
-                        <em>(Example: <code>{ &#39;openTrigger&#39;: &#39;closeTrigger&#39; }</code>)</em> - Extends the default trigger mappings mentioned above with mappings of your own.</p>
-                </li>
-                <li>
-                    <p><code>options(obj)</code> - Provide a set of defaults for certain tooltip and popover attributes. Currently supports the ones with the <small class="badge">C</small> badge.</p>
-                </li>
-            </ul>
-            <h3 id="known-issues">Known issues</h3>
-            <p>For Safari 7+ support, if you want to use <strong>focus</strong> <code>popover-trigger</code>, you need to use an anchor tag with a tab index. For example:</p>
-            <pre><code>&lt;a tabindex=&quot;0&quot; uib-popover=&quot;Test&quot; popover-trigger=&quot;focus&quot; class=&quot;btn btn-default&quot;&gt;
+			<hr />
+			<h4>Other</h4>
+			<button popover-animation="true" uib-popover="I fade in and out!" type="button" class="btn btn-default">fading</button>
+			<button uib-popover="I have a title!" popover-title="The title." type="button" class="btn btn-default">title</button>
+			<button uib-popover="I am activated manually" popover-is-open="popoverIsOpen" ng-click="popoverIsOpen = !popoverIsOpen" type="button" class="btn btn-default">Toggle popover</button>
+			<button uib-popover-html="htmlPopover" class="btn btn-default">HTML Popover</button>
+			<button uib-popover-html="'<b>HTML</b>, <i>inline</i>'" class="btn btn-default">HTML Popover (inline)</button>
+
+		</div>
+	</div>
+	<div data-ng-ignore class="col-md-6">
+		<p>A lightweight, extensible directive for fancy popover creation. The popover directive supports multiple placements, optional transition animation, and more.</p>
+		<p>Like the Bootstrap jQuery plugin, the popover <strong>requires</strong> the tooltip module.
+		</p>
+		<p><strong>Note to mobile developers</strong>: Please note that while popovers may work correctly on mobile devices (including tablets), we have made the decision to not officially support such a use-case because it does not make sense from a UX perspective.</p>
+		<p>There are three versions of the popover: <code>uib-popover</code> and <code>uib-popover-template</code>, and <code>uib-popover-html</code>:</p>
+		<ul>
+			<li><code>uib-popover</code> - Takes text only and will escape any HTML provided for the popover body.</li>
+			<li><code>uib-popover-html</code>
+				<small class="badge">$</small> - Takes an expression that evaluates to an HTML string. Note that this HTML is not compiled. If compilation is required, please use the <code>uib-popover-template</code> attribute option instead. <em>The user is responsible for ensuring the content is safe to put into the DOM!</em></li>
+			<li><code>uib-popover-template</code>
+				<small class="badge">$</small> - A URL representing the location of a template to use for the popover body. Note that the contents of this template need to be wrapped in a tag, e.g., <code>&lt;div&gt;&lt;/div&gt;</code>.</li>
+		</ul>
+		<h3 id="uib-popover-settings">uib-popover-* settings</h3>
+		<p>All these settings are available for the three types of popovers.</p>
+		<ul>
+			<li>
+				<p><code>popover-animation</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>, Config: <code>animation</code>)</em> - Should it fade in and out?</p>
+			</li>
+			<li>
+				<p><code>popover-append-to-body</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>false</code>, Config: <code>appendToBody</code>)</em> - Should the popover be appended to &#39;$body&#39; instead of the parent element?</p>
+			</li>
+			<li>
+				<p><code>popover-enable</code>
+					<small class="badge">$</small>
+					<em>(Default: <code>true</code>)</em> - Is it enabled? It will enable or disable the configured popover-trigger.</p>
+			</li>
+			<li>
+				<p><code>popover-is-open</code>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>false</code>)</em> - Whether to show the popover.</p>
+			</li>
+			<li>
+				<p><code>popover-placement</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>top</code>, Config: <code>placement</code>)</em> - Passing in &#39;auto&#39; separated by a space before the placement will enable auto positioning, e.g: &quot;auto bottom-left&quot;. The popover will attempt to position where it fits in the closest scrollable ancestor. Accepts:</p>
+				<ul>
+					<li><code>top</code> - popover on top, horizontally centered on host element.</li>
+					<li><code>top-left</code> - popover on top, left edge aligned with host element left edge.</li>
+					<li><code>top-right</code> - popover on top, right edge aligned with host element right edge.</li>
+					<li><code>bottom</code> - popover on bottom, horizontally centered on host element.</li>
+					<li><code>bottom-left</code> - popover on bottom, left edge aligned with host element left edge.</li>
+					<li><code>bottom-right</code> - popover on bottom, right edge aligned with host element right edge.</li>
+					<li><code>left</code> - popover on left, vertically centered on host element.</li>
+					<li><code>left-top</code> - popover on left, top edge aligned with host element top edge.</li>
+					<li><code>left-bottom</code> - popover on left, bottom edge aligned with host element bottom edge.</li>
+					<li><code>right</code> - popover on right, vertically centered on host element.</li>
+					<li><code>right-top</code> - popover on right, top edge aligned with host element top edge.</li>
+					<li><code>right-bottom</code> - popover on right, bottom edge aligned with host element bottom edge.</li>
+				</ul>
+			</li>
+			<li>
+				<p><code>popover-popup-close-delay</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>0</code>, Config: <code>popupCloseDelay</code>)</em> - For how long should the popover remain open after the close trigger event?</p>
+			</li>
+			<li>
+				<p><code>popover-popup-delay</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>0</code>, Config: <code>popupDelay</code>)</em> - Popup delay in milliseconds until it opens.</p>
+			</li>
+			<li>
+				<p><code>popover-title</code> - A string to display as a fancy title.</p>
+			</li>
+			<li>
+				<p><code>popover-trigger</code>
+					<small class="badge">$</small>
+					<em>(Default: <code>&#39;click&#39;</code>)</em> - What should trigger a show of the popover? Supports a space separated list of event names, or objects (see below).</p>
+			</li>
+		</ul>
+		<p><strong>Note:</strong> To configure the tooltips, you need to do it on <code>$uibTooltipProvider</code> (also see below).</p>
+		<h3 id="triggers">Triggers</h3>
+		<p>The following show triggers are supported out of the box, along with their provided hide triggers:</p>
+		<ul>
+			<li><code>mouseenter</code>: <code>mouseleave</code></li>
+			<li><code>click</code>: <code>click</code></li>
+			<li><code>outsideClick</code>: <code>outsideClick</code></li>
+			<li><code>focus</code>: <code>blur</code></li>
+			<li><code>none</code></li>
+		</ul>
+		<p>The <code>outsideClick</code> trigger will cause the popover to toggle on click, and hide when anything else is clicked.</p>
+		<p>For any non-supported value, the trigger will be used to both show and hide the popover. Using the &#39;none&#39; trigger will disable the internal trigger(s), one can then use the <code>popover-is-open</code> attribute exclusively to show and hide the popover.</p>
+		<h3 id="-uibtooltipprovider">$uibTooltipProvider</h3>
+		<p>Through the <code>$uibTooltipProvider</code>, you can change the way tooltips and popovers behave by default; the attributes above always take precedence. The following methods are available:</p>
+		<ul>
+			<li>
+				<p><code>setTriggers(obj)</code>
+					<em>(Example: <code>{ &#39;openTrigger&#39;: &#39;closeTrigger&#39; }</code>)</em> - Extends the default trigger mappings mentioned above with mappings of your own.</p>
+			</li>
+			<li>
+				<p><code>options(obj)</code> - Provide a set of defaults for certain tooltip and popover attributes. Currently supports the ones with the <small class="badge">C</small> badge.</p>
+			</li>
+		</ul>
+		<h3 id="known-issues">Known issues</h3>
+		<p>For Safari 7+ support, if you want to use <strong>focus</strong> <code>popover-trigger</code>, you need to use an anchor tag with a tab index. For example:</p>
+		<pre>
+			<code>&lt;a tabindex=&quot;0&quot; uib-popover=&quot;Test&quot; popover-trigger=&quot;focus&quot; class=&quot;btn btn-default&quot;&gt;
   Click Me
 &lt;/a&gt;
 </code></pre>
-        </div>
     </div>
-</section>
+</div>

@@ -9,9 +9,7 @@
 
 /*global
     msos: false,
-    angular: false,
-    Modernizr: false,
-    _: false
+    angular: false
 */
 
 // Reduced version of angular-ui-bootstrap for just these components.
@@ -24,6 +22,7 @@
 // ui.bootstrap.stackedMap      -> ng.bootstrap.ui.stackedMap
 // ui.bootstrap.multiMap		-> ng.bootstrap.ui.multiMap
 // Also Note: our adaptation of $q, $qq (ref. function qFactory where $q.defer acceptes a name)
+
 angular.module(
     "ng.bootstrap.ui",
 	[
@@ -33,6 +32,12 @@ angular.module(
         "ng.bootstrap.ui.tabindex", "ng.bootstrap.ui.stackedMap",
         "ng.bootstrap.ui.multiMap"
     ]
+).directive(
+    'templateUrl',  // used in many, many uib modules (this should probably be uibTemplateUrl)
+    angular.restrictADir
+).directive(
+    'animate',      // used in progressbar and modal (this should probably be uibAnimate)
+    angular.restrictADir
 );
 
 angular.module(
@@ -53,15 +58,13 @@ angular.module(
                     collapsingExpr = $parse(attrs.collapsing),
                     collapsedExpr = $parse(attrs.collapsed),
                     horizontal = false,
-                    horizontal_width = element.width(),
-                    horizontal_height = element.height(),
                     css = {},
                     cssTo = {};
 
                 function getScrollFromElement(gs_elm) {
                     var output;
                     if (horizontal) {
-                        output = { width: horizontal_width + 'px' };
+                        output = { width: gs_elm.scrollWidth + 'px' };
                     } else {
                         output = { height: gs_elm.scrollHeight + 'px' };
                     }
@@ -71,6 +74,8 @@ angular.module(
                 }
 
                 function expandDone() {
+					var dbd = '.';
+
                     element
                         .removeClass('collapsing')
                         .addClass('collapse')
@@ -78,7 +83,10 @@ angular.module(
 
                     if (expandedExpr !== angular.noop) {
                         expandedExpr(scope);
+						dbd = ', with expandedExpr.';
                     }
+
+					msos.console.debug(temp_cl + ' - expandDone -> fired' + dbd);
                 }
 
                 function expand() {
@@ -109,19 +117,25 @@ angular.module(
                     }
 
                     if (element.hasClass('collapse') && element.hasClass('in')) {
+						msos.console.debug(temp_cl + ' - expand -> skipped.');
                         return;
                     }
 
-                    // Get rid of noop causing expand/collape running thru $digest (Expreimental)
+					// Get rid of noop causing expand/collape running thru $digest (Expreimental)
                     if (expandingExpr === angular.noop) {
                         expand_then();
                     } else {
-                        $q.resolve($q.defer('ng_bootstrap_ui_collapse_resolve_expand'), expandingExpr(scope))
-                            .then(expand_then, angular.noop);
-                    }
+						$q.resolve(
+							$q.defer('ng_bootstrap_ui_collapse_resolve_expand'), expandingExpr(scope)
+						).then(
+							expand_then,
+							angular.noop
+						);
+					}
                 }
 
                 function collapseDone() {
+					element.css(cssTo);	// Required so that collapse works when animation is disabled
                     element
                         .removeClass('collapsing')
                         .addClass('collapse')
@@ -135,12 +149,9 @@ angular.module(
                 function collapse() {
 
                     function collapse_then() {
-                        var elem_height = horizontal ? horizontal_height : element[0].scrollHeight;
 
                         element
-                            .css({
-                                height: elem_height + 'px'
-                            })
+                            .css(getScrollFromElement(element[0]))
                             .removeClass('collapse')
                             .addClass('collapsing')
                             .attr('aria-expanded', false)
@@ -167,9 +178,13 @@ angular.module(
                         if (collapsingExpr === angular.noop) {
                             collapse_then();
                         } else {
-                            $q.resolve($q.defer('ng_bootstrap_ui_collapse_resolve_collapse'), collapsingExpr(scope))
-                                .then(collapse_then, angular.noop);
-                        }
+							$q.resolve(
+								$q.defer('ng_bootstrap_ui_collapse_resolve_collapse'), collapsingExpr(scope)
+							).then(
+								collapse_then,
+								angular.noop
+							);
+						}
                     }
                 }
 
@@ -200,20 +215,13 @@ angular.module(
                             .attr('aria-hidden', false)
                             .css(css);
                     }
-
-                    if (horizontal) {
-                        // For some reason, the first collapse doesn't animate correctly,
-                        // without going through on iteration first.
-                        collapse();
-                        expand();
-                    }
                 }
 
                 init();
 
                 scope.$watch(
                     attrs.uibCollapse,
-                    function (shouldCollapse) {
+                    function collapse_scope_watch(shouldCollapse) {
                         if (shouldCollapse) {
                             collapse();
                         } else {
@@ -226,20 +234,13 @@ angular.module(
     }]
 ).directive(
     'uibToggle',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
 ).directive(
     'uibTarget',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
+).directive(
+    'horizontal',
+    angular.restrictADir
 );
 
 angular.module(
@@ -828,7 +829,8 @@ angular.module(
 }]);
 
 angular.module(
-    'ng.bootstrap.ui.debounce', ['ng']
+    'ng.bootstrap.ui.debounce',
+	['ng']
 ).factory(
     '$$debounce',
     ['$timeout', function ($timeout) {

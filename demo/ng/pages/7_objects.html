@@ -1,0 +1,40 @@
+<div ng-init="eventObjects = [ 
+        {
+            eventName: 'password_failure',
+            username: 'marcwan',
+            password_retries: 50,
+            from_host: '192.168.1.1',
+            when: '2014/04/04 12:55:32' },
+        {
+            eventName: 'lost_wifi_connection',
+            username: 'marcwan',
+            local_ip: '192.168.100.100',
+            start_time: '2014/04/04 12:31:34' ,
+            end_time: '2014/04/04 12:35:27'
+        } ]">
+
+    <h3>Looping over Key/Value Pairs</h3>
+
+    <h4>A simple HTML "only" demo using the AngularJS "ng-init" directive to load data as an
+        "Array of Objects", loop over the array, and then the Key/Value pairs.
+    </h4>
+
+    <div ng-repeat="event in eventObjects">
+        <div style="border: 1px solid #aaa; padding: 20px; margin: 20px;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="(key, value) in event">
+                        <td> {{key}} </td>
+                        <td> {{value}} </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+  </div>
+</div>

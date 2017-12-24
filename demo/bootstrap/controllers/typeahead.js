@@ -1,19 +1,17 @@
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 msos.provide("demo.bootstrap.controllers.typeahead");
 msos.require("ng.bootstrap.ui.typeahead");
 
-demo.bootstrap.controllers.typeahead.version = new msos.set_version(16, 4, 7);
+demo.bootstrap.controllers.typeahead.version = new msos.set_version(17, 10, 25);
 
 
 angular.module(
-    'demo.bootstrap.controllers.typeahead', []
+    'demo.bootstrap.controllers.typeahead',
+    ['ng', 'ngAnimate', 'ngSanitize', 'ui.bootstrap', 'ng.bootstrap.ui.typeahead', 'ng.bootstrap.ui.dropdown']
 ).controller(
     'demo.bootstrap.controllers.typeahead.ctrl', [
         '$scope', '$http',

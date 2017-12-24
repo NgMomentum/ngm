@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.carousel");
 
-ng.bootstrap.ui.carousel.version = new msos.set_version(17, 1, 25);
+ng.bootstrap.ui.carousel.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.carousel.css = new msos.loader();
@@ -23,7 +20,7 @@ ng.bootstrap.ui.carousel.css.load(msos.resource_url('ng', 'bootstrap/css/ui/caro
 // uib/template/carousel/slide.html     -> msos.resource_url('ng', 'bootstrap/ui/tmpl/slide.html')
 angular.module(
     'ng.bootstrap.ui.carousel',
-    ['ng']
+    ['ng', 'ng.bootstrap.ui']
 ).controller(
     'UibCarouselController',
     ['$scope', '$element', '$interval', '$animate', function ($scope, $element, $interval, $animate) {
@@ -106,10 +103,7 @@ angular.module(
                 direction: direction
             });
 
-            if ($animate.enabled !== angular.noop
-             && $animate.enabled($element)
-             && !$scope.$currentTransition
-             && slides[index].element && self.slides.length > 1) {
+            if ($animate.enabled !== angular.noop && $animate.enabled($element) && !$scope.$currentTransition && slides[index].element && self.slides.length > 1) {
                 slides[index].element.data(SLIDE_DIRECTION, slide.direction);
                 var currentIdx = self.getCurrentIndex();
 
@@ -282,7 +276,6 @@ angular.module(
 
         $scope.$watch('interval', restartTimer);
 
-
         $scope.$watch('noTransition', function (noTransition) {
             if ($animate.enabled !== angular.noop) {
                 $animate.enabled($element, !noTransition);
@@ -394,11 +387,10 @@ angular.module(
                         directionClass + ' ' + direction, done);
                     element.addClass(direction);
 
-                    $animateCss(element, {
-                            addClass: directionClass
-                        })
-                        .start()
-                        .done(removeClassFn);
+                    $animateCss(
+                        element,
+                        { addClass: directionClass }
+                    ).start().done(removeClassFn);
 
                     return angular.noop;
                 }

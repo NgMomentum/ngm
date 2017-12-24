@@ -35,7 +35,8 @@ if (msos.config.debug_css) {
 		msos.resource_url('fonts', 'css/fontawesome.uc.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.uc.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/theme.uc.css'),
-		msos.resource_url('ng', 'bootstrap/css/ui/misc.css')
+		msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
+		msos.resource_url('demo', 'site.css')
 	];
 
 } else {
@@ -44,7 +45,8 @@ if (msos.config.debug_css) {
 		msos.resource_url('fonts', 'css/fontawesome.min.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.min.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/theme.min.css'),
-		msos.resource_url('ng', 'bootstrap/css/ui/misc.css')
+		msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
+		msos.resource_url('demo', 'site.css')
 	];
 
 }
@@ -58,12 +60,13 @@ if (msos.config.debug_script) {
 
 	// Debug full scripts (line no's mean something)
     msos.deferred_scripts = [
-		msos.resource_url('jquery', 'v321_msos.uc.js'),
-		msos.resource_url('firebase', 'v420.min.js'),		// There is no uncompressed file available
-		msos.resource_url('ng', 'v165_msos.uc.js'),
+		msos.resource_url('jquery', 'v321.uc.js'),
+		msos.resource_url('firebase', 'v480.min.js'),		// Full script is na
+		msos.resource_url('ng', 'v167_msos.uc.js'),
 		msos.resource_url('ng', 'ui/router/v042_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
 		msos.resource_url('ng', 'firebase/v230_msos.uc.js'),
+		msos.resource_url('ng', 'aria/v167_msos.uc.js'),
 		msos.resource_url('hello', 'v1151.uc.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.uc.js')
@@ -73,12 +76,13 @@ if (msos.config.debug_script) {
 
 	// Standard minimized scripts
     msos.deferred_scripts = [
-		msos.resource_url('jquery', 'v321_msos.min.js'),
-		msos.resource_url('firebase', 'v420.min.js'),
-		msos.resource_url('ng', 'v165_msos.min.js'),
+		msos.resource_url('jquery', 'v321.min.js'),
+		msos.resource_url('firebase', 'v480.min.js'),
+		msos.resource_url('ng', 'v167_msos.min.js'),
 		msos.resource_url('ng', 'ui/router/v042_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
 		msos.resource_url('ng', 'firebase/v230_msos.min.js'),
+		msos.resource_url('ng', 'aria/v167_msos.min.js'),
 		msos.resource_url('hello', 'v1151.min.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
@@ -119,8 +123,6 @@ msos.config.google.firebase = {
     storageBucket: "<BUCKET>.appspot.com",
     messagingSenderId: "<SENDER_ID>",
 };
-
-// firebase.initializeApp(msos.config.google.firebase);
 
 
 msos.css_loader(msos.deferred_css);

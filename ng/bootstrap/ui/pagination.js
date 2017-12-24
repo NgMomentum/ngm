@@ -1,9 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
@@ -11,7 +8,7 @@
 msos.provide("ng.bootstrap.ui.pagination");
 msos.require("ng.bootstrap.ui.paging");
 
-ng.bootstrap.ui.pagination.version = new msos.set_version(16, 10, 27);
+ng.bootstrap.ui.pagination.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.pagination.css = new msos.loader();
@@ -21,8 +18,10 @@ ng.bootstrap.ui.pagination.css.load(msos.resource_url('ng', 'bootstrap/css/ui/pa
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.pagination -> ng.bootstrap.ui.pagination
 // uib/template/pagination/pagination.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/pagination.html'),
-angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
-    .controller('UibPaginationController', ['$scope', '$attrs', '$parse', 'uibPaging', 'uibPaginationConfig', function ($scope, $attrs, $parse, uibPaging, uibPaginationConfig) {
+angular.module(
+    'ng.bootstrap.ui.pagination',
+    ['ng', 'ng.bootstrap.ui', 'ng.bootstrap.ui.paging']
+).controller('UibPaginationController', ['$scope', '$attrs', '$parse', 'uibPaging', 'uibPaginationConfig', function ($scope, $attrs, $parse, uibPaging, uibPaginationConfig) {
         var ctrl = this;
         // Setup configuration parameters
         var maxSize = angular.isDefined($attrs.maxSize) ? $scope.$parent.$eval($attrs.maxSize) : uibPaginationConfig.maxSize,
@@ -36,6 +35,8 @@ angular.module('ng.bootstrap.ui.pagination', ['ng.bootstrap.ui.paging'])
             } : angular.identity;
         $scope.boundaryLinks = angular.isDefined($attrs.boundaryLinks) ? $scope.$parent.$eval($attrs.boundaryLinks) : uibPaginationConfig.boundaryLinks;
         $scope.directionLinks = angular.isDefined($attrs.directionLinks) ? $scope.$parent.$eval($attrs.directionLinks) : uibPaginationConfig.directionLinks;
+
+        $attrs.$set('role', 'menu');
 
         uibPaging.create(this, $scope, $attrs);
 

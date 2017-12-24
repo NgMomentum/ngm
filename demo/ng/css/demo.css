@@ -1,0 +1,101 @@
+
+
+input[type=text] {
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid #bbb;
+}
+
+textarea {
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid #bbb;
+}
+
+.error {
+  color: #a00;
+}
+
+.album {
+  width: 250px;
+  float: left;
+  margin-right: 10px;
+}
+
+.album_input {
+  width: 350px;
+  float: left;
+  margin-right: 10px;
+}
+
+#demo_output {
+  border: 1px solid #CCC;
+}
+
+#album_list {
+  padding: 50px;
+}
+
+#top_bar {
+  text-align: left;
+  background-color: #f2f2f2;
+  border-bottom: 1px solid #ddd;
+  height: 60px;
+}
+
+#top_bar a {
+  text-decoration: none;
+}
+
+#top_bar .fa {
+  float: left;
+  font-size: 400%;
+  padding-left: 20px;
+  padding-bottom: 10px;
+  padding-top: 3px;
+  padding-right: 20px;
+  color: #666;
+}
+
+#top_bar #title {
+  border-left: 1px solid #ccc;
+  font-family: Helvetica;
+  font-size: 28px;
+  height: 60px;
+  padding-left: 10px;
+  margin-left: 95px;
+  padding-top: 12px;
+  font-weight: 100;
+  color: #666;
+}
+
+.section1 {
+  background-color: #efefef;
+  padding: 10px;
+}
+
+.page_link:hover {
+  cursor: pointer;
+}
+
+.album .title,
+.album_input .title {
+  float: right;
+}
+
+.album .panel-heading a,
+.album_input .panel-heading a {
+  text-decoration: none;
+  color: white;
+}
+
+.album .panel-heading a:hover,
+.album_input .panel-heading a:hover {
+  text-decoration: underline;
+  color: white;
+}
+
+.album .description,
+.album_input .description{
+  padding: 5px;
+}

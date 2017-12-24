@@ -10,7 +10,7 @@
 
 msos.provide("ng.bootstrap.ui.progressbar");
 
-ng.bootstrap.ui.progressbar.version = new msos.set_version(16, 10, 27);
+ng.bootstrap.ui.progressbar.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.progressbar.css = new msos.loader();
@@ -22,14 +22,15 @@ ng.bootstrap.ui.progressbar.css.load(msos.resource_url('ng', 'bootstrap/css/ui/p
 // uib/template/progressbar/progress.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/progress.html'),
 // uib/template/progressbar/bar.html            -> msos.resource_url('ng', 'bootstrap/ui/tmpl/bar.html'),
 // uib/template/progressbar/progressbar.html'   -> msos.resource_url('ng', 'bootstrap/ui/tmpl/progressbar.html')
-angular.module('ng.bootstrap.ui.progressbar', [])
-
-.constant('uibProgressConfig', {
-    animate: true,
-    max: 100
-})
-
-.controller('UibProgressController', ['$scope', '$attrs', 'uibProgressConfig', function ($scope, $attrs, progressConfig) {
+angular.module(
+    'ng.bootstrap.ui.progressbar',
+    ['ng', 'ng.bootstrap.ui']
+).constant(
+    'uibProgressConfig', {
+        animate: true,
+        max: 100
+    }
+).controller('UibProgressController', ['$scope', '$attrs', 'uibProgressConfig', function ($scope, $attrs, progressConfig) {
     var self = this,
         animate = angular.isDefined($attrs.animate) ? $scope.$parent.$eval($attrs.animate) : progressConfig.animate;
 

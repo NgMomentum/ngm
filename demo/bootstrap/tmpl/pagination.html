@@ -1,138 +1,136 @@
-<section id="pagination">
-    <div data-ng-ignore class="page-header">
-        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
-        <h1>Pagination
-            <small>(
-                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.pagination</a>)</small>
-        </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-6 show-grid">
-            <div ng-controller="demo.bootstrap.controllers.pagination.ctrl">
-                <h4>Default</h4>
-                <ul uib-pagination total-items="totalItems" ng-model="currentPage" ng-change="pageChanged()"></ul>
-                <ul uib-pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
-                <ul uib-pagination direction-links="false" boundary-links="true" total-items="totalItems" ng-model="currentPage"></ul>
-                <ul uib-pagination direction-links="false" total-items="totalItems" ng-model="currentPage" num-pages="smallnumPages"></ul>
-                <pre>The selected page no: {{currentPage}}</pre>
-                <button type="button" class="btn btn-info" ng-click="setPage(3)">Set current page to: 3</button>
 
-                <hr />
-                <h4>Limit the maximum visible buttons</h4>
-                <h6><code>rotate</code> defaulted to <code>true</code>:</h6>
-                <ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" num-pages="numPages"></ul>
-                <h6><code>rotate</code> defaulted to <code>true</code> and <code>force-ellipses</code> set to <code>true</code>:</h6>
-                <ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" force-ellipses="true"></ul>
-                <h6><code>rotate</code> set to <code>false</code>:</h6>
-                <ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"></ul>
-                <h6><code>boundary-link-numbers</code> set to <code>true</code> and <code>rotate</code> defaulted to <code>true</code>:</h6>
-                <ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-link-numbers="true"></ul>
-                <h6><code>boundary-link-numbers</code> set to <code>true</code> and <code>rotate</code> set to <code>false</code>:</h6>
-                <ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-link-numbers="true" rotate="false"></ul>
-                <pre>Page: {{bigCurrentPage}} / {{numPages}}</pre>
-            </div>
-        </div>
-        <div data-ng-ignore class="col-md-6">
-            <p>A lightweight pagination directive that is focused on ... providing pagination &amp; will take care of visualising a pagination bar and enable / disable buttons correctly!</p>
-            <h3 id="uib-pagination-settings">uib-pagination settings</h3>
-            <ul>
-                <li>
-                    <p><code>boundary-links</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>false</code>)</em> - Whether to display First / Last buttons.</p>
-                </li>
-                <li>
-                    <p><code>boundary-link-numbers</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>false</code>)</em> - Whether to always display the first and last page numbers. If <code>max-size</code> is smaller than the number of pages, then the first and last page numbers are still shown with ellipses in-between as necessary. NOTE: <code>max-size</code> refers to the center of the range. This option may add up to 2 more numbers on each side of the displayed range for the end value and what would be an ellipsis but is replaced by a number because it is sequential.</p>
-                </li>
-                <li>
-                    <p><code>direction-links</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Whether to display Previous / Next buttons.</p>
-                </li>
-                <li>
-                    <p><code>first-text</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>First</code>)</em> - Text for First button.</p>
-                </li>
-                <li>
-                    <p><code>force-ellipses</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>false</code>)</em> - Also displays ellipses when <code>rotate</code> is true and <code>max-size</code> is smaller than the number of pages.</p>
-                </li>
-                <li>
-                    <p><code>items-per-page</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>10</code>)</em> - Maximum number of items per page. A value less than one indicates all items on one page.</p>
-                </li>
-                <li>
-                    <p><code>last-text</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>Last</code>)</em> - Text for Last button.</p>
-                </li>
-                <li>
-                    <p><code>max-size</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>null</code>)</em> - Limit number for pagination size.</p>
-                </li>
-                <li>
-                    <p><code>next-text</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>Next</code>)</em> - Text for Next button.</p>
-                </li>
-                <li>
-                    <p><code>ng-change</code>
-                        <small class="badge">$</small> - This can be used to call a function whenever the page changes.</p>
-                </li>
-                <li>
-                    <p><code>ng-disabled</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>false</code>)</em> - Used to disable the pagination component.</p>
-                </li>
-                <li>
-                    <p><code>ng-model</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i> - Current page number. First page is 1.</p>
-                </li>
-                <li>
-                    <p><code>num-pages</code>
-                        <small class="badge">$</small>
-                        <small class="badge">readonly</small>
-                        <em>(Default: <code>angular.noop</code>)</em> - An optional expression assigned the total number of pages to display.</p>
-                </li>
-                <li>
-                    <p><code>page-label</code>
-                        <em>(Default: <code>angular.identity</code>)</em> - An optional expression to override the page label based on passing the current page indexes. Supports page number with <code>$page</code> in the template.</p>
-                </li>
-                <li>
-                    <p><code>previous-text</code>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>Previous</code>)</em> - Text for Previous button.</p>
-                </li>
-                <li>
-                    <p><code>rotate</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Whether to keep current page in the middle of the visible ones.</p>
-                </li>
-                <li>
-                    <p><code>template-url</code>
-                        <em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/pagination.html</code>)</em> - Override the template for the component with a custom provided template</p>
-                </li>
-                <li>
-                    <p><code>total-items</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i> - Total number of items in all pages.</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</section>
+<div data-ng-ignore class="page-header">
+	<h1>Pagination
+		<small>(
+			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.pagination</a>)</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-md-6 show-grid">
+		<div ng-controller="demo.bootstrap.controllers.pagination.ctrl">
+			<h4>Default</h4>
+			<ul uib-pagination total-items="totalItems" ng-model="currentPage" ng-change="pageChanged()"></ul>
+			<ul uib-pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
+			<ul uib-pagination direction-links="false" boundary-links="true" total-items="totalItems" ng-model="currentPage"></ul>
+			<ul uib-pagination direction-links="false" total-items="totalItems" ng-model="currentPage" num-pages="smallnumPages"></ul>
+			<pre>The selected page no: {{currentPage}}</pre>
+			<button type="button" class="btn btn-info" ng-click="setPage(3)">Set current page to: 3</button>
+
+			<hr />
+			<h4>Limit the maximum visible buttons</h4>
+			<h6><code>rotate</code> defaulted to <code>true</code>:</h6>
+			<ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" num-pages="numPages"></ul>
+			<h6><code>rotate</code> defaulted to <code>true</code> and <code>force-ellipses</code> set to <code>true</code>:</h6>
+			<ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" force-ellipses="true"></ul>
+			<h6><code>rotate</code> set to <code>false</code>:</h6>
+			<ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"></ul>
+			<h6><code>boundary-link-numbers</code> set to <code>true</code> and <code>rotate</code> defaulted to <code>true</code>:</h6>
+			<ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-link-numbers="true"></ul>
+			<h6><code>boundary-link-numbers</code> set to <code>true</code> and <code>rotate</code> set to <code>false</code>:</h6>
+			<ul uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-link-numbers="true" rotate="false"></ul>
+			<pre>Page: {{bigCurrentPage}} / {{numPages}}</pre>
+		</div>
+	</div>
+	<div data-ng-ignore class="col-md-6">
+		<p>A lightweight pagination directive that is focused on ... providing pagination &amp; will take care of visualising a pagination bar and enable / disable buttons correctly!</p>
+		<h3 id="uib-pagination-settings">uib-pagination settings</h3>
+		<ul>
+			<li>
+				<p><code>boundary-links</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>false</code>)</em> - Whether to display First / Last buttons.</p>
+			</li>
+			<li>
+				<p><code>boundary-link-numbers</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>false</code>)</em> - Whether to always display the first and last page numbers. If <code>max-size</code> is smaller than the number of pages, then the first and last page numbers are still shown with ellipses in-between as necessary. NOTE: <code>max-size</code> refers to the center of the range. This option may add up to 2 more numbers on each side of the displayed range for the end value and what would be an ellipsis but is replaced by a number because it is sequential.</p>
+			</li>
+			<li>
+				<p><code>direction-links</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Whether to display Previous / Next buttons.</p>
+			</li>
+			<li>
+				<p><code>first-text</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>First</code>)</em> - Text for First button.</p>
+			</li>
+			<li>
+				<p><code>force-ellipses</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>false</code>)</em> - Also displays ellipses when <code>rotate</code> is true and <code>max-size</code> is smaller than the number of pages.</p>
+			</li>
+			<li>
+				<p><code>items-per-page</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>10</code>)</em> - Maximum number of items per page. A value less than one indicates all items on one page.</p>
+			</li>
+			<li>
+				<p><code>last-text</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>Last</code>)</em> - Text for Last button.</p>
+			</li>
+			<li>
+				<p><code>max-size</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>null</code>)</em> - Limit number for pagination size.</p>
+			</li>
+			<li>
+				<p><code>next-text</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>Next</code>)</em> - Text for Next button.</p>
+			</li>
+			<li>
+				<p><code>ng-change</code>
+					<small class="badge">$</small> - This can be used to call a function whenever the page changes.</p>
+			</li>
+			<li>
+				<p><code>ng-disabled</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>false</code>)</em> - Used to disable the pagination component.</p>
+			</li>
+			<li>
+				<p><code>ng-model</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i> - Current page number. First page is 1.</p>
+			</li>
+			<li>
+				<p><code>num-pages</code>
+					<small class="badge">$</small>
+					<small class="badge">readonly</small>
+					<em>(Default: <code>angular.noop</code>)</em> - An optional expression assigned the total number of pages to display.</p>
+			</li>
+			<li>
+				<p><code>page-label</code>
+					<em>(Default: <code>angular.identity</code>)</em> - An optional expression to override the page label based on passing the current page indexes. Supports page number with <code>$page</code> in the template.</p>
+			</li>
+			<li>
+				<p><code>previous-text</code>
+					<small class="badge">C</small>
+					<em>(Default: <code>Previous</code>)</em> - Text for Previous button.</p>
+			</li>
+			<li>
+				<p><code>rotate</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Whether to keep current page in the middle of the visible ones.</p>
+			</li>
+			<li>
+				<p><code>template-url</code>
+					<em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/pagination.html</code>)</em> - Override the template for the component with a custom provided template</p>
+			</li>
+			<li>
+				<p><code>total-items</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i> - Total number of items in all pages.</p>
+			</li>
+		</ul>
+	</div>
+</div>

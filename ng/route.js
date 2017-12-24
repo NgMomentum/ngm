@@ -5,7 +5,7 @@
  * License: MIT
  *
  * Originally derived from v1.3.0,
- *       with updates from v1.3.3, thru v1.6.5,
+ *       with updates from v1.3.3, thru v1.6.7,
  */
 
 /*global
@@ -31,7 +31,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
 
     function $RouteProvider() {
         var routes = {},
-            temp_rt = 'ng/route - $RouteProvider';
+            temp_rt = 'ng - route - $RouteProvider';
 
         function inherit(parent, extra) {
             return w_angular.extend(
@@ -128,8 +128,8 @@ ng.route.version = new msos.set_version(17, 8, 4);
             return isEagerInstantiationEnabled;
         };
 
-        this.$get = ['$rootScope', '$location', '$routeParams', '$q', '$injector', '$templateRequest', '$sce', '$browser',
-            function ($rootScope,   $location,   $routeParams,   $q,   $injector,   $templateRequest,   $sce,   $browser) {
+        this.$get = ['$rootScope', '$location', '$routeParams', '$q', '$injector', '$templateRequest', '$sce',
+            function ($rootScope,   $location,   $routeParams,   $q,   $injector,   $templateRequest,   $sce) {
 
             var forceReload = false,
                 preparedRoute,
@@ -384,8 +384,6 @@ ng.route.version = new msos.set_version(17, 8, 4);
 
                     nextRoutePromise = $q.when($q.defer('ng_route_when_commitRoute'), nextRoute);
 
-                    $browser.$$incOutstandingRequestCount();
-
                     nextRoutePromise.then(
                         getRedirectionData
                     ).then(
@@ -421,8 +419,6 @@ ng.route.version = new msos.set_version(17, 8, 4);
                                     );
                                 }
                             }
-                        ).finally(
-                            function () { $browser.$$completeOutstandingRequest(w_angular.noop); }
                         );
                 }
 
@@ -490,7 +486,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
     }
 
     function ngViewFactory($route, $animate, $routeViewScroll) {
-        var temp_vf = 'ng/route - ngViewFactory - link';
+        var temp_vf = 'ng - route - ngViewFactory - link';
 
         return {
             restrict: 'ECA',
@@ -591,7 +587,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
             restrict: 'ECA',
             priority: -400,
             link: function (scope, $element) {
-                var temp_nc = 'ng/route - ngViewControllerFactory -> ',
+                var temp_nc = 'ng - route - ngViewControllerFactory -> ',
                     current = $route.current,
                     locals = current.locals,
                     link,
@@ -623,7 +619,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
 
     function instantiateRoute($injector) {
         if (isEagerInstantiationEnabled) {
-            w_msos.console.debug('ng/route - instantiateRoute -> eager.');
+            w_msos.console.debug('ng - route - instantiateRoute -> eager enabled.');
             $injector.get('$route');
         }
     }
