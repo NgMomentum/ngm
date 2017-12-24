@@ -1,59 +1,68 @@
-<section id="collapse">
-    <div data-ng-ignore class="page-header">
-        <a href="#top" class="btn btn-info" style="float:right;"><i class="fa fa-chevron-up"></i></a>
-        <h1>Collapse
-            <small>(
-                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.collapse</a>)</small>
-        </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-6 show-grid">
-            <div ng-controller="demo.bootstrap.controllers.collapse.ctrl">
-                <button type="button" class="btn btn-default" ng-click="isCollapsed = !isCollapsed">Toggle collapse Vertically</button>
-                <hr>
-                <div uib-collapse="isCollapsed">
-                    <div class="well well-lg">Some content</div>
-                </div>
 
-                <button type="button" class="btn btn-default" ng-click="isCollapsedHorizontal = !isCollapsedHorizontal">Toggle collapse Horizontally</button>
-                <hr>
-                <div class="horizontal-collapse" uib-collapse="isCollapsedHorizontal" horizontal>
-                    <div class="well well-lg">Some content</div>
-                </div>
-            </div>
-        </div>
-        <div data-ng-ignore class="col-md-6">
-            <p><strong>uib-collapse</strong> provides a simple way to hide and show an element with a css transition</p>
-            <h3 id="uib-collapse-settings">uib-collapse settings</h3>
-            <ul>
-                <li>
-                    <p><code>collapsed()</code>
-                        <small class="badge">$</small> - An optional expression called after the element finished collapsing.</p>
-                </li>
-                <li>
-                    <p><code>collapsing()</code>
-                        <small class="badge">$</small> - An optional expression called before the element begins collapsing. If the expression returns a promise, animation won&#39;t start until the promise resolves. If the returned promise is rejected, collapsing will be cancelled.</p>
-                </li>
-                <li>
-                    <p><code>expanded()</code>
-                        <small class="badge">$</small> - An optional expression called after the element finished expanding.</p>
-                </li>
-                <li>
-                    <p><code>expanding()</code>
-                        <small class="badge">$</small> - An optional expression called before the element begins expanding. If the expression returns a promise, animation won&#39;t start until the promise resolves. If the returned promise is rejected, expanding will be cancelled.</p>
-                </li>
-                <li>
-                    <p><code>uib-collapse</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>false</code>)</em> - Whether the element should be collapsed or not.</p>
-                </li>
-                <li>
-                    <p><code>horizontal</code>
-                        <small class="badge">$</small> - An optional attribute that permit to collapse horizontally.</p>
-                </li>
-            </ul>
-            <h3 id="known-issues">Known Issues</h3>
-            <p>When using the <code>horizontal</code> attribute with this directive, keep in mind that due to how CSS can reflow as the collapse element goes from 0px to its desired end width, this cause result in issues with a changing height. This can cause animations to not appear to run. The best way around this is to set a fixed height via CSS on the horizontal collapse element so that this situation does not occur, and so the animation can run as expected.</p>
-        </div>
-</section>
+<style data-ng-ignore>
+	.horizontal-collapse {
+		height: 70px;
+	}
+
+	.navbar-collapse.in {
+		overflow-y: hidden;
+	}
+</style>
+
+<div data-ng-ignore class="page-header">
+	<h1>Collapse
+		<small>(
+			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.collapse</a>)</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-md-6 show-grid">
+		<div ng-controller="demo.bootstrap.controllers.collapse.ctrl">
+			<button type="button" class="btn btn-default" ng-click="isCollapsed = !isCollapsed">Toggle collapse Vertically</button>
+			<hr>
+			<div uib-collapse="isCollapsed">
+				<div class="well well-lg">Some content</div>
+			</div>
+
+			<button type="button" class="btn btn-default" ng-click="isCollapsedHorizontal = !isCollapsedHorizontal">Toggle collapse Horizontally</button>
+			<hr>
+			<div class="horizontal-collapse" uib-collapse="isCollapsedHorizontal" horizontal>
+				<div class="well well-lg">Some content</div>
+			</div>
+		</div>
+	</div>
+	<div data-ng-ignore class="col-md-6">
+		<p><strong>uib-collapse</strong> provides a simple way to hide and show an element with a css transition</p>
+		<h3 id="uib-collapse-settings">uib-collapse settings</h3>
+		<ul>
+			<li>
+				<p><code>collapsed()</code>
+					<small class="badge">$</small> - An optional expression called after the element finished collapsing.</p>
+			</li>
+			<li>
+				<p><code>collapsing()</code>
+					<small class="badge">$</small> - An optional expression called before the element begins collapsing. If the expression returns a promise, animation won&#39;t start until the promise resolves. If the returned promise is rejected, collapsing will be cancelled.</p>
+			</li>
+			<li>
+				<p><code>expanded()</code>
+					<small class="badge">$</small> - An optional expression called after the element finished expanding.</p>
+			</li>
+			<li>
+				<p><code>expanding()</code>
+					<small class="badge">$</small> - An optional expression called before the element begins expanding. If the expression returns a promise, animation won&#39;t start until the promise resolves. If the returned promise is rejected, expanding will be cancelled.</p>
+			</li>
+			<li>
+				<p><code>uib-collapse</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>false</code>)</em> - Whether the element should be collapsed or not.</p>
+			</li>
+			<li>
+				<p><code>horizontal</code>
+					<small class="badge">$</small> - An optional attribute that permit to collapse horizontally.</p>
+			</li>
+		</ul>
+		<h3 id="known-issues">Known Issues</h3>
+		<p>When using the <code>horizontal</code> attribute with this directive, keep in mind that due to how CSS can reflow as the collapse element goes from 0px to its desired end width, this cause result in issues with a changing height. This can cause animations to not appear to run. The best way around this is to set a fixed height via CSS on the horizontal collapse element so that this situation does not occur, and so the animation can run as expected.</p>
+	</div>
+</div>

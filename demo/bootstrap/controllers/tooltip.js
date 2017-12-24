@@ -1,9 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
@@ -11,7 +8,7 @@
 msos.provide("demo.bootstrap.controllers.tooltip");
 msos.require("ng.bootstrap.ui.tooltip");
 
-demo.bootstrap.controllers.tooltip.version = new msos.set_version(16, 4, 1);
+demo.bootstrap.controllers.tooltip.version = new msos.set_version(17, 10, 26);
 
 
 angular.module(

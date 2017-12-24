@@ -185,7 +185,6 @@
                 // To complete the overall resolution, we have to wait for the parent
                 // promise and for the promise for each invokable in our plan.
                 var resolution = $q.defer('ng_ui_router_$Resolve_study'),
-//                    result = resolution.promise,
                     result = silenceUncaughtInPromise(resolution.promise),
                     promises = result.$$promises = {},
                     values = w_angular.extend({}, locals),
@@ -277,8 +276,6 @@
                         }
                     }
 
-                    // Wait for any parameter that we have a promise for (either from parent or from this
-                    // resolve; in that case study() will have made sure it's ordered before us in the plan).
                     w_angular.forEach(
                         params,
                         function (dep) {
@@ -344,19 +341,6 @@
             }
 
             return $injector.get('$templateRequest')(url);
-/*
-            return $http.get(
-                url,
-                {
-                    cache: $templateCache,
-                    headers: { Accept: 'text/html' }
-                }
-            ).then(
-                function (response) {
-                    return response.data;
-                }
-            );
-*/
         };
 
         this.fromProvider = function (provider, params, locals) {
@@ -2769,7 +2753,7 @@
 
             if (!(button > 1 || e.ctrlKey || e.metaKey || e.shiftKey || el.attr('target'))) {
                 // HACK: This is to allow ng-clicks to be processed before the transition is initiated:
-                transition = $timeout(function () {
+                transition = $timeout(function router_clickhook_timeout() {
                     $state.go(target.state, target.params, target.options);
                 });
 

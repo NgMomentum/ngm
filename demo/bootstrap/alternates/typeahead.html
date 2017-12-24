@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="handheldfriendly" content="true" />
+    <meta name="mobileoptimized" content="width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Open source software for the mobile web!" />
+    <meta name="author" content="Dwight Vietzke" />
+
+    <title>NgMomentum Simple Typeahead Demo</title>
+
+    <style>
+        /* Std AngularJS CSS: Load in page so cloaking starts immediately */
+
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .ng-hide:not(.ng-hide-animate) {
+            display: none !important;
+        }
+
+        ng\:form {
+            display: block;
+        }
+
+        .ng-cloak {
+            opacity: 0;
+        }
+
+        .ng-animate-shim {
+            visibility: hidden;
+        }
+
+        .ng-anchor {
+            position: absolute;
+        }
+        /* Std MSOS CSS: notify popup */
+
+        #notify_container {
+            position: absolute;
+            width: 18em;
+            z-index: 9999;
+        }
+
+        .notify {
+            background-color: #111;
+            border-radius: 0.4em;
+            margin-bottom: 1em;
+            opacity: 0.9;
+            padding: 1.2em;
+        }
+
+        .notify:hover {
+            opacity: 1;
+        }
+
+        .notify_title {
+            font-weight: bold;
+        }
+
+        .notify_title,
+        .notify_msg {
+            color: #FFF;
+            font-size: larger;
+            margin-bottom: 0.4em;
+            padding: 0 0.4em;
+        }
+
+        .notify>i {
+            float: left;
+        }
+
+        .notify_display>button {
+            float: right;
+        }
+
+        .notify>i.info {
+            color: blue;
+        }
+
+        .notify>i.warning {
+            color: yellow;
+        }
+
+        .notify>i.error {
+            color: red;
+        }
+
+        .notify>i.success {
+            color: green;
+        }
+
+        .notify>i.loading {
+            color: orange;
+        }
+
+        .notify {
+            -webkit-box-shadow: 0 0 12px #999;
+            box-shadow: 0 0 12px #999;
+        }
+
+        .notify:hover {
+            -webkit-box-shadow: 0 0 12px #000;
+            box-shadow: 0 0 12px #000;
+        }
+        /* Std MSOS CSS: No JavaScript message */
+
+        #no_javascript {
+            background-color: #FFF;
+            border: 2px solid #999;
+            border-radius: 0.4em;
+            margin-left: auto;
+            margin-right: auto;
+            width: 60%;
+        }
+
+        #no_javascript>i {
+            color: red;
+        }
+
+		/* Page specific */
+		.typeahead-demo .custom-popup-wrapper {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			z-index: 1000;
+			display: none;
+			background-color: #f9f9f9;
+		}
+
+		.typeahead-demo .custom-popup-wrapper>.message {
+			padding: 10px 20px;
+			border-bottom: 1px solid #ddd;
+			color: #868686;
+		}
+
+		.typeahead-demo .custom-popup-wrapper>.dropdown-menu {
+			position: static;
+			float: none;
+			display: block;
+			min-width: 160px;
+			background-color: transparent;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+		}
+    </style>
+
+    <link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+    <script src="../../../msos/base.uc.js"></script>
+    <script src="../../config.js"></script>
+
+</head>
+<body>
+
+    <noscript data-ng-ignore>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div id="body" class='container-fluid typeahead-demo' ng-controller="demo.bootstrap.controllers.typeahead.ctrl">
+
+		<!-- templates must be inside app node to register -->
+		<script type="text/ng-template" id="customTemplate.html">
+			<a>
+				<img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
+				<span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+			</a>
+		</script>
+
+		<script type="text/ng-template" id="customPopupTemplate.html">
+			<div class="custom-popup-wrapper" ng-style="{top: position().top+'px', left: position().left+'px'}" style="display: block;" ng-show="isOpen() && !moveInProgress" aria-hidden="{{!isOpen()}}">
+				<p class="message">select location from drop down.</p>
+
+				<ul class="dropdown-menu" role="listbox">
+					<li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }" ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
+						<div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+					</li>
+				</ul>
+			</div>
+		</script>
+
+		<h4>Static arrays</h4>
+		<pre>Model: {{selected | json}}</pre>
+		<input type="text" ng-model="selected" uib-typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control">
+
+		<h4>Asynchronous results</h4>
+		<pre>Model: {{asyncSelected | json}}</pre>
+		<input type="text" ng-model="asyncSelected" placeholder="Locations loaded via $http" uib-typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" class="form-control">
+		<i ng-show="loadingLocations" class="fa fa-refresh"></i>
+		<div ng-show="noResults">
+			<i class="fa fa-trash"></i> No Results Found
+		</div>
+
+		<h4>ngModelOptions support</h4>
+		<pre>Model: {{ngModelOptionsSelected | json}}</pre>
+		<input type="text" ng-model="ngModelOptionsSelected" ng-model-options="modelOptions" uib-typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control">
+
+		<h4>Custom templates for results</h4>
+		<pre>Model: {{customSelected | json}}</pre>
+		<input type="text" ng-model="customSelected" placeholder="Custom template" uib-typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" typeahead-template-url="customTemplate.html" class="form-control" typeahead-show-hint="true" typeahead-min-length="0">
+
+		<h4>Custom popup templates for typeahead's dropdown</h4>
+		<pre>Model: {{customPopupSelected | json}}</pre>
+		<input type="text" ng-model="customPopupSelected" placeholder="Custom popup template" uib-typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" typeahead-popup-template-url="customPopupTemplate.html" class="form-control">
+
+	</div>
+
+    <script data-ng-ignore>
+        msos.onload_func_pre.push(
+            function () {
+                "use strict";
+
+                msos.console.info('Page typeahead.html loaded!');
+
+                msos.require("demo.bootstrap.controllers.typeahead");
+            }
+        );
+		msos.onload_func_done.push(
+			function demo_start_onload() {
+				"use strict";
+
+				angular.bootstrap('#body', ['demo.bootstrap.controllers.typeahead']);
+			}
+		);
+    </script>
+</body>
+</html>

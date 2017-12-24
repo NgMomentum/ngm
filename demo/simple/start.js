@@ -1,11 +1,7 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
-    angular: false,
-    demo: false
+    angular: false
 */
 
 msos.provide("demo.simple.start");
@@ -47,7 +43,7 @@ msos.onload_func_done.push(
         angular.module('xmpl.filter', ['ng']);
 
         angular.module(
-            'demo.mobile.start',
+            'demo.simple.start',
             ['ng', 'xmpl.service', 'xmpl.directive', 'xmpl.filter']
         ).run(
             ['greeter', 'user', function (greeter, user) {
@@ -65,7 +61,7 @@ msos.onload_func_done.push(
             }]
         );
 
-        angular.bootstrap('body', ['demo.mobile.start']);
+        angular.bootstrap('body', ['demo.simple.start']);
 
         msos.console.debug(temp_ss + 'done!');
     }

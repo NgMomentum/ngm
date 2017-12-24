@@ -1,146 +1,144 @@
-<section id="timepicker">
-    <div data-ng-ignore class="page-header">
-        <a href="#top" class="btn btn-primary" style="float:right;"><i class="fa fa-chevron-up"></i></a>
-        <h1>Timepicker
-            <small>(
-                <a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.timepicker</a>)</small>
-        </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-6 show-grid">
-            <div ng-controller="demo.bootstrap.controllers.timepicker.ctrl">
-                <div uib-timepicker ng-model="mytime" ng-change="changed()" hour-step="hstep" minute-step="mstep" show-meridian="ismeridian"></div>
 
-                <pre class="alert alert-info">Time is: {{mytime | date:'shortTime' }}</pre>
+<div data-ng-ignore class="page-header">
+	<h1>Timepicker
+		<small>(
+			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.timepicker</a>)</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-md-6 show-grid">
+		<div ng-controller="demo.bootstrap.controllers.timepicker.ctrl">
+			<div uib-timepicker ng-model="mytime" ng-change="changed()" hour-step="hstep" minute-step="mstep" show-meridian="ismeridian"></div>
 
-                <div class="row">
-                    <div class="col-xs-6">
-                        Hours step is:
-                        <select class="form-control" ng-model="hstep" ng-options="opt for opt in options.hstep"></select>
-                    </div>
-                    <div class="col-xs-6">
-                        Minutes step is:
-                        <select class="form-control" ng-model="mstep" ng-options="opt for opt in options.mstep"></select>
-                    </div>
-                </div>
+			<pre class="alert alert-info">Time is: {{mytime | date:'shortTime' }}</pre>
 
-                <hr>
+			<div class="row">
+				<div class="col-xs-6">
+					Hours step is:
+					<select class="form-control" ng-model="hstep" ng-options="opt for opt in options.hstep"></select>
+				</div>
+				<div class="col-xs-6">
+					Minutes step is:
+					<select class="form-control" ng-model="mstep" ng-options="opt for opt in options.mstep"></select>
+				</div>
+			</div>
 
-                <button type="button" class="btn btn-info" ng-click="toggleMode()">12H / 24H</button>
-                <button type="button" class="btn btn-default" ng-click="update()">Set to 14:00</button>
-                <button type="button" class="btn btn-danger" ng-click="clear()">Clear</button>
-            </div>
-        </div>
-        <div data-ng-ignore class="col-md-6">
-            <p>A lightweight &amp; configurable timepicker directive.</p>
-            <h3 id="uib-timepicker-settings">uib-timepicker settings</h3>
-            <ul>
-                <li>
-                    <p><code>arrowkeys</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Whether user can use up/down arrow keys inside the hours &amp; minutes input to increase or decrease its values.</p>
-                </li>
-                <li>
-                    <p><code>hour-step</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>1</code>)</em> - Number of hours to increase or decrease when using a button.</p>
-                </li>
-                <li>
-                    <p><code>max</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>undefined</code>)</em> - Maximum time a user can select.</p>
-                </li>
-                <li>
-                    <p><code>meridians</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>null</code>)</em> - Meridian labels based on locale. To override you must supply an array like <code>[&#39;AM&#39;, &#39;PM&#39;]</code>.</p>
-                </li>
-                <li>
-                    <p><code>min</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>undefined</code>)</em> - Minimum time a user can select</p>
-                </li>
-                <li>
-                    <p><code>minute-step</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>1</code>)</em> - Number of minutes to increase or decrease when using a button.</p>
-                </li>
-                <li>
-                    <p><code>mousewheel</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Whether user can scroll inside the hours &amp; minutes input to increase or decrease its values.</p>
-                </li>
-                <li>
-                    <p><code>ng-disabled</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>false</code>)</em> - Whether or not to disable the component.</p>
-                </li>
-                <li>
-                    <p><code>ng-model</code>
-                        <small class="badge">$</small>
-                        <i class="fa fa-eye"></i> - Date object that provides the time state.</p>
-                </li>
-                <li>
-                    <p><code>pad-hours</code>
-                        <small class="badge">$</small>
-                        <em>(Default: true)</em> - Whether the hours column is padded with a 0.</p>
-                </li>
-                <li>
-                    <p><code>readonly-input</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>false</code>)</em> - Whether user can type inside the hours &amp; minutes input.</p>
-                </li>
-                <li>
-                    <p><code>second-step</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>1</code>)</em> - Number of seconds to increase or decrease when using a button.</p>
-                </li>
-                <li>
-                    <p><code>show-meridian</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>true</code>)</em> - Whether to display 12H or 24H mode.</p>
-                </li>
-                <li>
-                    <p><code>show-seconds</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <i class="fa fa-eye"></i>
-                        <em>(Default: <code>false</code>)</em> - Show seconds input.</p>
-                </li>
-                <li>
-                    <p><code>show-spinners</code>
-                        <small class="badge">$</small>
-                        <small class="badge">C</small>
-                        <em>(Default: <code>true</code>)</em> - Show spinner arrows above and below the inputs.</p>
-                </li>
-                <li>
-                    <p><code>tabindex</code>
-                        <em>(Defaults: <code>0</code>)</em> - Sets tabindex for each control in the timepicker.</p>
-                </li>
-                <li>
-                    <p><code>template-url</code>
-                        <small class="badge">C</small>
-                        <em>(Defaults: <code>ngm/ng/bootstrap/ui/tmpl/timepicker.html</code>)</em> - Add the ability to override the template used on the component.</p>
-                </li>
-            </ul>
-            <p><strong>Notes</strong></p>
-            <p>This component makes no claims of absolutely supporting the preservation of dates in all cases, and it is highly recommended that model tracking of dates is encapsulated in a different object. This component should not be used with the same model as the datepicker. This is due to edge cases with situations such as Daylight Savings timezone changes which require a modification of the date in order to prevent an impossible to increment or decrement situation. See <a href="https://github.com/angular-ui/bootstrap/issues/5485">#5485</a> for details.</p>
-            <p>If the model value is updated (i.e. via <code>Date.prototype.setDate</code>), you must update the model value by breaking the reference by <code>modelValue = new Date(modelValue)</code> in order to have the timepicker update.</p>
-        </div>
-    </div>
-</section>
+			<hr>
+
+			<button type="button" class="btn btn-info" ng-click="toggleMode()">12H / 24H</button>
+			<button type="button" class="btn btn-default" ng-click="update()">Set to 14:00</button>
+			<button type="button" class="btn btn-danger" ng-click="clear()">Clear</button>
+		</div>
+	</div>
+	<div data-ng-ignore class="col-md-6">
+		<p>A lightweight &amp; configurable timepicker directive.</p>
+		<h3 id="uib-timepicker-settings">uib-timepicker settings</h3>
+		<ul>
+			<li>
+				<p><code>arrowkeys</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Whether user can use up/down arrow keys inside the hours &amp; minutes input to increase or decrease its values.</p>
+			</li>
+			<li>
+				<p><code>hour-step</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>1</code>)</em> - Number of hours to increase or decrease when using a button.</p>
+			</li>
+			<li>
+				<p><code>max</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>undefined</code>)</em> - Maximum time a user can select.</p>
+			</li>
+			<li>
+				<p><code>meridians</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>null</code>)</em> - Meridian labels based on locale. To override you must supply an array like <code>[&#39;AM&#39;, &#39;PM&#39;]</code>.</p>
+			</li>
+			<li>
+				<p><code>min</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>undefined</code>)</em> - Minimum time a user can select</p>
+			</li>
+			<li>
+				<p><code>minute-step</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>1</code>)</em> - Number of minutes to increase or decrease when using a button.</p>
+			</li>
+			<li>
+				<p><code>mousewheel</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Whether user can scroll inside the hours &amp; minutes input to increase or decrease its values.</p>
+			</li>
+			<li>
+				<p><code>ng-disabled</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>false</code>)</em> - Whether or not to disable the component.</p>
+			</li>
+			<li>
+				<p><code>ng-model</code>
+					<small class="badge">$</small>
+					<i class="fa fa-eye"></i> - Date object that provides the time state.</p>
+			</li>
+			<li>
+				<p><code>pad-hours</code>
+					<small class="badge">$</small>
+					<em>(Default: true)</em> - Whether the hours column is padded with a 0.</p>
+			</li>
+			<li>
+				<p><code>readonly-input</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>false</code>)</em> - Whether user can type inside the hours &amp; minutes input.</p>
+			</li>
+			<li>
+				<p><code>second-step</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>1</code>)</em> - Number of seconds to increase or decrease when using a button.</p>
+			</li>
+			<li>
+				<p><code>show-meridian</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>true</code>)</em> - Whether to display 12H or 24H mode.</p>
+			</li>
+			<li>
+				<p><code>show-seconds</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<i class="fa fa-eye"></i>
+					<em>(Default: <code>false</code>)</em> - Show seconds input.</p>
+			</li>
+			<li>
+				<p><code>show-spinners</code>
+					<small class="badge">$</small>
+					<small class="badge">C</small>
+					<em>(Default: <code>true</code>)</em> - Show spinner arrows above and below the inputs.</p>
+			</li>
+			<li>
+				<p><code>tabindex</code>
+					<em>(Defaults: <code>0</code>)</em> - Sets tabindex for each control in the timepicker.</p>
+			</li>
+			<li>
+				<p><code>template-url</code>
+					<small class="badge">C</small>
+					<em>(Defaults: <code>ngm/ng/bootstrap/ui/tmpl/timepicker.html</code>)</em> - Add the ability to override the template used on the component.</p>
+			</li>
+		</ul>
+		<p><strong>Notes</strong></p>
+		<p>This component makes no claims of absolutely supporting the preservation of dates in all cases, and it is highly recommended that model tracking of dates is encapsulated in a different object. This component should not be used with the same model as the datepicker. This is due to edge cases with situations such as Daylight Savings timezone changes which require a modification of the date in order to prevent an impossible to increment or decrement situation. See <a href="https://github.com/angular-ui/bootstrap/issues/5485">#5485</a> for details.</p>
+		<p>If the model value is updated (i.e. via <code>Date.prototype.setDate</code>), you must update the model value by breaking the reference by <code>modelValue = new Date(modelValue)</code> in order to have the timepicker update.</p>
+	</div>
+</div>

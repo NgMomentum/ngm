@@ -1,0 +1,26 @@
+﻿<div data-ng-controller="SimpleController2">
+
+    <h3>Filtering and Sorting Data</h3>
+
+	<h4>Filtering and sorting data using AngularJS's built-in "filters" and the AngularJS "ng-controller" directive</h4>
+
+    Name:
+	<br />
+    <input type="text" data-ng-model="inputData.name" placeholder="name" />
+    <br />
+    City:
+	<br />
+    <input type="text" data-ng-model="inputData.city" placeholder="city" />
+    <br />
+	<br />
+    <button class="btn btn-primary" data-ng-click="addCustomer()">Add Customer</button>
+    <br />
+    <br />
+
+	Filter by Name:
+	<input type="text" data-ng-model="nameText" />
+	<br />
+	<ul>
+		<li data-ng-repeat="customer in customers | filter:nameText | orderBy:'name'">{{ customer.name | uppercase }} - {{ customer.city }}</li>
+	</ul>
+</div>

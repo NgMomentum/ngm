@@ -93,6 +93,9 @@ msos.site.auto_init = function () {
 
 	msos.console.debug(temp_ai + 'start.');
 
+	// Add Touch events for ng, ng.bootstrap.ui
+	if (cfg.mobile && cfg.browser.touch) { req("ng.touch"); }
+
 	// Apple mobile OS
 	if (cfg.mobile && navigator.platform.match(/iPad|iPhone|iPod/i)) { req("msos.mbp.ios"); }
 
@@ -114,6 +117,19 @@ msos.site.auto_init = function () {
 
 // Load site specific setup code
 msos.onload_func_pre.push(msos.site.auto_init);
+
+msos.onload_func_start.push(
+	function () {
+		jQuery('#notify_container').position(
+			{
+				of: window,
+				my: 'center top+60',
+				at: 'center top',
+				collision: 'none'
+			}
+		);
+	}
+);
 
 msos.console.info('site -> done!');
 msos.console.timeEnd('site');

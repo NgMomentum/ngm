@@ -1,17 +1,15 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.bootstrap.controllers.dateparser");
 msos.require("ng.bootstrap.ui.datepicker");
+msos.require("ng.bootstrap.ui.datepickerpopup");
 
-demo.bootstrap.controllers.dateparser.version = new msos.set_version(16, 4, 13);
+demo.bootstrap.controllers.dateparser.version = new msos.set_version(17, 9, 10);
 
 
 angular.module(

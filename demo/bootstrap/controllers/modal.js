@@ -1,9 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
@@ -12,61 +9,109 @@ msos.provide("demo.bootstrap.controllers.modal");
 msos.require("ng.bootstrap.ui.modal");
 
 
-demo.bootstrap.controllers.modal.version = new msos.set_version(16, 8, 30);
+demo.bootstrap.controllers.modal.version = new msos.set_version(17, 11, 25);
 
 angular.module(
-    'demo.bootstrap.controllers.modal', ['ng.bootstrap.ui.modal']
+    'demo.bootstrap.controllers.modal',
+    ['ng', 'ngAnimate', 'ngSanitize', 'ng.bootstrap.ui.modal']
 ).controller(
-    'demo.bootstrap.controllers.modal.ctrl', [
-        '$uibModal', '$log',
-        function ($uibModal, $log) {
+    'demo.bootstrap.controllers.modal.ctrl',
+    ['$uibModal', '$log', '$document', 'items',
+        function ($uibModal, $log, $document, items) {
             "use strict";
 
             var $ctrl = this;
 
-            $ctrl.items = ['item1', 'item2', 'item3'];
+            $ctrl.items = items;
 
             $ctrl.animationsEnabled = true;
 
-            $ctrl.open = function (size) {
-                var modalInstance = $uibModal.open({
-                    animation: $ctrl.animationsEnabled,
-                    ariaLabelledBy: 'modal-title',
-                    ariaDescribedBy: 'modal-body',
-                    templateUrl: 'myModalContent.html',
-                    controller: 'ModalInstanceCtrl',
-                    controllerAs: '$ctrl',
-                    size: size,
-                    resolve: {
-                        items: function () {
-                            return $ctrl.items;
-                        }
-                    }
-                });
+            msos.console.info('demo.bootstrap.controllers.modal.ctrl -> called, $ctrl:', $ctrl);
 
-                modalInstance.result.then(function (selectedItem) {
-                    $ctrl.selected = selectedItem;
-                }, function () {
-                    $log.info('Modal dismissed at: ' + new Date());
-                });
+            $ctrl.open = function (size, parentSelector) {
+    
+                msos.console.info('demo.bootstrap.controllers.modal.ctrl - $ctrl.open -> called.');
+
+                var parentElem = parentSelector ? angular.element($document[0].querySelector('.modal-demo ' + parentSelector)) : undefined,
+                    modalInstance = $uibModal.open(
+                        {
+                            animation: $ctrl.animationsEnabled,
+                            ariaLabelledBy: 'modal-title',
+                            ariaDescribedBy: 'modal-body',
+                            templateUrl: 'myModalContent.html',
+                            controller: 'ModalInstanceCtrl',
+                            controllerAs: '$ctrl',
+                            size: size,
+                            appendTo: parentElem,
+                            resolve: {
+                                items: function () {
+                                    return $ctrl.items;
+                                }
+                            }
+                        }
+                    );
+
+                modalInstance.result.then(
+                    function open_modal_resolve(selectedItem) {
+                        msos.console.info('demo.bootstrap.controllers.modal.ctrl - $ctrl.open -> modal selectedItem: ' + selectedItem);
+                        $ctrl.selected = selectedItem;
+                    }, function open_modal_reject() {
+                        msos.console.warn('demo.bootstrap.controllers.modal.ctrl - $ctrl.open -> modal dismissed at: ' + new Date());
+                    }
+                );
             };
 
             $ctrl.openComponentModal = function () {
-                var modalInstance = $uibModal.open({
-                    animation: $ctrl.animationsEnabled,
-                    component: 'modalComponent',
-                    resolve: {
-                        items: function () {
-                            return $ctrl.items;
+                var modalInstance = $uibModal.open(
+                        {
+                            animation: $ctrl.animationsEnabled,
+                            component: 'modalComponent',
+                            resolve: {
+                                items: function () {
+                                    return $ctrl.items;
+                                }
+                            }
                         }
-                    }
-                });
+                    );
 
-                modalInstance.result.then(function (selectedItem) {
-                    $ctrl.selected = selectedItem;
-                }, function () {
-                    $log.info('modal-component dismissed at: ' + new Date());
-                });
+                modalInstance.result.then(
+                    function open_comp_modal_resolve(selectedItem) {
+                        msos.console.info('demo.bootstrap.controllers.modal.ctrl -> modal-component selectedItem: ' + selectedItem);
+                        $ctrl.selected = selectedItem;
+                    },
+                    function open_comp_modal_reject() {
+                        msos.console.warn('demo.bootstrap.controllers.modal.ctrl -> modal-component dismissed at: ' + new Date());
+                    }
+                );
+            };
+
+            $ctrl.openMultipleModals = function () {
+
+                $uibModal.open(
+                    {
+                        animation: $ctrl.animationsEnabled,
+                        ariaLabelledBy: 'modal-title-bottom',
+                        ariaDescribedBy: 'modal-body-bottom',
+                        templateUrl: 'stackedModal.html',
+                        size: 'sm',
+                        controller: ['$scope', function ($scope) {
+                            $scope.name = 'bottom';  
+                        }]
+                    }
+                );
+
+                $uibModal.open(
+                    {
+                        animation: $ctrl.animationsEnabled,
+                        ariaLabelledBy: 'modal-title-top',
+                        ariaDescribedBy: 'modal-body-top',
+                        templateUrl: 'stackedModal.html',
+                        size: 'sm',
+                        controller: ['$scope', function ($scope) {
+                            $scope.name = 'top';  
+                        }]
+                    }
+                );
             };
 
             $ctrl.toggleAnimation = function () {
@@ -77,8 +122,13 @@ angular.module(
 ).controller(
     'ModalInstanceCtrl',
     ['$uibModalInstance', 'items', function ($uibModalInstance, items) {
+
         var $ctrl = this;
+
         $ctrl.items = items;
+
+        msos.console.info('demo.bootstrap.controllers.modal - ModalInstanceCtrl -> called, $ctrl:', $ctrl);
+
         $ctrl.selected = {
             item: $ctrl.items[0]
         };
@@ -122,4 +172,7 @@ angular.module(
             };
         }
     }
+).value(
+    'items',
+    ['item1', 'item2', 'item3']
 );

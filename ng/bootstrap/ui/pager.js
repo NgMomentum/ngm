@@ -1,9 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
@@ -11,7 +8,7 @@
 msos.provide("ng.bootstrap.ui.pager");
 msos.require("ng.bootstrap.ui.paging");
 
-ng.bootstrap.ui.pager.version = new msos.set_version(16, 10, 27);
+ng.bootstrap.ui.pager.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.pager.css = new msos.loader();
@@ -23,7 +20,7 @@ ng.bootstrap.ui.pager.css.load(msos.resource_url('ng', 'bootstrap/css/ui/pager.c
 // uib/template/pagination/pager.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/pager.html')
 angular.module(
     'ng.bootstrap.ui.pager',
-    ['ng.bootstrap.ui.paging', 'ng.bootstrap.ui.tabindex']
+    ['ng', 'ng.bootstrap.ui', 'ng.bootstrap.ui.paging', 'ng.bootstrap.ui.tabindex']
 ).controller(
     'UibPagerController',
     ['$scope', '$attrs', 'uibPaging', 'uibPagerConfig',

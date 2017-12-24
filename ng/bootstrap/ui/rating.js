@@ -10,15 +10,16 @@
 
 msos.provide("ng.bootstrap.ui.rating");
 
-ng.bootstrap.ui.rating.version = new msos.set_version(16, 8, 30);
+ng.bootstrap.ui.rating.version = new msos.set_version(17, 12, 6);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.rating -> ng.bootstrap.ui.rating
 // ubi/template/rating/rating.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/rating.html')
-angular.module('ng.bootstrap.ui.rating', [])
-
-.constant('uibRatingConfig', {
+angular.module(
+    'ng.bootstrap.ui.rating',
+    ['ng', 'ng.bootstrap.ui']
+).constant('uibRatingConfig', {
     max: 5,
     stateOn: null,
     stateOff: null,

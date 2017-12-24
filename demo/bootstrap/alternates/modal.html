@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="handheldfriendly" content="true" />
+    <meta name="mobileoptimized" content="width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Open source software for the mobile web!" />
+    <meta name="author" content="Dwight Vietzke" />
+
+    <title>NgMomentum Simple Modal Demo</title>
+
+    <style>
+        /* Std AngularJS CSS: Load in page so cloaking starts immediately */
+
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .ng-hide:not(.ng-hide-animate) {
+            display: none !important;
+        }
+
+        ng\:form {
+            display: block;
+        }
+
+        .ng-cloak {
+            opacity: 0;
+        }
+
+        .ng-animate-shim {
+            visibility: hidden;
+        }
+
+        .ng-anchor {
+            position: absolute;
+        }
+        /* Std MSOS CSS: notify popup */
+
+        #notify_container {
+            position: absolute;
+            width: 18em;
+            z-index: 9999;
+        }
+
+        .notify {
+            background-color: #111;
+            border-radius: 0.4em;
+            margin-bottom: 1em;
+            opacity: 0.9;
+            padding: 1.2em;
+        }
+
+        .notify:hover {
+            opacity: 1;
+        }
+
+        .notify_title {
+            font-weight: bold;
+        }
+
+        .notify_title,
+        .notify_msg {
+            color: #FFF;
+            font-size: larger;
+            margin-bottom: 0.4em;
+            padding: 0 0.4em;
+        }
+
+        .notify>i {
+            float: left;
+        }
+
+        .notify_display>button {
+            float: right;
+        }
+
+        .notify>i.info {
+            color: blue;
+        }
+
+        .notify>i.warning {
+            color: yellow;
+        }
+
+        .notify>i.error {
+            color: red;
+        }
+
+        .notify>i.success {
+            color: green;
+        }
+
+        .notify>i.loading {
+            color: orange;
+        }
+
+        .notify {
+            -webkit-box-shadow: 0 0 12px #999;
+            box-shadow: 0 0 12px #999;
+        }
+
+        .notify:hover {
+            -webkit-box-shadow: 0 0 12px #000;
+            box-shadow: 0 0 12px #000;
+        }
+        /* Std MSOS CSS: No JavaScript message */
+
+        #no_javascript {
+            background-color: #FFF;
+            border: 2px solid #999;
+            border-radius: 0.4em;
+            margin-left: auto;
+            margin-right: auto;
+            width: 60%;
+        }
+
+        #no_javascript>i {
+            color: red;
+        }
+    </style>
+
+    <link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+    <script src="../../../msos/base.uc.js"></script>
+    <script src="../../config.js"></script>
+
+</head>
+
+<body>
+
+    <noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+    <div id='body' ng-controller="demo.bootstrap.controllers.modal.ctrl as $ctrl" class="ng-cloak modal-demo">
+        <script type="text/ng-template" id="myModalContent.html">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">I'm a modal!</h3>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <ul>
+                    <li ng-repeat="item in $ctrl.items">
+                        <a href="#" ng-click="$event.preventDefault(); $ctrl.selected.item = item">{{ item }}</a>
+                    </li>
+                </ul>
+                Selected: <b>{{ $ctrl.selected.item }}</b>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
+                <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+            </div>
+        </script>
+        <script type="text/ng-template" id="stackedModal.html">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title-{{name}}">The {{name}} modal!</h3>
+            </div>
+            <div class="modal-body" id="modal-body-{{name}}">
+                Having multiple modals open at once is probably bad UX but it's technically possible.
+            </div>
+        </script>
+
+        <button type="button" class="btn btn-default" ng-click="$ctrl.open()">Open me!</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.open('lg')">Large modal</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.open('sm')">Small modal</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.open('sm', '.modal-parent')">
+            Modal appended to a custom parent
+    </button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.toggleAnimation()">Toggle Animation ({{ $ctrl.animationsEnabled }})</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.openComponentModal()">Open a component modal!</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.openMultipleModals()">
+        Open multiple modals at once 
+    </button>
+        <div ng-show="$ctrl.selected">Selection from a modal: {{ $ctrl.selected }}</div>
+        <div class="modal-parent">
+        </div>
+    </div>
+
+    <script data-ng-ignore>
+        msos.onload_func_pre.push(
+            function() {
+                "use strict";
+
+                msos.console.info('Page modal.html loaded!');
+
+                msos.require("demo.bootstrap.controllers.modal");
+            }
+        );
+		msos.onload_func_done.push(
+			function demo_start_onload() {
+				"use strict";
+
+				angular.bootstrap('#body', ['demo.bootstrap.controllers.modal']);
+			}
+		);
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>angular-react table with ng-repeat</title>
+    <link rel="stylesheet" href="../../../css/pure.uc.css">
+
+    <style>
+        [ng\:cloak],
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .x-ng-cloak {
+            display: none !important;
+        }
+        
+        .content {
+            margin: 0 auto;
+            padding: 0 2em;
+            max-width: 800px;
+            margin-bottom: 50px;
+            line-height: 1.6em;
+        }
+        
+        .header {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 1em;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            background: #fff;
+        }
+        
+        .header h1 {
+            font-size: 300%;
+            font-weight: 100;
+            margin: 0;
+        }
+        
+        .content .pure-menu {
+            margin-top: 2em;
+        }
+        
+        .content .pure-table {
+            margin-top: 2em;
+        }
+    </style>
+</head>
+<body ng-controller="mainCtrl">
+    <div class="content">
+        <div class="header">
+            <h1>Table with ng-repeat</h1>
+        </div>
+
+        <div class="pure-menu pure-menu-open pure-menu-horizontal">
+            <ul>
+                <li><a href="#" ng-click="regenerate()">Refesh Modified Date</a></li>
+            </ul>
+        </div>
+
+        <table ng-cloak class="pure-table">
+            <thead>
+                <tr>
+                    <th ng-repeat="col in table.cols">
+                        {{col}}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="row in table.rows">
+                    <td ng-repeat="cell in row">{{cell}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script data-ng-ignore src="../../../msos/base.uc.js"></script>
+    <script data-ng-ignore src="../../../jquery/v321.uc.js"></script>
+    <script data-ng-ignore src="../../../msos/core.uc.js"></script>
+    <script data-ng-ignore src="../../../ng/v167_msos.uc.js"></script>
+	<script data-ng-ignore src='../../../react/v1620_dev.js'></script>
+    <script data-ng-ignore src='../../../react/v1620_dev_dom.js'></script>
+	<script data-ng-ignore src='../../../react/prop_types/v1560.js'></script>
+	<script data-ng-ignore src='../../../react/create_react_class/v1562.js'></script>
+    <script data-ng-ignore src="../../../ng/react.js"></script>
+    <script data-ng-ignore src="app.js"></script>
+
+    <script data-ng-ignore>
+        // Bootstrap our simple demo
+        msos.onload_func_done.push(
+            function() {
+                "use strict";
+
+                msos.console.info('Page ngrepeat.html loaded!');
+
+                angular.bootstrap('body', ['app']);
+            }
+        );
+    </script>
+</body>
+</html>

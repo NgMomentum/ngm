@@ -1,28 +1,27 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.typeahead");
+msos.require("ng.bootstrap.ui.dropdown");
 
-ng.bootstrap.ui.typeahead.version = new msos.set_version(16, 8, 30);
+ng.bootstrap.ui.typeahead.version = new msos.set_version(17, 12, 16);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.typeahead -> ng.bootstrap.ui.typeahead
 // uib/template/typeahead/typeahead-popup.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead.html'),
 // uib/template/typeahead/typeahead-match.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/typeahead/match.html')
-angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.bootstrap.ui.position'])
-/**
- * A helper service that can parse typeahead's syntax (string provided by users)
- * Extracted to a separate service for ease of unit testing
- */
-.factory('uibTypeaheadParser', ['$parse', function ($parse) {
+angular.module(
+    'ng.bootstrap.ui.typeahead',
+    [
+		'ng', 'ng.bootstrap.ui', 'ng.bootstrap.ui.debounce',
+		'ng.bootstrap.ui.position', 'ng.bootstrap.ui.dropdown'
+	]
+).factory('uibTypeaheadParser', ['$parse', function ($parse) {
     //                      000001111111100000000000002222222200000000000000003333333333333330000000000044444444000
     var TYPEAHEAD_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+([\s\S]+?)$/;
 
@@ -43,9 +42,9 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             };
         }
     };
-}])
-
-.controller('UibTypeaheadController', ['$scope', '$element', '$attrs', '$compile', '$parse', '$q', '$timeout', '$document', '$window', '$rootScope', '$$debounce', '$uibPosition', 'uibTypeaheadParser',
+}]).controller(
+	'UibTypeaheadController',
+	['$scope', '$element', '$attrs', '$compile', '$parse', '$q', '$timeout', '$document', '$window', '$rootScope', '$$debounce', '$uibPosition', 'uibTypeaheadParser',
     function (originalScope, element, attrs, $compile, $parse, $q, $timeout, $document, $window, $rootScope, $$debounce, $position, typeaheadParser) {
         var HOT_KEYS = [9, 13, 27, 38, 40];
         var eventDebounceTime = 200;
@@ -112,11 +111,11 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
         var parsedModel = $parse(attrs.ngModel);
         var invokeModelSetter = $parse(attrs.ngModel + '($$$p)');
         var $setModelValue = function (scope, newValue) {
-            if (angular.isFunction(parsedModel(originalScope)) &&
-                ngModelOptions && ngModelOptions.$options && ngModelOptions.$options.getterSetter) {
-                return invokeModelSetter(scope, {
-                    $$$p: newValue
-                });
+            if (angular.isFunction(parsedModel(originalScope)) && ngModelOptions.getOption('getterSetter')) {
+                return invokeModelSetter(
+                    scope,
+                    { $$$p: newValue }
+                );
             }
 
             return parsedModel.assign(scope, newValue);
@@ -561,16 +560,15 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             element.after($popup);
         }
 
-        this.init = function (_modelCtrl, _ngModelOptions) {
+        this.init = function (_modelCtrl) {
             modelCtrl = _modelCtrl;
-            ngModelOptions = _ngModelOptions;
+            ngModelOptions = _modelCtrl.$options;
 
             var parse_debounce;
 
-            if (modelCtrl.$options
-             && modelCtrl.$options.debounce) {
+            if (ngModelOptions && ngModelOptions.debounce) {
 
-                parse_debounce = $parse(modelCtrl.$options.debounce);
+                parse_debounce = $parse(ngModelOptions.getOption('debounce'));
 
                 scope.debounceUpdate = parse_debounce !== angular.noop ? parse_debounce(originalScope) : undefined;
             }
@@ -636,19 +634,15 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             });
         };
     }
-])
-
-.directive('uibTypeahead', function () {
+]).directive('uibTypeahead', function () {
     return {
         controller: 'UibTypeaheadController',
-        require: ['ngModel', '^?ngModelOptions', 'uibTypeahead'],
+        require: ['ngModel', 'uibTypeahead'],
         link: function (originalScope, element, attrs, ctrls) {
-            ctrls[2].init(ctrls[0], ctrls[1]);
+            ctrls[1].init(ctrls[0]);
         }
     };
-})
-
-.directive('uibTypeaheadPopup', ['$$debounce', function ($$debounce) {
+}).directive('uibTypeaheadPopup', ['$$debounce', function ($$debounce) {
     return {
         scope: {
             matches: '=',
@@ -701,9 +695,7 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             };
         }
     };
-}])
-
-.directive('uibTypeaheadMatch', ['$templateRequest', '$compile', '$parse', function ($templateRequest, $compile, $parse) {
+}]).directive('uibTypeaheadMatch', ['$templateRequest', '$compile', '$parse', function ($templateRequest, $compile, $parse) {
     return {
         scope: {
             index: '=',
@@ -719,33 +711,51 @@ angular.module('ng.bootstrap.ui.typeahead', ['ng.bootstrap.ui.debounce', 'ng.boo
             });
         }
     };
-}])
+}]).directive(
+    'typeaheadLoading',
+    angular.restrictADir
+).directive(
+    'typeaheadNoResults',
+    angular.restrictADir
+).directive(
+    'typeaheadTemplateUrl',
+    angular.restrictADir
+).directive(
+    'typeaheadShowHint',
+    angular.restrictADir
+).directive(
+    'typeaheadMinLength',
+    angular.restrictADir
+).directive(
+    'typeaheadPopupTemplateUrl',
+    angular.restrictADir
+).directive(
+    'popupTemplateUrl',
+    angular.restrictADir
+).filter(
+    'uibTypeaheadHighlight',
+    ['$sce', '$injector', function ($sce, $injector) {
+        var isSanitizePresent = $injector.has('$sanitize');
 
-.filter('uibTypeaheadHighlight', ['$sce', '$injector', function ($sce, $injector) {
-    var isSanitizePresent = $injector.has('$sanitize');
+        if (!isSanitizePresent) {
+            msos.console.warn('ng.bootstrap.ui.typeahead - filter -> unsafe: please add ngSanitize to app required modules.');
+        }
 
-    if (!isSanitizePresent) {
-        msos.console.warn('ng.bootstrap.ui.typeahead - filter -> unsafe: please add ngSanitize to app required modules.');
-    }
+        function escapeRegexp(queryToEscape) {
+            // Regex: capture the whole query string and replace it with the string that will be used to match
+            // the results, for example if the capture is "a" the result will be \a
+            return queryToEscape.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
+        }
 
-    function escapeRegexp(queryToEscape) {
-        // Regex: capture the whole query string and replace it with the string that will be used to match
-        // the results, for example if the capture is "a" the result will be \a
-        return queryToEscape.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
-    }
+        return function (matchItem, query) {
 
-    function containsHtml(matchItem) {
-        return /<.*>/g.test(matchItem);
-    }
+            matchItem = query ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') : matchItem;
 
-    return function (matchItem, query) {
+            // Use $sce.trustAsHtml if ngSanitize not required
+            if (!isSanitizePresent) { matchItem = $sce.trustAsHtml(matchItem); }
 
-        matchItem = query ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') : matchItem;
-
-        // Use $sce.trustAsHtml if ngSanitize not required
-        if (!isSanitizePresent) { matchItem = $sce.trustAsHtml(matchItem); }
-
-        return matchItem;
-    };
-}]);
+            return matchItem;
+        };
+    }]
+);
 

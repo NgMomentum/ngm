@@ -10,16 +10,17 @@
 
 msos.provide("ng.bootstrap.ui.tabs");
 
-ng.bootstrap.ui.tabs.version = new msos.set_version(16, 4, 4);
+ng.bootstrap.ui.tabs.version = new msos.set_version(17, 12, 6);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.tabs -> ng.bootstrap.ui.tabs
 // uib/template/tabs/tabset.html    -> msos.resource_url('ng', 'bootstrap/ui/tmpl/tabset.html'),
 // uib/template/tabs/tab.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/tab.html')
-angular.module('ng.bootstrap.ui.tabs', [])
-
-.controller('UibTabsetController', ['$scope', function ($scope) {
+angular.module(
+    'ng.bootstrap.ui.tabs',
+    ['ng', 'ng.bootstrap.ui']
+).controller('UibTabsetController', ['$scope', function ($scope) {
     var ctrl = this,
         oldIndex;
     ctrl.tabs = [];

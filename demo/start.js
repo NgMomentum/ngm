@@ -8,6 +8,7 @@
 
 msos.provide("demo.start");
 msos.require("ng.bootstrap.ui.dropdown");
+msos.require("ng.touch");
 
 
 msos.onload_functions.push(
@@ -96,11 +97,20 @@ msos.onload_functions.push(
 						resolve: {
 							load: ['$postload', function ($postload) {
 
-								// Request specific demo module
-								msos.require('demo.' + ui_group +'.controllers.' + ui_name);
+								var module_name = 'demo.' + ui_group +'.controllers.' + ui_name,
+									module_id = module_name.replace(/\./g, '_');
 
-								// Start AngularJS module registration process
+								// If already loaded, just continue resolve
+								if (msos.registered_modules[module_id]) {
+									return true;
+								}
+
+								// Otherwise, request specific demo module
+								msos.require(module_name);
+
+								// Then, start AngularJS module registration process
 								return $postload.run_registration();
+								
 							}]
 						}
 					};
@@ -242,7 +252,7 @@ msos.onload_functions.push(
 					}
 				);
 
-				// Angular-UI-Bootstrap examples
+				// Material Design examples
 				jQuery.each(
 					material_ctrls,
 					function (index, route) {
@@ -321,7 +331,7 @@ msos.onload_functions.push(
 );
 
 msos.onload_func_done.push(
-	function () {
+	function demo_start_onload() {
 		"use strict";
 
 		angular.bootstrap('#body', ['demo.start']);

@@ -3,7 +3,7 @@
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  *
- * Updated to v1.6.5
+ * Updated to v1.6.7
  */
 
 (function (window, angular) {

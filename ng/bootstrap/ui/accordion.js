@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.accordion");
 
-ng.bootstrap.ui.accordion.version = new msos.set_version(17, 1, 20);
+ng.bootstrap.ui.accordion.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS (accordion requires panel.css)
 ng.bootstrap.ui.accordion.css = new msos.loader();
@@ -23,7 +20,7 @@ ng.bootstrap.ui.accordion.css.load(msos.resource_url('ng', 'bootstrap/css/ui/pan
 // uib/template/accordion/accordion-group.html  -> msos.resource_url('ng', 'bootstrap/ui/tmpl/accordion/group.html')
 angular.module(
     'ng.bootstrap.ui.accordion',
-    ['ng.bootstrap.ui.collapse', 'ng.bootstrap.ui.tabindex']
+    ['ng', 'ng.bootstrap.ui', 'ng.bootstrap.ui.collapse', 'ng.bootstrap.ui.tabindex']
 ).constant(
     'uibAccordionConfig',
     { closeOthers: true }
@@ -176,26 +173,11 @@ angular.module(
     }
 ).directive(
     'uibAccordionHeader',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
 ).directive(
     'accordionCloseOthers',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
 ).directive(
     'accordionTemplateUrl',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
 );

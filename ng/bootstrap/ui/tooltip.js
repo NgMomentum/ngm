@@ -1,14 +1,11 @@
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 msos.provide("ng.bootstrap.ui.tooltip");
 
-ng.bootstrap.ui.tooltip.version = new msos.set_version(16, 10, 27);
+ng.bootstrap.ui.tooltip.version = new msos.set_version(17, 12, 6);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.tooltip.css = new msos.loader();
@@ -20,12 +17,10 @@ ng.bootstrap.ui.tooltip.css.load(msos.resource_url('ng', 'bootstrap/css/ui/toolt
 // uib/template/tooltip/tooltip-popup.html				-> msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip.html'),
 // uib/template/tooltip/tooltip-template-popup.html     -> msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip/template_popup.html')
 // uib/template/tooltip/tooltip-html-popup.html         -> msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip/html_popup.html')
-angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.bootstrap.ui.stackedMap'])
-    /**
-     * The $tooltip service creates tooltip- and popover-like directives as well as
-     * houses global options for them.
-     */
-    .provider('$uibTooltip', function () {
+angular.module(
+    'ng.bootstrap.ui.tooltip',
+    ['ng', 'ng.bootstrap.ui', 'ng.bootstrap.ui.position', 'ng.bootstrap.ui.stackedMap']
+).provider('$uibTooltip', function () {
         // The default options tooltip and popover.
         var defaultOptions = {
             placement: 'top',
@@ -48,24 +43,10 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
         // The options specified to the provider globally.
         var globalOptions = {};
 
-        /**
-         * `options({})` allows global configuration of all tooltips in the
-         * application.
-         *
-         *   var app = angular.module( 'App', ['ui.bootstrap.tooltip'], function ( $tooltipProvider ) {
-         *     // place tooltips left instead of top by default
-         *     $tooltipProvider.options( { placement: 'left' } );
-         *   });
-         */
         this.options = function (value) {
             angular.extend(globalOptions, value);
         };
 
-        /**
-         * This allows you to extend the set of trigger mappings available. E.g.:
-         *
-         *   $tooltipProvider.setTriggers( 'openTrigger': 'closeTrigger' );
-         */
         this.setTriggers = function setTriggers(triggers) {
             angular.extend(triggerMap, triggers);
         };
@@ -91,20 +72,6 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
             return function $tooltip(ttType, prefix, defaultTriggerShow, options) {
                 options = angular.extend({}, defaultOptions, globalOptions, options);
 
-                /**
-                 * Returns an object of show and hide triggers.
-                 *
-                 * If a trigger is supplied,
-                 * it is used to show the tooltip; otherwise, it will use the `trigger`
-                 * option passed to the `$tooltipProvider.options` method; else it will
-                 * default to the trigger supplied to this directive factory.
-                 *
-                 * The hide trigger is based on the show trigger. If the `trigger` option
-                 * was passed to the `$tooltipProvider.options` method, it will use the
-                 * mapped trigger from `triggerMap` or the passed trigger if the map is
-                 * undefined; otherwise, it uses the `triggerMap` value of the show
-                 * trigger; else it will just use the show trigger.
-                 */
                 function getTriggers(trigger) {
                     var show = (trigger || options.trigger || defaultTriggerShow).split(' ');
                     var hide = show.map(function (trigger) {
@@ -135,10 +102,10 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                     '</div>';
 
                 return {
-                    compile: function (tElem, tAttrs) {
+                    compile: function () {
                         var tooltipLinker = $compile(template);
 
-                        return function link(scope, element, attrs, tooltipCtrl) {
+                        return function link(scope, element, attrs) {
                             var tooltip;
                             var tooltipLinkedScope;
                             var transitionTimeout;
@@ -183,12 +150,14 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                         }
 
                                         $timeout(function () {
+                                            if (!tooltip) { return; }
+
                                             var currentHeight = angular.isDefined(tooltip.offsetHeight) ? tooltip.offsetHeight : tooltip.prop('offsetHeight');
                                             var adjustment = $position.adjustTop(placementClasses, elementPos, initialHeight, currentHeight);
                                             if (adjustment) {
                                                 tooltip.css(adjustment);
                                             }
-                                        }, 0, false);
+                                        }, 10, false);
 
                                         // first time through tt element will have the
                                         // uib-position-measure class or if the placement
@@ -413,7 +382,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
 
                             if (isOpenParse) {
                                 scope.$watch(isOpenParse, function (val) {
-                                    if (ttScope && !val === ttScope.isOpen) {
+                                    if (ttScope && val !== ttScope.isOpen) {
                                         toggleTooltipBind();
                                     }
                                 });
@@ -497,6 +466,10 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                 }
                             }
 
+                            function hideOnEscapeKey(e) {
+                                if (e.which === 27) { hideTooltipBind(); }
+                            }
+
                             var unregisterTriggers = function () {
                                 triggers.show.forEach(function (trigger) {
                                     if (trigger === 'outsideClick') {
@@ -505,6 +478,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                         element.off(trigger, showTooltipBind);
                                         element.off(trigger, toggleTooltipBind);
                                     }
+                                    element.off('keypress', hideOnEscapeKey);
                                 });
                                 triggers.hide.forEach(function (trigger) {
                                     if (trigger === 'outsideClick') {
@@ -546,11 +520,7 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                                             element.on(triggers.hide[idx], hideTooltipBind);
                                         }
 
-                                        element.on('keypress', function (e) {
-                                            if (e.which === 27) {
-                                                hideTooltipBind();
-                                            }
-                                        });
+                                        element.on('keypress', hideOnEscapeKey);
                                     });
                                 }
                             }
@@ -581,10 +551,8 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
                 };
             };
         }];
-    })
-
-// This is mostly ngInclude code but with a custom scope
-.directive('uibTooltipTemplateTransclude', [
+    }
+).directive('uibTooltipTemplateTransclude', [
     '$animate', '$sce', '$compile', '$templateRequest',
     function ($animate, $sce, $compile, $templateRequest) {
         return {
@@ -654,14 +622,9 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
             }
         };
     }
-])
-
-/**
- * Note that it's intentional that these classes are *not* applied through $animate.
- * They must not be animated as they're expected to be present on the tooltip on
- * initialization.
- */
-.directive('uibTooltipClasses', ['$uibPosition', function ($uibPosition) {
+]).directive(
+    'uibTooltipClasses',
+    ['$uibPosition', function ($uibPosition) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
@@ -684,44 +647,71 @@ angular.module('ng.bootstrap.ui.tooltip', ['ng.bootstrap.ui.position', 'ng.boots
             }
         }
     };
-}])
-
-.directive('uibTooltipPopup', function () {
+}]).directive(
+    'uibTooltipPopup',
+    function () {
     return {
         restrict: 'A',
         scope: { content: '@' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip.html')
     };
-})
-
-.directive('uibTooltip', ['$uibTooltip', function ($uibTooltip) {
+}).directive('uibTooltip', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibTooltip', 'tooltip', 'mouseenter');
-}])
-
-.directive('uibTooltipTemplatePopup', function () {
+}]).directive('uibTooltipTemplatePopup', function () {
     return {
         restrict: 'A',
         scope: { contentExp: '&', originScope: '&' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip/template_popup.html')
     };
-})
-
-.directive('uibTooltipTemplate', ['$uibTooltip', function ($uibTooltip) {
+}).directive('uibTooltipTemplate', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibTooltipTemplate', 'tooltip', 'mouseenter', {
         useContentExp: true
     });
-}])
-
-.directive('uibTooltipHtmlPopup', function () {
+}]).directive('uibTooltipHtmlPopup', function () {
     return {
         restrict: 'A',
         scope: { contentExp: '&' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/tooltip/html_popup.html')
     };
-})
-
-.directive('uibTooltipHtml', ['$uibTooltip', function ($uibTooltip) {
+}).directive('uibTooltipHtml', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibTooltipHtml', 'tooltip', 'mouseenter', {
         useContentExp: true
     });
-}]);
+}]).directive(
+    'uibTitle',
+    angular.restrictADir
+).directive(
+    'tooltipAnimationClass',
+    angular.restrictADir
+).directive(
+    'originScope',
+    angular.restrictADir
+).directive(
+    'tooltipPlacement',
+    angular.restrictADir
+).directive(
+    'tooltipAnimation',
+    angular.restrictADir
+).directive(
+    'tooltipPopupDelay',
+    angular.restrictADir
+).directive(
+    'tooltipPopupCloseDelay',
+    angular.restrictADir
+).directive(
+    'tooltipClass',
+    angular.restrictADir
+).directive(
+    'tooltipTrigger',
+    angular.restrictADir
+).directive(
+    'tooltipEnable',
+    angular.restrictADir
+).directive(
+    'tooltipIsOpen',
+    angular.restrictADir
+).directive(
+    'tooltipTemplateTranscludeScope',
+    angular.restrictADir
+);
+

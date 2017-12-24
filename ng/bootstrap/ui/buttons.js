@@ -1,23 +1,20 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.buttons");
 
-ng.bootstrap.ui.buttons.version = new msos.set_version(17, 2, 10);
+ng.bootstrap.ui.buttons.version = new msos.set_version(17, 12, 6);
 
 
 // Below is the standard plugin, except for naming (MSOS style)
 // ui.bootstrap.buttons -> ng.bootstrap.ui.buttons
 angular.module(
     'ng.bootstrap.ui.buttons',
-    ['ng']
+    ['ng', 'ng.bootstrap.ui']
 ).constant(
     'uibButtonConfig',
     {
@@ -128,26 +125,14 @@ angular.module(
     }
 ).directive(
     'btnCheckboxTrue',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
 ).directive(
     'btnCheckboxFalse',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
 ).directive(
     'uibUncheckable',
-    function () {
-		"use strict";
-        return {
-            restrict: 'A'
-        };
-    }
+    angular.restrictADir
+).directive(
+    'uncheckable',
+    angular.restrictADir
 );

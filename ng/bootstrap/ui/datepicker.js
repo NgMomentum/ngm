@@ -1,8 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
     _: false,
     angular: false,
     ng: false
@@ -10,14 +8,14 @@
 
 msos.provide("ng.bootstrap.ui.datepicker");
 
-ng.bootstrap.ui.datepicker.version = new msos.set_version(17, 2, 10);
+ng.bootstrap.ui.datepicker.version = new msos.set_version(17, 12, 6);
 
 
 // Below is the standard plugin, except for naming (MSOS style)
 // ui.bootstrap.dateparser -> ng.bootstrap.ui.dateparser
 angular.module(
     'ng.bootstrap.ui.dateparser',
-    ['ng']
+    ['ng', 'ng.bootstrap.ui']
 ).service(
     'uibDateParser',
     ['$log', '$locale', 'dateFilter', 'orderByFilter', function ($log, $locale, dateFilter, orderByFilter) {
@@ -447,7 +445,7 @@ angular.module(
             j = 0,
             data;
 
-        for (var j = 0; j < formatCodeToRegex.length; j += 1) {
+        for (j = 0; j < formatCodeToRegex.length; j += 1) {
             if (new RegExp('^' + formatCodeToRegex[j].key).test(currentPosStr)) {
                 data = formatCodeToRegex[j];
 
@@ -639,13 +637,14 @@ angular.module(
 // uib/template/datepicker/day.html         -> msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/day.html'),
 // uib/template/datepicker/month.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/month.html'),
 // uib/template/datepicker/year.html        -> msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/year.html')
-angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.bootstrap.ui.isClass'])
-
-.value('$datepickerSuppressError', false)
-
-.value('$datepickerLiteralWarning', true)
-
-.constant('uibDatepickerConfig', {
+angular.module(
+    'ng.bootstrap.ui.datepicker',
+    ['ng.bootstrap.ui.dateparser', 'ng.bootstrap.ui.isClass']
+).value(
+    '$datepickerSuppressError', false
+).value(
+    '$datepickerLiteralWarning', true
+).constant('uibDatepickerConfig', {
     datepickerMode: 'day',
     formatDay: 'dd',
     formatMonth: 'MMMM',
@@ -663,9 +662,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
     showWeeks: true,
     yearColumns: 5,
     yearRows: 4
-})
-
-.controller(
+}).controller(
     'UibDatepickerController',
     ['$scope', '$element', '$attrs', '$parse', '$interpolate', '$locale', '$log', 'dateFilter', 'uibDatepickerConfig', '$datepickerLiteralWarning', '$datepickerSuppressError', 'uibDateParser',
     function ($scope, $element, $attrs, $parse, $interpolate, $locale, $log, dateFilter, datepickerConfig, $datepickerLiteralWarning, $datepickerSuppressError, dateParser) {
@@ -747,7 +744,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                     $scope.$watch('datepickerOptions.' + key, function (value) {
                         if (value) {
                             if (angular.isDate(value)) {
-                                self[key] = dateParser.fromTimezone(new Date(value), ngModelOptions.timezone);
+                                self[key] = dateParser.fromTimezone(new Date(value), ngModelOptions.getOption('timezone'));
                             } else {
                                 if ($datepickerLiteralWarning) {
                                     $log.warn('Literal date support has been deprecated, please switch to date object usage');
@@ -757,8 +754,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                             }
                         } else {
                             self[key] = datepickerConfig[key] ?
-                                dateParser.fromTimezone(new Date(datepickerConfig[key]), ngModelOptions.timezone) :
-                                null;
+                                dateParser.fromTimezone(new Date(datepickerConfig[key]), ngModelOptions.getOption('timezone')) : null;
                         }
 
                         self.refreshView();
@@ -804,30 +800,44 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             return false;
         };
 
-        this.init = function (ngModelCtrl_) {
-            ngModelCtrl = ngModelCtrl_;
+        function extractOptions(ngModelCtrl) {
+            var ngModelOptions,
+                timezone = ngModelCtrl.$options.getOption('timezone') || ($scope.datepickerOptions.ngModelOptions ? $scope.datepickerOptions.ngModelOptions.timezone : null) || (datepickerConfig.ngModelOptions ? datepickerConfig.ngModelOptions.timezone : null);
 
-            ngModelOptions = ngModelCtrl_.$options
-                || $scope.datepickerOptions.ngModelOptions
-                || datepickerConfig.ngModelOptions;
+            // values passed to createChild override existing values
+            ngModelOptions = ngModelCtrl.$options // start with a ModelOptions instance
+                .createChild(datepickerConfig.ngModelOptions) // lowest precedence
+                .createChild($scope.datepickerOptions.ngModelOptions)
+                .createChild(ngModelCtrl.$options) // highest precedence
+                .createChild({timezone: timezone}); // to keep from squashing a non-null value
+
+            return ngModelOptions;
+        }
+
+        this.init = function (ngModelCtrl_) {
+            var date;
+
+            ngModelCtrl = ngModelCtrl_;
+            ngModelOptions = extractOptions(ngModelCtrl);
 
             if ($scope.datepickerOptions.initDate) {
-                self.activeDate = dateParser.fromTimezone($scope.datepickerOptions.initDate, ngModelOptions.timezone) || new Date();
-                $scope.$watch('datepickerOptions.initDate', function (initDate) {
-                    if (initDate && (ngModelCtrl.$isEmpty(ngModelCtrl.$modelValue) || ngModelCtrl.$invalid)) {
-                        self.activeDate = dateParser.fromTimezone(initDate, ngModelOptions.timezone);
-                        self.refreshView();
+                self.activeDate = dateParser.fromTimezone($scope.datepickerOptions.initDate, ngModelOptions.getOption('timezone')) || new Date();
+                $scope.$watch(
+                    'datepickerOptions.initDate',
+                    function (initDate) {
+                        if (initDate && (ngModelCtrl.$isEmpty(ngModelCtrl.$modelValue) || ngModelCtrl.$invalid)) {
+                            self.activeDate = dateParser.fromTimezone(initDate, ngModelOptions.getOption('timezone'));
+                            self.refreshView();
+                        }
                     }
-                });
+                );
             } else {
                 self.activeDate = new Date();
             }
 
-            var date = ngModelCtrl.$modelValue ? new Date(ngModelCtrl.$modelValue) : new Date();
+            date = ngModelCtrl.$modelValue ? new Date(ngModelCtrl.$modelValue) : new Date();
 
-            this.activeDate = !isNaN(date)
-                ? dateParser.fromTimezone(date, ngModelOptions.timezone)
-                : dateParser.fromTimezone(new Date(), ngModelOptions.timezone);
+            this.activeDate = !isNaN(date) ? dateParser.fromTimezone(date, ngModelOptions.getOption('timezone')) : dateParser.fromTimezone(new Date(), ngModelOptions.getOption('timezone'));
 
             ngModelCtrl.$render = function () {
                 self.render();
@@ -840,7 +850,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                     isValid = !isNaN(date);
 
                 if (isValid) {
-                    this.activeDate = dateParser.fromTimezone(date, ngModelOptions.timezone);
+                    this.activeDate = dateParser.fromTimezone(date, ngModelOptions.getOption('timezone'));
                 } else if (!$datepickerSuppressError) {
                     $log.error('Datepicker directive: "ng-model" value must be a Date object');
                 }
@@ -857,7 +867,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
                 }
 
                 var date = ngModelCtrl.$viewValue ? new Date(ngModelCtrl.$viewValue) : null;
-                date = dateParser.fromTimezone(date, ngModelOptions.timezone);
+                date = dateParser.fromTimezone(date, ngModelOptions.getOption('timezone'));
                 ngModelCtrl.$setValidity('dateDisabled', !date ||
                     this.element && !this.isDisabled(date));
             }
@@ -865,9 +875,9 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
 
         this.createDateObject = function (date, format) {
             var model = ngModelCtrl.$viewValue ? new Date(ngModelCtrl.$viewValue) : null;
-            model = dateParser.fromTimezone(model, ngModelOptions.timezone);
+            model = dateParser.fromTimezone(model, ngModelOptions.getOption('timezone'));
             var today = new Date();
-            today = dateParser.fromTimezone(today, ngModelOptions.timezone);
+            today = dateParser.fromTimezone(today, ngModelOptions.getOption('timezone'));
             var time = this.compare(date, today);
             var dt = {
                 date: date,
@@ -919,9 +929,9 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
 
         $scope.select = function (date) {
             if ($scope.datepickerMode === self.minMode) {
-                var dt = ngModelCtrl.$viewValue ? dateParser.fromTimezone(new Date(ngModelCtrl.$viewValue), ngModelOptions.timezone) : new Date(0, 0, 0, 0, 0, 0, 0);
+                var dt = ngModelCtrl.$viewValue ? dateParser.fromTimezone(new Date(ngModelCtrl.$viewValue), ngModelOptions.getOption('timezone')) : new Date(0, 0, 0, 0, 0, 0, 0);
                 dt.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-                dt = dateParser.toTimezone(dt, ngModelOptions.timezone);
+                dt = dateParser.toTimezone(dt, ngModelOptions.getOption('timezone'));
                 ngModelCtrl.$setViewValue(dt);
                 ngModelCtrl.$render();
             } else {
@@ -969,7 +979,9 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         };
 
         var focusElement = function () {
-            self.element[0].focus();
+            if (self.element) {
+                self.element[0].focus();
+            }
         };
 
         // Listen for focus requests from popup directive
@@ -1022,9 +1034,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             $scope.datepickerOptions.datepickerMode = mode;
         }
     }
-])
-
-.controller('UibDaypickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
+]).controller('UibDaypickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
     var DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     this.step = {
@@ -1120,7 +1130,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return Math.floor(Math.round((time - checkDate) / 86400000) / 7) + 1;
     }
 
-    this.handleKeyDown = function (key, evt) {
+    this.handleKeyDown = function (key) {
         var date = this.activeDate.getDate();
 
         if (key === 'left') {
@@ -1142,9 +1152,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         }
         this.activeDate.setDate(date);
     };
-}])
-
-.controller('UibMonthpickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
+}]).controller('UibMonthpickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
     this.step = {
         years: 1
     };
@@ -1181,7 +1189,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return _date1 - _date2;
     };
 
-    this.handleKeyDown = function (key, evt) {
+    this.handleKeyDown = function (key) {
         var date = this.activeDate.getMonth();
 
         if (key === 'left') {
@@ -1202,10 +1210,9 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         }
         this.activeDate.setMonth(date);
     };
-}])
-
-.controller('UibYearpickerController', ['$scope', '$element', 'dateFilter', function (scope, $element, dateFilter) {
+}]).controller('UibYearpickerController', ['$scope', '$element', function (scope, $element) {
     var columns, range;
+
     this.element = $element;
 
     function getStartingYear(year) {
@@ -1241,7 +1248,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         return date1.getFullYear() - date2.getFullYear();
     };
 
-    this.handleKeyDown = function (key, evt) {
+    this.handleKeyDown = function (key) {
         var date = this.activeDate.getFullYear();
 
         if (key === 'left') {
@@ -1261,9 +1268,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
         }
         this.activeDate.setFullYear(date);
     };
-}])
-
-.directive('uibDatepicker', function () {
+}]).directive('uibDatepicker', function () {
     return {
         templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker.html');
@@ -1282,9 +1287,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             datepickerCtrl.init(ngModelCtrl);
         }
     };
-})
-
-.directive('uibDaypicker', function () {
+}).directive('uibDaypicker', function () {
     return {
         templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/day.html');
@@ -1299,9 +1302,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             daypickerCtrl.init(datepickerCtrl);
         }
     };
-})
-
-.directive('uibMonthpicker', function () {
+}).directive('uibMonthpicker', function () {
     return {
         templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/month.html');
@@ -1316,9 +1317,7 @@ angular.module('ng.bootstrap.ui.datepicker', ['ng.bootstrap.ui.dateparser', 'ng.
             monthpickerCtrl.init(datepickerCtrl);
         }
     };
-})
-
-.directive('uibYearpicker', function () {
+}).directive('uibYearpicker', function () {
     return {
         templateUrl: function (element, attrs) {
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/datepicker/year.html');

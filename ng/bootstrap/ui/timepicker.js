@@ -1,24 +1,22 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.timepicker");
 
-ng.bootstrap.ui.timepicker.version = new msos.set_version(16, 8, 30);
+ng.bootstrap.ui.timepicker.version = new msos.set_version(17, 12, 15);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
 // ui.bootstrap.timepicker -> ng.bootstrap.ui.timepicker
 // uib/template/timepicker/timepicker.html -> msos.resource_url('ng', 'bootstrap/ui/tmpl/timepicker.html')
-angular.module('ng.bootstrap.ui.timepicker', [])
-
-.constant('uibTimepickerConfig', {
+angular.module(
+    'ng.bootstrap.ui.timepicker',
+    ['ng', 'ng.bootstrap.ui']
+).constant('uibTimepickerConfig', {
     hourStep: 1,
     minuteStep: 1,
     secondStep: 1,
@@ -229,34 +227,43 @@ angular.module('ng.bootstrap.ui.timepicker', [])
     // Respond on mousewheel spin
     this.setupMousewheelEvents = function (hoursInputEl, minutesInputEl, secondsInputEl) {
         var isScrollingUp = function (e) {
-            if (e.originalEvent) {
-                e = e.originalEvent;
-            }
-            //pick correct delta variable depending on event
-            var delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
-            return e.detail || delta > 0;
-        };
+				if (e.originalEvent) {
+					e = e.originalEvent;
+				}
+				//pick correct delta variable depending on event
+				var delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
+				return e.detail || delta > 0;
+			};
 
-        hoursInputEl.bind('mousewheel wheel', function (e) {
-            if (!disabled) {
-                $scope.$apply(isScrollingUp(e) ? $scope.incrementHours() : $scope.decrementHours());
-            }
-            e.preventDefault();
-        });
+        hoursInputEl.bind(
+			'mousewheel wheel',
+			function (e) {
+				if (!disabled) {
+					$scope.$apply(isScrollingUp(e) ? $scope.incrementHours() : $scope.decrementHours());
+				}
+				e.preventDefault();
+			}
+		);
 
-        minutesInputEl.bind('mousewheel wheel', function (e) {
-            if (!disabled) {
-                $scope.$apply(isScrollingUp(e) ? $scope.incrementMinutes() : $scope.decrementMinutes());
-            }
-            e.preventDefault();
-        });
+        minutesInputEl.bind(
+			'mousewheel wheel',
+			function (e) {
+				if (!disabled) {
+					$scope.$apply(isScrollingUp(e) ? $scope.incrementMinutes() : $scope.decrementMinutes());
+				}
+				e.preventDefault();
+			}
+		);
 
-        secondsInputEl.bind('mousewheel wheel', function (e) {
-            if (!disabled) {
-                $scope.$apply(isScrollingUp(e) ? $scope.incrementSeconds() : $scope.decrementSeconds());
-            }
-            e.preventDefault();
-        });
+        secondsInputEl.bind(
+			'mousewheel wheel',
+			function (e) {
+				if (!disabled) {
+					$scope.$apply(isScrollingUp(e) ? $scope.incrementSeconds() : $scope.decrementSeconds());
+				}
+				e.preventDefault();
+			}
+		);
     };
 
     // Respond on up/down arrowkeys
@@ -347,7 +354,7 @@ angular.module('ng.bootstrap.ui.timepicker', [])
             }
         };
 
-        hoursInputEl.bind('blur', function (e) {
+        hoursInputEl.bind('blur', function () {
             ngModelCtrl.$setTouched();
             if (modelIsEmpty()) {
                 makeValid();
@@ -379,7 +386,7 @@ angular.module('ng.bootstrap.ui.timepicker', [])
             }
         };
 
-        minutesInputEl.bind('blur', function (e) {
+        minutesInputEl.bind('blur', function () {
             ngModelCtrl.$setTouched();
             if (modelIsEmpty()) {
                 makeValid();
@@ -405,7 +412,7 @@ angular.module('ng.bootstrap.ui.timepicker', [])
             }
         };
 
-        secondsInputEl.bind('blur', function (e) {
+        secondsInputEl.bind('blur', function () {
             if (modelIsEmpty()) {
                 makeValid();
             } else if (!$scope.invalidSeconds && $scope.seconds < 10) {
