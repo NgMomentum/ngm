@@ -738,7 +738,7 @@ angular.module(
         var isSanitizePresent = $injector.has('$sanitize');
 
         if (!isSanitizePresent) {
-            msos.console.warn('ng.bootstrap.ui.typeahead - filter -> unsafe: please add ngSanitize to app required modules.');
+            msos.console.warn('ng.bootstrap.ui.typeahead - filter -> unsafe: please add ng.sanitize to app required modules.');
         }
 
         function escapeRegexp(queryToEscape) {

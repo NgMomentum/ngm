@@ -1,211 +1,212 @@
 
-<div data-ng-ignore class="page-header">
-	<h1>Modal
-		<small>(
-			<a target="_blank" href="https://github.com/angular-ui/bootstrap/tree/master/src/modal">ng.bootstrap.ui.modal</a>)</small>
-	</h1>
-</div>
-<div class="row">
-	<div ng-controller="demo.bootstrap.controllers.modal.ctrl as $ctrl" class="col-md-6 show-grid modal-demo">
-		<script type="text/ng-template" id="myModalContent.html">
-			<div class="modal-header">
-				<h3 class="modal-title" id="modal-title">I'm a modal!</h3>
-			</div>
-			<div class="modal-body" id="modal-body">
-				<ul>
-					<li ng-repeat="item in $ctrl.items">
-						<a href="#" ng-click="$event.preventDefault(); $ctrl.selected.item = item">{{ item }}</a>
-					</li>
-				</ul>
-				Selected: <b>{{ $ctrl.selected.item }}</b>
-			</div>
-			<div class="modal-footer">
-				<button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
-				<button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
-			</div>
-		</script>
-		<script type="text/ng-template" id="stackedModal.html">
-			<div class="modal-header">
-				<h3 class="modal-title" id="modal-title-{{name}}">The {{name}} modal!</h3>
-			</div>
-			<div class="modal-body" id="modal-body-{{name}}">
-				Having multiple modals open at once is probably bad UX but it's technically possible.
-			</div>
-		</script>
+<div  class="ngm_page">
 
-		<button type="button" class="btn btn-default" ng-click="$ctrl.open()">Open me!</button>
-		<button type="button" class="btn btn-default" ng-click="$ctrl.open('lg')">Large modal</button>
-		<button type="button" class="btn btn-default" ng-click="$ctrl.open('sm')">Small modal</button>
-		<button type="button" 
-			class="btn btn-default" 
-			ng-click="$ctrl.open('sm', '.modal-parent')">
-				Modal appended to a custom parent
-		</button>
-		<button type="button" class="btn btn-default" ng-click="$ctrl.toggleAnimation()">Toggle Animation ({{ $ctrl.animationsEnabled }})</button>
-		<button type="button" class="btn btn-default" ng-click="$ctrl.openComponentModal()">Open a component modal!</button>
-		<button type="button" class="btn btn-default" ng-click="$ctrl.openMultipleModals()">
-			Open multiple modals at once 
-		</button>
-		<div ng-show="$ctrl.selected">Selection from a modal: {{ $ctrl.selected }}</div>
-		<div class="modal-parent"></div>
-	</div>
-	<div data-ng-ignore class="col-md-6">
-		<p><code>$uibModal</code> is a service to create modal windows. Creating modals is straightforward: create a template, a controller and reference them when using <code>$uibModal</code>.</p>
-		<p>The <code>$uibModal</code> service has only one method: <code>open(options)</code>.</p>
-		<h3 id="-uibmodal-s-open-function">$uibModal&#39;s open function</h3>
-		<h4 id="options-parameter">options parameter</h4>
-		<ul>
-			<li>
-				<p><code>animation</code>
-					<em>(Type: <code>boolean</code>, Default: <code>true</code>)</em> - Set to false to disable animations on new modal/backdrop. Does not toggle animations for modals/backdrops that are already displayed.</p>
-			</li>
-			<li>
-				<p><code>appendTo</code>
-					<em>(Type: <code>angular.element</code>, Default: <code>body</code>: Example: <code>$document.find(&#39;aside&#39;).eq(0)</code>)</em> - Appends the modal to a specific element.</p>
-			</li>
-			<li>
-				<p><code>ariaDescribedBy</code>
-					<em>(Type: <code>string</code>, <code>my-modal-description</code>)</em> - Sets the <a href="https://www.w3.org/TR/wai-aria/states_and_properties#aria-describedby"><code>aria-describedby</code></a> property on the modal. The value should be an id (without the leading <code>#</code>) pointing to the element that describes your modal. Typically, this will be the text on your modal, but does not include something the user would interact with, like buttons or a form. Omitting this option will not impact sighted users but will weaken your accessibility support.</p>
-			</li>
-			<li>
-				<p><code>ariaLabelledBy</code>
-					<em>(Type: <code>string</code>, <code>my-modal-title</code>)</em> - Sets the <a href="https://www.w3.org/TR/wai-aria/states_and_properties#aria-labelledby"><code>aria-labelledby</code></a> property on the modal. The value should be an id (without the leading <code>#</code>) pointing to the element that labels your modal. Typically, this will be a header element. Omitting this option will not impact sighted users but will weaken your accessibility support.</p>
-			</li>
-			<li>
-				<p><code>backdrop</code>
-					<em>(Type: <code>boolean|string</code>, Default: <code>true</code>)</em> - Controls presence of a backdrop. Allowed values: <code>true</code> (default), <code>false</code> (no backdrop), <code>&#39;static&#39;</code> (disables modal closing by click on the backdrop).</p>
-			</li>
-			<li>
-				<p><code>backdropClass</code>
-					<em>(Type: <code>string</code>)</em> - Additional CSS class(es) to be added to a modal backdrop template.</p>
-			</li>
-			<li>
-				<p><code>bindToController</code>
-					<em>(Type: <code>boolean</code>, Default: <code>false</code>)</em> - When used with <code>controllerAs</code> &amp; set to <code>true</code>, it will bind the $scope properties onto the controller.</p>
-			</li>
-			<li>
-				<p><code>component</code>
-					<em>(Type: <code>string</code>, Example: <code>myComponent</code>)</em> - A string reference to the component to be rendered that is registered with Angular&#39;s compiler. If using a directive, the directive must have <code>restrict: &#39;E&#39;</code> and a template or templateUrl set.</p>
-				<p>It supports these bindings:</p>
-				<ul>
-					<li>
-						<p><code>close</code> - A method that can be used to close a modal, passing a result. The result must be passed in this format: <code>{$value: myResult}</code></p>
-					</li>
-					<li>
-						<p><code>dismiss</code> - A method that can be used to dismiss a modal, passing a result. The result must be passed in this format: <code>{$value: myRejectedResult}</code></p>
-					</li>
-					<li>
-						<p><code>modalInstance</code> - The modal instance. This is the same <code>$uibModalInstance</code> injectable found when using <code>controller</code>.</p>
-					</li>
-					<li>
-						<p><code>resolve</code> - An object of the modal resolve values. See <a href="#ui-router-resolves">UI Router resolves</a> for details.</p>
-					</li>
-				</ul>
-			</li>
-			<li>
-				<p><code>controller</code>
-					<em>(Type: <code>function|string|array</code>, Example: <code>MyModalController</code>)</em> - A controller for the modal instance, either a controller name as a string, or an inline controller function, optionally wrapped in array notation for dependency injection. Allows the controller-as syntax. Has a special <code>$uibModalInstance</code> injectable to access the modal instance.</p>
-			</li>
-			<li>
-				<p><code>controllerAs</code>
-					<em>(Type: <code>string</code>, Example: <code>ctrl</code>)</em> - An alternative to the controller-as syntax. Requires the <code>controller</code> option to be provided as well.</p>
-			</li>
-			<li>
-				<p><code>keyboard</code> -
-					<em>(Type: <code>boolean</code>, Default: <code>true</code>)</em> - Indicates whether the dialog should be closable by hitting the ESC key.</p>
-			</li>
-			<li>
-				<p><code>openedClass</code>
-					<em>(Type: <code>string</code>, Default: <code>modal-open</code>)</em> - Class added to the <code>body</code> element when the modal is opened.</p>
-			</li>
-			<li>
-				<p><code>resolve</code>
-					<em>(Type: <code>Object</code>)</em> - Members that will be resolved and passed to the controller as locals; it is equivalent of the <code>resolve</code> property in the router.</p>
-			</li>
-			<li>
-				<p><code>scope</code>
-					<em>(Type: <code>$scope</code>)</em> - The parent scope instance to be used for the modal&#39;s content. Defaults to <code>$rootScope</code>.</p>
-			</li>
-			<li>
-				<p><code>size</code>
-					<em>(Type: <code>string</code>, Example: <code>lg</code>)</em> - Optional suffix of modal window class. The value used is appended to the <code>modal-</code> class, i.e. a value of <code>sm</code> gives <code>modal-sm</code>.</p>
-			</li>
-			<li>
-				<p><code>template</code>
-					<em>(Type: <code>string</code>)</em> - Inline template representing the modal&#39;s content.</p>
-			</li>
-			<li>
-				<p><code>templateUrl</code>
-					<em>(Type: <code>string</code>)</em> - A path to a template representing modal&#39;s content. You need either a <code>template</code> or <code>templateUrl</code>.</p>
-			</li>
-			<li>
-				<p><code>windowClass</code>
-					<em>(Type: <code>string</code>)</em> - Additional CSS class(es) to be added to a modal window template.</p>
-			</li>
-			<li>
-				<p><code>windowTemplateUrl</code>
-					<em>(Type: <code>string</code>, Default: <code>ngm/ng/bootstrap/ui/tmpl/window.html</code>)</em> - A path to a template overriding modal&#39;s window template.</p>
-			</li>
-			<li>
-				<p><code>windowTopClass</code>
-					<em>(Type: <code>string</code>)</em> - CSS class(es) to be added to the top modal window.</p>
-			</li>
-		</ul>
-		<p>Global defaults may be set for <code>$uibModal</code> via <code>$uibModalProvider.options</code>.</p>
-		<h4 id="return">return</h4>
-		<p>The <code>open</code> method returns a modal instance, an object with the following properties:</p>
-		<ul>
-			<li>
-				<p><code>close(result)</code>
-					<em>(Type: <code>function</code>)</em> - Can be used to close a modal, passing a result.</p>
-			</li>
-			<li>
-				<p><code>dismiss(reason)</code>
-					<em>(Type: <code>function</code>)</em> - Can be used to dismiss a modal, passing a reason.</p>
-			</li>
-			<li>
-				<p><code>result</code>
-					<em>(Type: <code>promise</code>)</em> - Is resolved when a modal is closed and rejected when a modal is dismissed.</p>
-			</li>
-			<li>
-				<p><code>opened</code>
-					<em>(Type: <code>promise</code>)</em> - Is resolved when a modal gets opened after downloading content&#39;s template and resolving all variables.</p>
-			</li>
-			<li>
-				<p><code>closed</code>
-					<em>(Type: <code>promise</code>)</em> - Is resolved when a modal is closed and the animation completes.</p>
-			</li>
-			<li>
-				<p><code>rendered</code>
-					<em>(Type: <code>promise</code>)</em> - Is resolved when a modal is rendered.</p>
-			</li>
-		</ul>
-		<hr>
-		<p>The scope associated with modal&#39;s content is augmented with:</p>
-		<ul>
-			<li>
-				<p><code>$close(result)</code>
-					<em>(Type: <code>function</code>)</em> - A method that can be used to close a modal, passing a result.</p>
-			</li>
-			<li>
-				<p><code>$dismiss(reason)</code>
-					<em>(Type: <code>function</code>)</em> - A method that can be used to dismiss a modal, passing a reason.</p>
-			</li>
-		</ul>
-		<p>Those methods make it easy to close a modal window without a need to create a dedicated controller.</p>
-		<p>Also, when using <code>bindToController</code>, you can define an <code>$onInit</code> method in the controller that will fire upon initialization.</p>
-		<hr>
-		<p>Events fired:</p>
-		<ul>
-			<li>
-				<p><code>$uibUnscheduledDestruction</code> - This event is fired if the $scope is destroyed via unexpected mechanism, such as it being passed in the modal options and a $route/$state transition occurs. The modal will also be dismissed.</p>
-			</li>
-			<li>
-				<p><code>modal.closing</code> - This event is broadcast to the modal scope before the modal closes. If the listener calls preventDefault() on the event, then the modal will remain open. Also, the <code>$close</code> and <code>$dismiss</code> methods returns true if the event was executed. This event also includes a parameter for the result/reason and a boolean that indicates whether the modal is being closed (true) or dismissed.</p>
-			</li>
-		</ul>
-		<h5 id="ui-router-resolves">UI Router resolves</h5>
-		<p>If one wants to have the modal resolve using <a href="https://github.com/angular-ui/ui-router">UI Router&#39;s</a> pre-1.0 resolve mechanism, one can call <code>$uibResolve.setResolver(&#39;$resolve&#39;)</code> in the configuration phase of the application. One can also provide a custom resolver as well, as long as the signature conforms to UI Router&#39;s <a href="http://angular-ui.github.io/ui-router/site/#/api/ui.router.util.$resolve">$resolve</a>.</p>
-		<p>When the modal is opened with a controller, a <code>$resolve</code> object is exposed on the template with the resolved values from the resolve object. If using the component option, see details on how to access this object in component section of the modal documentation.</p>
+	<h2 data-ng-ignore>Modal
+		<small>(<a target="_blank" href="https://github.com/angular-ui/bootstrap/tree/master/src/modal">ng.bootstrap.ui.modal</a>)</small>
+	</h2>
+
+	<div class="row">
+		<div ng-controller="demo.bootstrap.controllers.modal.ctrl as $ctrl" class="col-md-6 modal-demo">
+			<script type="text/ng-template" id="myModalContent.html">
+				<div class="modal-header">
+					<h3 class="modal-title" id="modal-title">I'm a modal!</h3>
+				</div>
+				<div class="modal-body" id="modal-body">
+					<ul>
+						<li ng-repeat="item in $ctrl.items">
+							<a href="#" ng-click="$event.preventDefault(); $ctrl.selected.item = item">{{ item }}</a>
+						</li>
+					</ul>
+					Selected: <b>{{ $ctrl.selected.item }}</b>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
+					<button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+				</div>
+			</script>
+			<script type="text/ng-template" id="stackedModal.html">
+				<div class="modal-header">
+					<h3 class="modal-title" id="modal-title-{{name}}">The {{name}} modal!</h3>
+				</div>
+				<div class="modal-body" id="modal-body-{{name}}">
+					Having multiple modals open at once is probably bad UX but it's technically possible.
+				</div>
+			</script>
+	
+			<button type="button" class="btn btn-default" ng-click="$ctrl.open()">Open me!</button>
+			<button type="button" class="btn btn-default" ng-click="$ctrl.open('lg')">Large modal</button>
+			<button type="button" class="btn btn-default" ng-click="$ctrl.open('sm')">Small modal</button>
+			<button type="button" 
+				class="btn btn-default" 
+				ng-click="$ctrl.open('sm', '.modal-parent')">
+					Modal appended to a custom parent
+			</button>
+			<button type="button" class="btn btn-default" ng-click="$ctrl.toggleAnimation()">Toggle Animation ({{ $ctrl.animationsEnabled }})</button>
+			<button type="button" class="btn btn-default" ng-click="$ctrl.openComponentModal()">Open a component modal!</button>
+			<button type="button" class="btn btn-default" ng-click="$ctrl.openMultipleModals()">
+				Open multiple modals at once 
+			</button>
+			<div ng-show="$ctrl.selected">Selection from a modal: {{ $ctrl.selected }}</div>
+			<div class="modal-parent"></div>
+		</div>
+		<div data-ng-ignore class="col-md-6">
+			<p><code>$uibModal</code> is a service to create modal windows. Creating modals is straightforward: create a template, a controller and reference them when using <code>$uibModal</code>.</p>
+			<p>The <code>$uibModal</code> service has only one method: <code>open(options)</code>.</p>
+			<h3 id="-uibmodal-s-open-function">$uibModal&#39;s open function</h3>
+			<h4 id="options-parameter">options parameter</h4>
+			<ul>
+				<li>
+					<p><code>animation</code>
+						<em>(Type: <code>boolean</code>, Default: <code>true</code>)</em> - Set to false to disable animations on new modal/backdrop. Does not toggle animations for modals/backdrops that are already displayed.</p>
+				</li>
+				<li>
+					<p><code>appendTo</code>
+						<em>(Type: <code>angular.element</code>, Default: <code>body</code>: Example: <code>$document.find(&#39;aside&#39;).eq(0)</code>)</em> - Appends the modal to a specific element.</p>
+				</li>
+				<li>
+					<p><code>ariaDescribedBy</code>
+						<em>(Type: <code>string</code>, <code>my-modal-description</code>)</em> - Sets the <a href="https://www.w3.org/TR/wai-aria/states_and_properties#aria-describedby"><code>aria-describedby</code></a> property on the modal. The value should be an id (without the leading <code>#</code>) pointing to the element that describes your modal. Typically, this will be the text on your modal, but does not include something the user would interact with, like buttons or a form. Omitting this option will not impact sighted users but will weaken your accessibility support.</p>
+				</li>
+				<li>
+					<p><code>ariaLabelledBy</code>
+						<em>(Type: <code>string</code>, <code>my-modal-title</code>)</em> - Sets the <a href="https://www.w3.org/TR/wai-aria/states_and_properties#aria-labelledby"><code>aria-labelledby</code></a> property on the modal. The value should be an id (without the leading <code>#</code>) pointing to the element that labels your modal. Typically, this will be a header element. Omitting this option will not impact sighted users but will weaken your accessibility support.</p>
+				</li>
+				<li>
+					<p><code>backdrop</code>
+						<em>(Type: <code>boolean|string</code>, Default: <code>true</code>)</em> - Controls presence of a backdrop. Allowed values: <code>true</code> (default), <code>false</code> (no backdrop), <code>&#39;static&#39;</code> (disables modal closing by click on the backdrop).</p>
+				</li>
+				<li>
+					<p><code>backdropClass</code>
+						<em>(Type: <code>string</code>)</em> - Additional CSS class(es) to be added to a modal backdrop template.</p>
+				</li>
+				<li>
+					<p><code>bindToController</code>
+						<em>(Type: <code>boolean</code>, Default: <code>false</code>)</em> - When used with <code>controllerAs</code> &amp; set to <code>true</code>, it will bind the $scope properties onto the controller.</p>
+				</li>
+				<li>
+					<p><code>component</code>
+						<em>(Type: <code>string</code>, Example: <code>myComponent</code>)</em> - A string reference to the component to be rendered that is registered with Angular&#39;s compiler. If using a directive, the directive must have <code>restrict: &#39;E&#39;</code> and a template or templateUrl set.</p>
+					<p>It supports these bindings:</p>
+					<ul>
+						<li>
+							<p><code>close</code> - A method that can be used to close a modal, passing a result. The result must be passed in this format: <code>{$value: myResult}</code></p>
+						</li>
+						<li>
+							<p><code>dismiss</code> - A method that can be used to dismiss a modal, passing a result. The result must be passed in this format: <code>{$value: myRejectedResult}</code></p>
+						</li>
+						<li>
+							<p><code>modalInstance</code> - The modal instance. This is the same <code>$uibModalInstance</code> injectable found when using <code>controller</code>.</p>
+						</li>
+						<li>
+							<p><code>resolve</code> - An object of the modal resolve values. See <a href="#ui-router-resolves">UI Router resolves</a> for details.</p>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<p><code>controller</code>
+						<em>(Type: <code>function|string|array</code>, Example: <code>MyModalController</code>)</em> - A controller for the modal instance, either a controller name as a string, or an inline controller function, optionally wrapped in array notation for dependency injection. Allows the controller-as syntax. Has a special <code>$uibModalInstance</code> injectable to access the modal instance.</p>
+				</li>
+				<li>
+					<p><code>controllerAs</code>
+						<em>(Type: <code>string</code>, Example: <code>ctrl</code>)</em> - An alternative to the controller-as syntax. Requires the <code>controller</code> option to be provided as well.</p>
+				</li>
+				<li>
+					<p><code>keyboard</code> -
+						<em>(Type: <code>boolean</code>, Default: <code>true</code>)</em> - Indicates whether the dialog should be closable by hitting the ESC key.</p>
+				</li>
+				<li>
+					<p><code>openedClass</code>
+						<em>(Type: <code>string</code>, Default: <code>modal-open</code>)</em> - Class added to the <code>body</code> element when the modal is opened.</p>
+				</li>
+				<li>
+					<p><code>resolve</code>
+						<em>(Type: <code>Object</code>)</em> - Members that will be resolved and passed to the controller as locals; it is equivalent of the <code>resolve</code> property in the router.</p>
+				</li>
+				<li>
+					<p><code>scope</code>
+						<em>(Type: <code>$scope</code>)</em> - The parent scope instance to be used for the modal&#39;s content. Defaults to <code>$rootScope</code>.</p>
+				</li>
+				<li>
+					<p><code>size</code>
+						<em>(Type: <code>string</code>, Example: <code>lg</code>)</em> - Optional suffix of modal window class. The value used is appended to the <code>modal-</code> class, i.e. a value of <code>sm</code> gives <code>modal-sm</code>.</p>
+				</li>
+				<li>
+					<p><code>template</code>
+						<em>(Type: <code>string</code>)</em> - Inline template representing the modal&#39;s content.</p>
+				</li>
+				<li>
+					<p><code>templateUrl</code>
+						<em>(Type: <code>string</code>)</em> - A path to a template representing modal&#39;s content. You need either a <code>template</code> or <code>templateUrl</code>.</p>
+				</li>
+				<li>
+					<p><code>windowClass</code>
+						<em>(Type: <code>string</code>)</em> - Additional CSS class(es) to be added to a modal window template.</p>
+				</li>
+				<li>
+					<p><code>windowTemplateUrl</code>
+						<em>(Type: <code>string</code>, Default: <code>ngm/ng/bootstrap/ui/tmpl/window.html</code>)</em> - A path to a template overriding modal&#39;s window template.</p>
+				</li>
+				<li>
+					<p><code>windowTopClass</code>
+						<em>(Type: <code>string</code>)</em> - CSS class(es) to be added to the top modal window.</p>
+				</li>
+			</ul>
+			<p>Global defaults may be set for <code>$uibModal</code> via <code>$uibModalProvider.options</code>.</p>
+			<h4 id="return">return</h4>
+			<p>The <code>open</code> method returns a modal instance, an object with the following properties:</p>
+			<ul>
+				<li>
+					<p><code>close(result)</code>
+						<em>(Type: <code>function</code>)</em> - Can be used to close a modal, passing a result.</p>
+				</li>
+				<li>
+					<p><code>dismiss(reason)</code>
+						<em>(Type: <code>function</code>)</em> - Can be used to dismiss a modal, passing a reason.</p>
+				</li>
+				<li>
+					<p><code>result</code>
+						<em>(Type: <code>promise</code>)</em> - Is resolved when a modal is closed and rejected when a modal is dismissed.</p>
+				</li>
+				<li>
+					<p><code>opened</code>
+						<em>(Type: <code>promise</code>)</em> - Is resolved when a modal gets opened after downloading content&#39;s template and resolving all variables.</p>
+				</li>
+				<li>
+					<p><code>closed</code>
+						<em>(Type: <code>promise</code>)</em> - Is resolved when a modal is closed and the animation completes.</p>
+				</li>
+				<li>
+					<p><code>rendered</code>
+						<em>(Type: <code>promise</code>)</em> - Is resolved when a modal is rendered.</p>
+				</li>
+			</ul>
+			<hr>
+			<p>The scope associated with modal&#39;s content is augmented with:</p>
+			<ul>
+				<li>
+					<p><code>$close(result)</code>
+						<em>(Type: <code>function</code>)</em> - A method that can be used to close a modal, passing a result.</p>
+				</li>
+				<li>
+					<p><code>$dismiss(reason)</code>
+						<em>(Type: <code>function</code>)</em> - A method that can be used to dismiss a modal, passing a reason.</p>
+				</li>
+			</ul>
+			<p>Those methods make it easy to close a modal window without a need to create a dedicated controller.</p>
+			<p>Also, when using <code>bindToController</code>, you can define an <code>$onInit</code> method in the controller that will fire upon initialization.</p>
+			<hr>
+			<p>Events fired:</p>
+			<ul>
+				<li>
+					<p><code>$uibUnscheduledDestruction</code> - This event is fired if the $scope is destroyed via unexpected mechanism, such as it being passed in the modal options and a $route/$state transition occurs. The modal will also be dismissed.</p>
+				</li>
+				<li>
+					<p><code>modal.closing</code> - This event is broadcast to the modal scope before the modal closes. If the listener calls preventDefault() on the event, then the modal will remain open. Also, the <code>$close</code> and <code>$dismiss</code> methods returns true if the event was executed. This event also includes a parameter for the result/reason and a boolean that indicates whether the modal is being closed (true) or dismissed.</p>
+				</li>
+			</ul>
+			<h5 id="ui-router-resolves">UI Router resolves</h5>
+			<p>If one wants to have the modal resolve using <a href="https://github.com/angular-ui/ui-router">UI Router&#39;s</a> pre-1.0 resolve mechanism, one can call <code>$uibResolve.setResolver(&#39;$resolve&#39;)</code> in the configuration phase of the application. One can also provide a custom resolver as well, as long as the signature conforms to UI Router&#39;s <a href="http://angular-ui.github.io/ui-router/site/#/api/ui.router.util.$resolve">$resolve</a>.</p>
+			<p>When the modal is opened with a controller, a <code>$resolve</code> object is exposed on the template with the resolved values from the resolve object. If using the component option, see details on how to access this object in component section of the modal documentation.</p>
+		</div>
 	</div>
 </div>

@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.paging");
 
-ng.bootstrap.ui.paging.version = new msos.set_version(17, 12, 6);
+ng.bootstrap.ui.paging.version = new msos.set_version(17, 12, 26);
 
 // Below is the standard ui.bootstrap.accordion plugin, except for naming (MSOS style)
 // ui.bootstrap.paging -> ng.bootstrap.ui.paging
@@ -107,4 +104,8 @@ angular.module(
                 });
             }
         };
-    }]);
+    }]
+).directive(
+    'numPages',
+    angular.restrictADir
+);

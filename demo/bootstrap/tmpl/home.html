@@ -1,22 +1,62 @@
 
-<div data-ng-ignore class="page-header">
-	<header class="bs-header text-center">
-		<div class="container">
+<iframe id="ngm_iframe" data-ng-ignore src="./ngm/demo/paperjs/index.html"></iframe>
 
-			<h1>NgMomentum Adaptation of UI Bootstrap</h1>
+<div data-ng-ignore class="ngm_page ngm_overview">
 
+	<h2>A Derivation of AngularJS</h2>
+
+	<div class="row">
+		<div class="col-md-6">
 			<p>
-				Bootstrap components written in pure
-				<a href="http://angularjs.org">AngularJS</a>
-				by the <a href="http://angular-ui.github.io">AngularUI Team</a>
-				and rendered using NgMomentum
+				NgMomentum is a modified version of AngularJS. It retains all the basic goodness of standard
+				AngularJS, but is designed specifically for client-side browser execution. NgMomentum (NgM) is
+				coded as an AngularJS compatible layer on top of our MobileSiteOS framework. MobileSiteOS (MSOS)
+				features "lazy" module loading, and bundles UnderscoreJS and Modernizr in the base script. MSOS
+				and NgM also require jQuery as a hard dependency.
 			</p>
-
 			<p>
-				<a class="btn btn-outline-inverse btn-lg" href="https://github.com/angular-ui/bootstrap">
-					<i class="fa fa-github"></i> Code on Github
-				</a>
+				Our goal for NgM was to add "lazy" AngularJS module loading and to remove as much duplicate code
+				as possible from AngularJS. Equivalent UnderscoreJS, Modernizr and jQuery functions are used in
+				NgM where possible. That is, previous AngularJS code which was duplicated by UnderscoreJS,
+				Modernizr and/or jQuery, was removed from standard AngularJS.
+			<p>	
+			</p>
+				The result, NgM functions like standard AngularJS, with one major exception. MobileSiteOS can't
+				utilize AngularJS's self bootstrapping feature due to MSOS module loading verification and execution
+				timing. In order to use "lazy" module loading, bootstrapping must be called via a MSOS runtime
+				function at the end of MSOS code processing.
 			</p>
 		</div>
-	</header>
+		<div class="col-md-6">
+			<p>
+				The NgM derivation of AngularJS has also been cleaned up a bit to try and remove some of the more
+				"ambiguous" style of coding that was used. This was initially done as an exercise into understanding
+				exactly how AngularJS goes about doing what it does. Extensive debugging code was also added for the
+				same reason. Other than for improvement, the intent was to clarify and not change basic operations.
+				As such, there are also many small attempts at improving the debugging and speed of NgM over the
+				standard AngularJS script.
+			</p>
+			<p>
+				Given NgM's focus on client side execution, we also decided to include the following independent modules
+				as standard in NgMomentum. Building in ngAnimate also has the added benefit of reducing overall code size.
+			</p>
+
+			<h4>NgM Bundled Modules</h4>
+
+			<div class="row">
+				<div class="col-md-6">
+					<ul class="list-group">
+						<li class="list-group-item">ngAnimate (NgM -> ng.animate)</li>
+						<li class="list-group-item">ngSanitize (NgM -> ng.sanitize)</li>
+					</ul>
+				</div>
+				<div class="col-md-6">
+					<ul class="list-group">
+						<li class="list-group-item">ngResize (NgM -> ng.resize)</li>
+						<li class="list-group-item">ngPostloader (NgM -> ng.postloader)</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

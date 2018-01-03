@@ -38,6 +38,9 @@ angular.module(
 ).directive(
     'animate',      // used in progressbar and modal (this should probably be uibAnimate)
     angular.restrictADir
+).directive(
+    'disable',		// // used in many, many uib modules (this should probably be uibDisable)
+    angular.restrictADir
 );
 
 angular.module(

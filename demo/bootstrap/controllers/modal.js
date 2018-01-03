@@ -13,7 +13,7 @@ demo.bootstrap.controllers.modal.version = new msos.set_version(17, 11, 25);
 
 angular.module(
     'demo.bootstrap.controllers.modal',
-    ['ng', 'ngAnimate', 'ngSanitize', 'ng.bootstrap.ui.modal']
+    ['ng', 'ngAnimate', 'ng.sanitize', 'ng.bootstrap.ui.modal']
 ).controller(
     'demo.bootstrap.controllers.modal.ctrl',
     ['$uibModal', '$log', '$document', 'items',

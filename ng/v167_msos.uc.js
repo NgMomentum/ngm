@@ -2720,7 +2720,7 @@ msos.console.time('ng');
     ////////////////////////////////////
     // Module Loading
     ////////////////////////////////////
-    function loadModules(modules_to_load, _injector, _instance) {
+    function loadModules(modules_to_load, _injector) {
 
         var temp_lm = 'ng - loadModules',
             run_blocks = [],
@@ -2863,19 +2863,6 @@ msos.console.time('ng');
                 }
             }
         );
-
-        if (_instance) {
-            forEach(
-                run_blocks,
-                function (fn, idx) {
-                    if (_.isFunction(fn) || _.isArray(fn)) {
-                        _instance.invoke(fn, undefined, undefined, 'runBlocks' + idx);
-                    } else {
-                        msos.console.warn(temp_lm + ' -> (foreach), not an array or function for run_blocks[' + idx + ']: ', fn);
-                    }
-                }
-            );
-        }
 
         if (msos_verbose) {
             msos_debug(temp_lm + ' ->  done:', modules_to_load);
@@ -3304,14 +3291,23 @@ msos.console.time('ng');
 
         providerCache.$injector.modules = createMap();
 
-        loadModules(modulesToLoad, providerCache.$injector, instanceInjector);
+		function InjectRunBlocks(fn, idx) {
+			if (_.isFunction(fn) || _.isArray(fn)) {
+				instanceInjector.invoke(fn, undefined, undefined, 'runBlocks' + idx);
+			} else {
+				msos.console.warn(temp_ci + ' ===> (foreach), not an array or function for run_blocks[' + idx + ']: ', fn);
+			}
+		}
 
-		instanceInjector.loadNewModules = function (mods) {
+		forEach(
+			loadModules(modulesToLoad, providerCache.$injector),
+			InjectRunBlocks
+		);
+
+		instanceInjector.loadNewModules = function (mods_to_load) {
 			forEach(
-				loadModules(mods),
-				function inst_inj_load_new_modules(fn) {
-					if (fn) instanceInjector.invoke(fn);
-				}
+				loadModules(mods_to_load, providerCache.$injector),
+				InjectRunBlocks
 			);
 		};
 
@@ -22421,79 +22417,79 @@ msos.console.time('ng');
     publishExternalAPI(angular);
 
     // Start of ng - Postloader code
-    angular.module('ngPostloader', ['ng']).provider(
+    angular.module(
+		'ng.postloader',
+		['ng']
+	).provider(
         '$postload',
-        [
-            '$injector', '$injectorProvider',
-            function ($injector, $injectorProvider) {
-                var temp_pl = 'ng - Postloader';
+        ['$injectorProvider', function ($injectorProvider) {
+			var temp_pl = 'ng.postloader';
 
-                this.$get = [
-                    '$rootScope', '$q',
-                    function ($rootScope, $q) {
+			this.$get = [
+				'$rootScope', '$q',
+				function ($rootScope, $q) {
 
-                        msos_debug(temp_pl + ' -> called.');
+					msos_debug(temp_pl + ' -> called.');
 
-                        return {
-                            run_registration: function () {
-                                var temp_rr = temp_pl + ' - run_registration',
-                                    defer = $q.defer('ng_postload_run');
+					return {
+						run_registration: function () {
+							var temp_rr = temp_pl + ' - run_registration',
+								defer = $q.defer('ng_postload_run');
 
-                                msos_debug(temp_rr + ' -> start.');
+							msos_debug(temp_rr + ' -> start.');
 
-                                msos.onload_func_post.push(
-                                    function () {
+							msos.onload_func_post.push(
+								function () {
 
-                                        var curr_modules = _.keys(msos.registered_modules),
-                                            diff_modules = _.difference(curr_modules, msos_prev_modules),
-                                            angl_modules = [];
+									var curr_modules = _.keys(msos.registered_modules),
+										diff_modules = _.difference(curr_modules, msos_prev_modules),
+										angl_modules = [];
 
-                                        msos_debug(temp_rr + ' (onload_func_post) -> start.');
+									msos_debug(temp_rr + ' (onload_func_post) -> start.');
 
-                                        jQuery.each(
-                                            diff_modules,
-                                            function (index_na, module_key) {
-                                                var module_name = module_key.replace(/_/g, '.');    // MSOS encoded naming
-                                                // Screen away non-AngularJS modules
-                                                if (_.indexOf(angular.registered_modules, module_name) !== -1) {
-                                                    if (!angular.loaded_modules.get(module_name)) {
-                                                        angl_modules.push(module_name);
-                                                    }
-                                                }
-                                            }
-                                        );
-
-										// Skip if no new modules
-										if (angl_modules.length > 0) {
-											// Load and ready our newly received modules
-											loadModules(_.uniq(angl_modules), $injector, $injectorProvider.$get());
+									jQuery.each(
+										diff_modules,
+										function (index_na, module_key) {
+											var module_name = module_key.replace(/_/g, '.');    // MSOS encoded naming
+											// Screen away non-AngularJS modules
+											if (_.indexOf(angular.registered_modules, module_name) !== -1) {
+												if (!angular.loaded_modules.get(module_name)) {
+													angl_modules.push(module_name);
+												}
+											}
 										}
+									);
 
-										defer.resolve();
-										$rootScope.$apply();
+									// Skip if no new modules
+									if (angl_modules.length > 0) {
+										// Load and ready our newly received modules
+										$injectorProvider.$get().loadNewModules(_.uniq(angl_modules));
+									}
 
-                                        // Reset for next round...
-                                        msos_prev_modules = curr_modules;
+									defer.resolve();
+									$rootScope.$apply();
 
-                                        msos_debug(temp_rr + ' (onload_func_post) ->  done!');
-                                    }
-                                );
+									// Reset for next round...
+									msos_prev_modules = curr_modules;
 
-                                // Run MSOS module loading
-                                msos.run_onload();
+									msos_debug(temp_rr + ' (onload_func_post) ->  done!');
+								}
+							);
 
-                                msos_debug(temp_rr + ' ->  done!');
-                                return defer.promise;
-                            }
-                        };
-                    }
-                ];
-            }
-        ]
+							// Run MSOS module loading
+							msos.run_onload();
+
+							msos_debug(temp_rr + ' ->  done!');
+							return defer.promise;
+						}
+					};
+				}
+			];
+        }]
     ).run(
                 ['$location', '$timeout',
         function ($location,   $timeout) {
-            var temp_rn = 'ng - Postloader - run -> ',
+            var temp_rn = 'ng.postloader - run -> ',
                 org_location;
 
             msos_debug(temp_rn + 'start.');
@@ -22514,7 +22510,7 @@ msos.console.time('ng');
                         msos.console.info(temp_rn + 'do $location replace.');
                         $location.path(org_location).replace();
                     },
-                    100,
+                    200,
                     false
                 );
             }
@@ -22524,7 +22520,7 @@ msos.console.time('ng');
     );
 
     /**
-     * @license AngularJS original v1.5.3, updated to v1.6.5
+     * @license AngularJS original v1.5.3, updated to v1.6.7
      * (c) 2010-2016 Google, Inc. http://angularjs.org
      * License: MIT
      * 
@@ -22634,6 +22630,7 @@ msos.console.time('ng');
                     body.firstChild.remove();
 
                     return body;
+
                 } catch (e) {
                     return undefined;
                 }
@@ -22778,7 +22775,7 @@ msos.console.time('ng');
                                     out('"');
                                 } else {
                                     if (msos_verbose) {
-                                        msos_debug('ng - ngSanitize - htmlSanitizeWriter - start -> skipped: ' + lkey);
+                                        msos_debug('ng.sanitize - htmlSanitizeWriter - start -> skipped: ' + lkey);
                                     }
                                 }
                             }
@@ -22869,14 +22866,12 @@ msos.console.time('ng');
         }
 
         angular.module(
-			'ngSanitize',
+			'ng.sanitize',
 			['ng']
 		).provider(
 			'$sanitize',
 			$SanitizeProvider
-		);
-
-        angular.module('ngSanitize').filter(
+		).filter(
             'linky',
             ['$sanitize', function ($sanitize) {
                 var LINKY_URL_REGEXP = /((s?ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+-]+@)\S*[^\s.;,(){}<>"\u201d\u2019]/i,
@@ -22965,7 +22960,10 @@ msos.console.time('ng');
     * (c) 2014 Daniel Smith http://www.danmasta.com
     * License: MIT
     */
-    angular.module('ngResize', ['ng']).provider(
+    angular.module(
+		'ng.resize',
+		['ng']
+	).provider(
         'resize',
         [function resizeProvider() {
 
@@ -23076,7 +23074,7 @@ msos.console.time('ng');
                                     function () {
                                         scope.$apply(
                                             function ngResizeDirScopeApply() {
-                                                msos_debug('ng - ngResize - onresize -> called.');
+                                                msos_debug('ng.resize - onresize -> called.');
                                                 fn(scope, { $event: data });
                                             }
                                         );

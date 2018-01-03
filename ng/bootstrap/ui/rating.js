@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.rating");
 
-ng.bootstrap.ui.rating.version = new msos.set_version(17, 12, 6);
+ng.bootstrap.ui.rating.version = new msos.set_version(17, 12, 26);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
@@ -137,4 +134,19 @@ angular.module(
             ratingCtrl.init(ngModelCtrl);
         }
     };
-});
+}).directive(
+    'titles',
+    angular.restrictADir
+).directive(
+    'stateOn',
+    angular.restrictADir
+).directive(
+    'stateOff',
+    angular.restrictADir
+).directive(
+    'ratingStates',
+    angular.restrictADir
+).directive(
+    'readOnly',
+    angular.restrictADir
+);

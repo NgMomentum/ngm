@@ -118,18 +118,5 @@ msos.site.auto_init = function () {
 // Load site specific setup code
 msos.onload_func_pre.push(msos.site.auto_init);
 
-msos.onload_func_start.push(
-	function () {
-		jQuery('#notify_container').position(
-			{
-				of: window,
-				my: 'center top+60',
-				at: 'center top',
-				collision: 'none'
-			}
-		);
-	}
-);
-
 msos.console.info('site -> done!');
 msos.console.timeEnd('site');

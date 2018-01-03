@@ -1,97 +1,98 @@
 
-<div data-ng-ignore class="page-header">
-	<h1>Buttons
-		<small>(
-			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.buttons</a>)</small>
-	</h1>
-</div>
-<div class="row">
-	<div class="col-md-6 show-grid">
-		<div ng-controller="demo.bootstrap.controllers.buttons.ctrl">
-			<h4>Single toggle</h4>
-			<pre>{{singleModel}}</pre>
-			<button type="button" class="btn btn-primary" ng-model="singleModel" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-				Single Toggle
-			</button>
-			<h4>Checkbox</h4>
-			<pre>Model: {{checkModel}}</pre>
-			<pre>Results: {{checkResults}}</pre>
-			<div class="btn-group">
-				<label class="btn btn-primary" ng-model="checkModel.left"   uib-btn-checkbox>Left</label>
-				<label class="btn btn-primary" ng-model="checkModel.middle" uib-btn-checkbox>Middle</label>
-				<label class="btn btn-primary" ng-model="checkModel.right"  uib-btn-checkbox>Right</label>
-			</div>
-			<h4>Radio &amp; Uncheckable Radio</h4>
-			<pre>{{radioModel || 'null'}}</pre>
-			<div class="btn-group">
-				<label class="btn btn-primary" ng-model="radioModel" uib-btn-radio="'Left'">Left</label>
-				<label class="btn btn-primary" ng-model="radioModel" uib-btn-radio="'Middle'">Middle</label>
-				<label class="btn btn-primary" ng-model="radioModel" uib-btn-radio="'Right'">Right</label>
-			</div>
-			<div class="btn-group">
-				<label class="btn btn-success" ng-model="radioModel" uib-btn-radio="'Left'" uncheckable>Left</label>
-				<label class="btn btn-success" ng-model="radioModel" uib-btn-radio="'Middle'" uncheckable>Middle</label>
-				<label class="btn btn-success" ng-model="radioModel" uib-btn-radio="'Right'" uib-uncheckable="uncheckable">Right</label>
-			</div>
-			<div>
-				<button class="btn btn-default" ng-click="uncheckable = !uncheckable">
-					Toggle uncheckable
+<div class="ngm_page">
+
+	<h2 data-ng-ignore>Buttons
+		<small>(<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.buttons</a>)</small>
+	</h2>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div ng-controller="demo.bootstrap.controllers.buttons.ctrl">
+				<h4>Single toggle</h4>
+				<pre>{{singleModel}}</pre>
+				<button type="button" class="btn btn-primary" ng-model="singleModel" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+					Single Toggle
 				</button>
+				<h4>Checkbox</h4>
+				<pre>Model: {{checkModel}}</pre>
+				<pre>Results: {{checkResults}}</pre>
+				<div class="btn-group">
+					<label class="btn btn-primary" ng-model="checkModel.left"   uib-btn-checkbox>Left</label>
+					<label class="btn btn-primary" ng-model="checkModel.middle" uib-btn-checkbox>Middle</label>
+					<label class="btn btn-primary" ng-model="checkModel.right"  uib-btn-checkbox>Right</label>
+				</div>
+				<h4>Radio &amp; Uncheckable Radio</h4>
+				<pre>{{radioModel || 'null'}}</pre>
+				<div class="btn-group">
+					<label class="btn btn-primary" ng-model="radioModel" uib-btn-radio="'Left'">Left</label>
+					<label class="btn btn-primary" ng-model="radioModel" uib-btn-radio="'Middle'">Middle</label>
+					<label class="btn btn-primary" ng-model="radioModel" uib-btn-radio="'Right'">Right</label>
+				</div>
+				<div class="btn-group">
+					<label class="btn btn-success" ng-model="radioModel" uib-btn-radio="'Left'" uncheckable>Left</label>
+					<label class="btn btn-success" ng-model="radioModel" uib-btn-radio="'Middle'" uncheckable>Middle</label>
+					<label class="btn btn-success" ng-model="radioModel" uib-btn-radio="'Right'" uib-uncheckable="uncheckable">Right</label>
+				</div>
+				<div>
+					<button class="btn btn-default" ng-click="uncheckable = !uncheckable">
+						Toggle uncheckable
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
-	<div data-ng-ignore class="col-md-6">
-		<p>With the buttons directive, we can make a group of buttons behave like a set of checkboxes (<code>uib-btn-checkbox</code>) or behave like a set of radio buttons (<code>uib-btn-radio</code>).</p>
-
-		<h3 id="uib-btn-checkbox-settings">uib-btn-checkbox settings</h3>
-		<ul>
-			<li>
-				<p><code>btn-checkbox-false</code>
-					<em>(Default: <code>false</code>)</em> - Sets the value for the unchecked status.</p>
-			</li>
-			<li>
-				<p><code>btn-checkbox-true</code>
-					<em>(Default: <code>true</code>)</em> - Sets the value for the checked status.</p>
-			</li>
-			<li>
-				<p><code>ng-model</code>
-					<small class="badge">$</small>
-					<i class="fa fa-eye"></i> - Model where we set the checkbox status. By default <code>true</code> or <code>false</code>.</p>
-			</li>
-		</ul>
-		<h3 id="uib-btn-radio-settings">uib-btn-radio settings</h3>
-		<ul>
-			<li>
-				<p><code>ng-model</code>
-					<small class="badge">$</small>
-					<i class="fa fa-eye"></i> - Model where we set the radio status. All radio buttons in a group should use the same <code>ng-model</code>.</p>
-			</li>
-			<li>
-				<p><code>uib-btn-radio</code> -
-					<small class="badge">$</small> Value to assign to the <code>ng-model</code> if we check this radio button.</p>
-			</li>
-			<li>
-				<p><code>uib-uncheckable</code>
-					<small class="badge">$</small>
-					<em>(Default: <code>null</code>)</em> - An expression that evaluates to a truthy or falsy value that determines whether the <code>uncheckable</code> attribute is present.</p>
-			</li>
-			<li>
-				<p><code>uncheckable</code>
-					<small class="badge">B</small> - Whether a radio button can be unchecked or not.</p>
-			</li>
-		</ul>
-		<h3 id="additional-settings-uibbuttonconfig-">Additional settings <code>uibButtonConfig</code></h3>
-		<ul>
-			<li>
-				<p><code>activeClass</code>
-					<em>(Default: <code>active</code>)</em> - Class to apply to the checked buttons.</p>
-			</li>
-			<li>
-				<p><code>toggleEvent</code>
-					<em>(Default: <code>click</code>)</em> - Event used to toggle the buttons.</p>
-			</li>
-		</ul>
-		<h3 id="known-issues">Known issues</h3>
-		<p>To use tooltips or popovers on elements within a <code>btn-group</code>, set the tooltip/popover <code>appendToBody</code> option to <code>true</code>. This is due to Bootstrap CSS styling. See <a href="http://getbootstrap.com/components/#btn-groups">here</a> for more information.</p>
+		<div data-ng-ignore class="col-md-6">
+			<p>With the buttons directive, we can make a group of buttons behave like a set of checkboxes (<code>uib-btn-checkbox</code>) or behave like a set of radio buttons (<code>uib-btn-radio</code>).</p>
+	
+			<h3 id="uib-btn-checkbox-settings">uib-btn-checkbox settings</h3>
+			<ul>
+				<li>
+					<p><code>btn-checkbox-false</code>
+						<em>(Default: <code>false</code>)</em> - Sets the value for the unchecked status.</p>
+				</li>
+				<li>
+					<p><code>btn-checkbox-true</code>
+						<em>(Default: <code>true</code>)</em> - Sets the value for the checked status.</p>
+				</li>
+				<li>
+					<p><code>ng-model</code>
+						<small class="badge">$</small>
+						<i class="fa fa-eye"></i> - Model where we set the checkbox status. By default <code>true</code> or <code>false</code>.</p>
+				</li>
+			</ul>
+			<h3 id="uib-btn-radio-settings">uib-btn-radio settings</h3>
+			<ul>
+				<li>
+					<p><code>ng-model</code>
+						<small class="badge">$</small>
+						<i class="fa fa-eye"></i> - Model where we set the radio status. All radio buttons in a group should use the same <code>ng-model</code>.</p>
+				</li>
+				<li>
+					<p><code>uib-btn-radio</code> -
+						<small class="badge">$</small> Value to assign to the <code>ng-model</code> if we check this radio button.</p>
+				</li>
+				<li>
+					<p><code>uib-uncheckable</code>
+						<small class="badge">$</small>
+						<em>(Default: <code>null</code>)</em> - An expression that evaluates to a truthy or falsy value that determines whether the <code>uncheckable</code> attribute is present.</p>
+				</li>
+				<li>
+					<p><code>uncheckable</code>
+						<small class="badge">B</small> - Whether a radio button can be unchecked or not.</p>
+				</li>
+			</ul>
+			<h3 id="additional-settings-uibbuttonconfig-">Additional settings <code>uibButtonConfig</code></h3>
+			<ul>
+				<li>
+					<p><code>activeClass</code>
+						<em>(Default: <code>active</code>)</em> - Class to apply to the checked buttons.</p>
+				</li>
+				<li>
+					<p><code>toggleEvent</code>
+						<em>(Default: <code>click</code>)</em> - Event used to toggle the buttons.</p>
+				</li>
+			</ul>
+			<h3 id="known-issues">Known issues</h3>
+			<p>To use tooltips or popovers on elements within a <code>btn-group</code>, set the tooltip/popover <code>appendToBody</code> option to <code>true</code>. This is due to Bootstrap CSS styling. See <a href="http://getbootstrap.com/components/#btn-groups">here</a> for more information.</p>
+		</div>
 	</div>
 </div>

@@ -61,15 +61,17 @@ if (msos.config.debug_script) {
 	// Debug full scripts (line no's mean something)
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v321.uc.js'),
-		msos.resource_url('firebase', 'v480.min.js'),		// Full script is na
 		msos.resource_url('ng', 'v167_msos.uc.js'),
 		msos.resource_url('ng', 'ui/router/v042_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
-		msos.resource_url('ng', 'firebase/v230_msos.uc.js'),
-		msos.resource_url('ng', 'aria/v167_msos.uc.js'),
-		msos.resource_url('hello', 'v1151.uc.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.uc.js')
+	];
+
+	msos.prefetch_scripts = [
+		msos.resource_url('firebase', 'v480.min.js'),		// Full script is na
+		msos.resource_url('ng', 'firebase/v230_msos.uc.js'),
+		msos.resource_url('hello', 'v1151.uc.js')
 	];
 
 } else {
@@ -77,17 +79,18 @@ if (msos.config.debug_script) {
 	// Standard minimized scripts
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v321.min.js'),
-		msos.resource_url('firebase', 'v480.min.js'),
 		msos.resource_url('ng', 'v167_msos.min.js'),
 		msos.resource_url('ng', 'ui/router/v042_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
-		msos.resource_url('ng', 'firebase/v230_msos.min.js'),
-		msos.resource_url('ng', 'aria/v167_msos.min.js'),
-		msos.resource_url('hello', 'v1151.min.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
 	];
 
+	msos.prefetch_scripts = [
+		msos.resource_url('firebase', 'v480.min.js'),
+		msos.resource_url('ng', 'firebase/v230_msos.min.js'),
+		msos.resource_url('hello', 'v1151.min.js')
+	];
 }
 
 
@@ -125,8 +128,19 @@ msos.config.google.firebase = {
 };
 
 
+// Load our CSS
 msos.css_loader(msos.deferred_css);
+
+// Load our primary Scripts
 msos.script_loader(msos.deferred_scripts);
+
+// Prefetch our large secondary Scripts
+msos.onload_func_done.push(
+	function config_run_prefetch() {
+		// Note: these will not be available at first page rendering
+		msos.script_prefetcher(msos.prefetch_scripts);
+	}
+);
 
 msos.console.info('config -> done!');
 msos.console.timeEnd('config');

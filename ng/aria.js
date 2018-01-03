@@ -6,11 +6,21 @@
  * Updated to v1.6.7
  */
 
+/*global
+    msos: false,
+    ng: false
+*/
+
+msos.provide("ng.aria");
+
+ng.aria.version = new msos.set_version(17, 12, 30);
+
 (function (window, angular) {
     'use strict';
 
     var ngAriaModule = angular.module(
-            'ngAria', ['ng']
+            'ng.aria',
+			['ng']
         ).provider(
             '$aria', $AriaProvider
         ),
