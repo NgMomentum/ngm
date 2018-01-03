@@ -8,7 +8,6 @@
 
 msos.provide("demo.start");
 msos.require("ng.bootstrap.ui.dropdown");
-msos.require("ng.touch");
 
 
 msos.onload_functions.push(
@@ -51,8 +50,8 @@ msos.onload_functions.push(
 		demo.start = angular.module(
 			'demo.start', [
 				'ui.router',
-				'ngSanitize',
-				'ngPostloader',
+				'ng.sanitize',
+				'ng.postloader',
 				'ng.bootstrap.ui',
 				'ng.bootstrap.ui.dropdown'
 			]
@@ -231,7 +230,13 @@ msos.onload_functions.push(
 						'home',
 						{
 							url: "/",
-							templateUrl: msos.resource_url('demo', 'contacts/tmpl/home.html')
+							templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/home.html')
+						}
+					).state(
+						'router',
+						{
+							url: "/router",
+							templateUrl: msos.resource_url('demo', 'contacts/tmpl/router.html')
 						}
 					).state(
 						'about',

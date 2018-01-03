@@ -23,7 +23,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
     'use strict';
 
     var ngRouteModule,
-        $routeMinErr = w_angular.$$minErr('ngRoute'),
+        $routeMinErr = w_angular.$$minErr('ng.route'),
         isEagerInstantiationEnabled = true,
         vb_rt = false;
 
@@ -31,7 +31,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
 
     function $RouteProvider() {
         var routes = {},
-            temp_rt = 'ng - route - $RouteProvider';
+            temp_rt = 'ng.route - $RouteProvider';
 
         function inherit(parent, extra) {
             return w_angular.extend(
@@ -486,7 +486,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
     }
 
     function ngViewFactory($route, $animate, $routeViewScroll) {
-        var temp_vf = 'ng - route - ngViewFactory - link';
+        var temp_vf = 'ng.route - ngViewFactory - link';
 
         return {
             restrict: 'ECA',
@@ -587,7 +587,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
             restrict: 'ECA',
             priority: -400,
             link: function (scope, $element) {
-                var temp_nc = 'ng - route - ngViewControllerFactory -> ',
+                var temp_nc = 'ng.route - ngViewControllerFactory -> ',
                     current = $route.current,
                     locals = current.locals,
                     link,
@@ -619,13 +619,13 @@ ng.route.version = new msos.set_version(17, 8, 4);
 
     function instantiateRoute($injector) {
         if (isEagerInstantiationEnabled) {
-            w_msos.console.debug('ng - route - instantiateRoute -> eager enabled.');
+            w_msos.console.debug('ng.route - instantiateRoute -> eager enabled.');
             $injector.get('$route');
         }
     }
 
     ngRouteModule = w_angular.module(
-        'ngRoute',
+        'ng.route',
         ['ng']
     ).provider(
         '$route',

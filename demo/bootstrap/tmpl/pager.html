@@ -1,72 +1,73 @@
 
-<div data-ng-ignore class="page-header">
-	<h1>Pager
-		<small>(
-			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.pager</a>)</small>
-	</h1>
-</div>
-<div class="row">
-	<div class="col-md-6 show-grid">
-		<div ng-controller="demo.bootstrap.controllers.pager.ctrl">
+<div class="ngm_page">
 
-			<h4>Pager</h4>
-			<pre>You are currently on page {{currentPage}}</pre>
-			<ul uib-pager total-items="totalItems" ng-model="currentPage"></ul>
+	<h2 data-ng-ignore>Pager
+		<small>(<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.pager</a>)</small>
+	</h2>
 
+	<div class="row">
+		<div class="col-md-6">
+			<div ng-controller="demo.bootstrap.controllers.pager.ctrl">
+	
+				<h4>Pager</h4>
+				<pre>You are currently on page {{currentPage}}</pre>
+				<ul uib-pager total-items="totalItems" ng-model="currentPage"></ul>
+	
+			</div>
 		</div>
-	</div>
-	<div data-ng-ignore class="col-md-6">
-		<p>A lightweight pager directive that is focused on providing previous/next paging functionality</p>
-		<h3 id="uib-pager-settings">uib-pager settings</h3>
-		<ul>
-			<li>
-				<p><code>align</code>
-					<small class="badge">C</small>
-					<em>(Default: <code>true</code>)</em> - Whether to align each link to the sides.</p>
-			</li>
-			<li>
-				<p><code>items-per-page</code>
-					<small class="badge">$</small>
-					<small class="badge">C</small>
-					<i class="fa fa-eye"></i>
-					<em>(Default: <code>10</code>)</em> - Maximum number of items per page. A value less than one indicates all items on one page.</p>
-			</li>
-			<li>
-				<p><code>next-text</code>
-					<small class="badge">C</small>
-					<em>(Default: <code>Next »</code>)</em> - Text for Next button.</p>
-			</li>
-			<li>
-				<p><code>ng-disabled</code>
-					<small class="badge">$</small>
-					<i class="fa fa-eye"></i>
-					<em>(Default: <code>false</code>)</em> - Used to disable the pager component.</p>
-			</li>
-			<li>
-				<p><code>ng-model</code>
-					<small class="badge">$</small>
-					<i class="fa fa-eye"></i> - Current page number. First page is 1.</p>
-			</li>
-			<li>
-				<p><code>num-pages</code>
-					<small class="badge">$</small>
-					<small class="badge">readonly</small>
-					<em>(Default: <code>angular.noop</code>)</em> - An optional expression assigned the total number of pages to display.</p>
-			</li>
-			<li>
-				<p><code>previous-text</code>
-					<small class="badge">C</small>
-					<em>(Default: <code>« Previous</code>)</em> - Text for Previous button.</p>
-			</li>
-			<li>
-				<p><code>template-url</code>
-					<em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/pager.html</code>)</em> - Override the template for the component with a custom provided template.</p>
-			</li>
-			<li>
-				<p><code>total-items</code>
-					<small class="badge">$</small>
-					<i class="fa fa-eye"></i> - Total number of items in all pages.</p>
-			</li>
-		</ul>
+		<div data-ng-ignore class="col-md-6">
+			<p>A lightweight pager directive that is focused on providing previous/next paging functionality</p>
+			<h3 id="uib-pager-settings">uib-pager settings</h3>
+			<ul>
+				<li>
+					<p><code>align</code>
+						<small class="badge">C</small>
+						<em>(Default: <code>true</code>)</em> - Whether to align each link to the sides.</p>
+				</li>
+				<li>
+					<p><code>items-per-page</code>
+						<small class="badge">$</small>
+						<small class="badge">C</small>
+						<i class="fa fa-eye"></i>
+						<em>(Default: <code>10</code>)</em> - Maximum number of items per page. A value less than one indicates all items on one page.</p>
+				</li>
+				<li>
+					<p><code>next-text</code>
+						<small class="badge">C</small>
+						<em>(Default: <code>Next »</code>)</em> - Text for Next button.</p>
+				</li>
+				<li>
+					<p><code>ng-disabled</code>
+						<small class="badge">$</small>
+						<i class="fa fa-eye"></i>
+						<em>(Default: <code>false</code>)</em> - Used to disable the pager component.</p>
+				</li>
+				<li>
+					<p><code>ng-model</code>
+						<small class="badge">$</small>
+						<i class="fa fa-eye"></i> - Current page number. First page is 1.</p>
+				</li>
+				<li>
+					<p><code>num-pages</code>
+						<small class="badge">$</small>
+						<small class="badge">readonly</small>
+						<em>(Default: <code>angular.noop</code>)</em> - An optional expression assigned the total number of pages to display.</p>
+				</li>
+				<li>
+					<p><code>previous-text</code>
+						<small class="badge">C</small>
+						<em>(Default: <code>« Previous</code>)</em> - Text for Previous button.</p>
+				</li>
+				<li>
+					<p><code>template-url</code>
+						<em>(Default: <code>ngm/ng/bootstrap/ui/tmpl/pager.html</code>)</em> - Override the template for the component with a custom provided template.</p>
+				</li>
+				<li>
+					<p><code>total-items</code>
+						<small class="badge">$</small>
+						<i class="fa fa-eye"></i> - Total number of items in all pages.</p>
+				</li>
+			</ul>
+		</div>
 	</div>
 </div>

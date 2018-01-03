@@ -11,7 +11,7 @@ demo.bootstrap.controllers.typeahead.version = new msos.set_version(17, 10, 25);
 
 angular.module(
     'demo.bootstrap.controllers.typeahead',
-    ['ng', 'ngAnimate', 'ngSanitize', 'ui.bootstrap', 'ng.bootstrap.ui.typeahead', 'ng.bootstrap.ui.dropdown']
+    ['ng', 'ngAnimate', 'ng.sanitize', 'ui.bootstrap', 'ng.bootstrap.ui.typeahead', 'ng.bootstrap.ui.dropdown']
 ).controller(
     'demo.bootstrap.controllers.typeahead.ctrl', [
         '$scope', '$http',

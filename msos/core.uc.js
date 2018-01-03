@@ -634,19 +634,6 @@ msos.notify = {
 
 		// Add our container
 		jQuery('body').append(cont);
-
-		// Position using jquery.ui.position object
-		cont.position(
-			{
-				of: window,
-				my: 'center top+60',
-				at: 'center top',
-				collision: 'none'
-			}
-		);
-
-		// Now fix it in place
-		cont.css('position', 'fixed');
 	},
 
 	queue: [],
@@ -698,8 +685,15 @@ msos.notify = {
 			// Prepend the notify element to our container
 			self.container.prepend(self.current.note_el);
 
+			self.container.show();
+
 			// Add the specified display delay
 			self.current.auto_delay = setTimeout(self.current.fade_out, self.current.delay);
+
+		} else {
+
+			// Done, so kill the display
+			self.container.hide();
 		}
 	},
 

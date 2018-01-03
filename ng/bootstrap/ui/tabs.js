@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.tabs");
 
-ng.bootstrap.ui.tabs.version = new msos.set_version(17, 12, 6);
+ng.bootstrap.ui.tabs.version = new msos.set_version(17, 12, 26);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
@@ -136,12 +133,8 @@ angular.module(
             return attrs.templateUrl || msos.resource_url('ng', 'bootstrap/ui/tmpl/tab/set.html');
         },
         link: function (scope, element, attrs) {
-            scope.vertical = angular.isDefined(attrs.vertical)
-                ? scope.$parent.$eval(attrs.vertical)
-                : false;
-            scope.justified = angular.isDefined(attrs.justified)
-                ? scope.$parent.$eval(attrs.justified)
-                : false;
+            scope.vertical = angular.isDefined(attrs.vertical) ? scope.$parent.$eval(attrs.vertical) : false;
+            scope.justified = angular.isDefined(attrs.justified) ? scope.$parent.$eval(attrs.justified) : false;
         }
     };
 })
@@ -218,7 +211,7 @@ angular.module(
     return {
         restrict: 'A',
         require: '^uibTab',
-        link: function (scope, elm, attrs, tabCtrl) {
+        link: function (scope, elm) {
             scope.$watch(
                 'headingElement',
                 function updateHeadingElement(heading) {
@@ -264,4 +257,15 @@ angular.module(
             node.tagName.toLowerCase() === 'uib:tab-heading'
         );
     }
-});
+}).directive(
+    'uibTabHeading',
+    function () {
+        return { restrict: 'EA' };
+    }
+).directive(
+    'vertical',
+    angular.restrictADir
+).directive(
+    'justified',
+    angular.restrictADir
+);

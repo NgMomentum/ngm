@@ -1,16 +1,13 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
 
 msos.provide("ng.bootstrap.ui.progressbar");
 
-ng.bootstrap.ui.progressbar.version = new msos.set_version(17, 12, 6);
+ng.bootstrap.ui.progressbar.version = new msos.set_version(17, 12, 26);
 
 // Load Angular-UI-Bootstrap module specific CSS
 ng.bootstrap.ui.progressbar.css = new msos.loader();
@@ -49,7 +46,7 @@ angular.module(
         bar.max = getMaxOrDefault();
         bar.title = attrs && angular.isDefined(attrs.title) ? attrs.title : 'progressbar';
 
-        bar.$watch('value', function (value) {
+        bar.$watch('value', function () {
             bar.recalculatePercentage();
         });
 
@@ -78,7 +75,7 @@ angular.module(
     };
 
     //$attrs.$observe('maxParam', function (maxParam) {
-    $scope.$watch('maxParam', function (maxParam) {
+    $scope.$watch('maxParam', function () {
         self.bars.forEach(function (bar) {
             bar.max = getMaxOrDefault();
             bar.recalculatePercentage();

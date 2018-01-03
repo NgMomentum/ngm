@@ -2513,6 +2513,7 @@ var msos = {
 
 	deferred_css: [],
 	deferred_scripts: [],
+	prefetch_scripts: [],
 
 	dom: {},
 
@@ -2551,7 +2552,8 @@ var msos = {
         js: {},
         css: {},
         ico: {},
-		ajax: {}
+		ajax: {},
+		prefetch: {}
     },
     registered_folders: {
         msos: '',
@@ -4409,9 +4411,9 @@ msos.loader = function (win) {
     if (!win.msos)	{ win.msos = {}; }		// Popup might not have msos defined
     if (!win.name)	{ win.name = file.replace(/[^0-9a-zA-Z]/g, '_') || 'base_win'; }
 
-    // Initiate 'dynamic_files' tracking
+    // Initiate 'dynamic_files' tracking (for iframes, child windows)
     if (!win.msos.registered_files) {
-		win.msos.registered_files = { js : {}, css : {}, ico : {}, ajax: {} };
+		win.msos.registered_files = { js : {}, css : {}, ico : {}, ajax: {}, prefetch: {} };
     }
 
     msos.console.debug(temp_mod + " -> start for window: " + win.name);
@@ -4430,9 +4432,14 @@ msos.loader = function (win) {
 		var name = msos.generate_url_name(url),
 			base = url.split('?')[0],
 			ext = base.substr(base.lastIndexOf('.') + 1),
-			pattern = /^js|css|ico$/,
+			pattern = /^js|css|ico|prefetch$/,
 			lo = ' - load -> ',
 			load_resource_func = null;
+
+		if (type === 'prefetch') {
+			// Special case, since we later want to use name for actual script tag
+			name = 'pf_' + name;
+		}
 
 		if (msos.config.verbose) {
 			msos.console.debug(temp_mod + lo + 'start, name: ' + name);
@@ -4559,7 +4566,9 @@ msos.loader = function (win) {
 			node_attrs = { id: name, rel: 'stylesheet', href: url, media: 'all' };
 		} else if	(type === 'ico') {
 			node_attrs = { id: name, type: 'image/x-icon', rel: 'shortcut icon', href: url };
-		  }
+		} else if	(type === 'prefetch') {
+			node_attrs = { id: name, rel: 'prefetch', href: url, as: 'script' };
+		}
 
 		if (attribs !== undefined && typeof attribs === 'object') {
 			for (ats in attribs) {
@@ -4580,11 +4589,13 @@ msos.loader = function (win) {
 			node = msos.create_node('link',		node_attrs, win);
 		} else if	(type === 'ico') {
 			node = msos.create_node('link',		node_attrs, win);
-		  }
+		} else if	(type === 'prefetch') {
+			node = msos.create_node('link',		node_attrs, win);
+		}
 
 		node.msos_load_state = 'loading';
 
-		if (type === 'js' && msos.config.script_onerror) {
+		if ((type === 'js' || type === 'prefetch') && msos.config.script_onerror) {
 			node.onerror = function (e) { msos.console.error(temp_mod + ' -> failed for: ' + name, e); };
 		}
 
@@ -4823,6 +4834,49 @@ msos.script_loader = function (url_array) {
 	msos.console.debug(temp_esl + 'done!');
 };
 
+// --------------------------
+// Bulk External Script Prefetching
+// --------------------------
+msos.script_prefetcher = function (url_array) {
+	"use strict";
+
+	var temp_spf = 'msos.script_prefetcher',
+		loader_obj = null,
+		script_url = '',
+		i = 0;
+
+	msos.console.debug(temp_spf + ' -> start.');
+
+	// Get a new loader object
+	loader_obj = new msos.loader();
+
+	for (i = 0; i < url_array.length; i += 1) {
+		script_url = url_array[i];
+		loader_obj.load(script_url, 'prefetch');
+	}
+
+	// On next 'msos.run_onload', setup prefetched scripts for use
+	msos.onload_func_pre.push(
+		function initialize_prefetched() {
+			var temp_ip = ' - initialize_prefetched -> ',
+				pf_loader_obj,
+				j = 0;
+
+			msos.console.debug(temp_spf + temp_ip + 'start.');
+
+			// Now, load (the already prefetched scripts)
+			pf_loader_obj = new msos.loader();
+
+			for (j = 0; j < url_array.length; j += 1) {
+				pf_loader_obj.load(url_array[j], 'js');
+			}
+
+			msos.console.debug(temp_spf + temp_ip + ' done!');
+		}
+	);
+
+	msos.console.debug(temp_spf + ' ->  done!');
+};
 
 // *******************************************
 // Establish base MSOS environment

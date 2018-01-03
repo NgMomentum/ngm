@@ -1,9 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     ng: false
 */
@@ -11,7 +8,7 @@
 msos.provide("ng.bootstrap.ui.popover");
 msos.require("ng.bootstrap.ui.tooltip");
 
-ng.bootstrap.ui.popover.version = new msos.set_version(17,1, 4);
+ng.bootstrap.ui.popover.version = new msos.set_version(17,12, 26);
 
 
 // Load Angular-UI-Bootstrap module specific CSS
@@ -23,44 +20,50 @@ ng.bootstrap.ui.popover.css.load(msos.resource_url('ng', 'bootstrap/css/ui/popov
 // uib/template/popover/popover.html            -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover.html')
 // uib/template/popover/popover-template.html   -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/template.html')
 // uib/template/popover/popover-html.html       -> msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/html.html')
-angular.module('ng.bootstrap.ui.popover', ['ng.bootstrap.ui.tooltip'])
-
-.directive('uibPopoverTemplatePopup', function () {
+angular.module(
+	'ng.bootstrap.ui.popover',
+	['ng', 'ng.bootstrap.ui.tooltip']
+).directive('uibPopoverTemplatePopup', function () {
     return {
         restrict: 'A',
         scope: { uibTitle: '@', contentExp: '&', originScope: '&' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/template.html')
     };
-})
-
-.directive('uibPopoverTemplate', ['$uibTooltip', function ($uibTooltip) {
+}).directive('uibPopoverTemplate', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibPopoverTemplate', 'popover', 'click', {
         useContentExp: true
     });
-}])
-
-.directive('uibPopoverHtmlPopup', function () {
+}]).directive('uibPopoverHtmlPopup', function () {
     return {
         restrict: 'A',
         scope: { contentExp: '&', uibTitle: '@' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/popover/html.html')
     };
-})
-
-.directive('uibPopoverHtml', ['$uibTooltip', function ($uibTooltip) {
+}).directive('uibPopoverHtml', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibPopoverHtml', 'popover', 'click', {
         useContentExp: true
     });
-}])
-
-.directive('uibPopoverPopup', function () {
+}]).directive('uibPopoverPopup', function () {
     return {
         restrict: 'A',
         scope: { uibTitle: '@', content: '@' },
         templateUrl: msos.resource_url('ng', 'bootstrap/ui/tmpl/popover.html')
     };
-})
-
-.directive('uibPopover', ['$uibTooltip', function ($uibTooltip) {
+}).directive('uibPopover', ['$uibTooltip', function ($uibTooltip) {
     return $uibTooltip('uibPopover', 'popover', 'click');
-}]);
+}]).directive(
+    'popoverTitle',
+    angular.restrictADir
+).directive(
+    'popoverAnimation',
+    angular.restrictADir
+).directive(
+    'popoverPlacement',
+    angular.restrictADir
+).directive(
+    'popoverTrigger',
+    angular.restrictADir
+).directive(
+    'popoverIsOpen',
+    angular.restrictADir
+);

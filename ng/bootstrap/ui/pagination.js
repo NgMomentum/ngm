@@ -179,4 +179,19 @@ angular.module(
             paginationCtrl.init(ngModelCtrl, uibPaginationConfig);
         }
     };
-}]);
+}]).directive(
+    'boundaryLinks',
+    angular.restrictADir
+).directive(
+    'directionLinks',
+    angular.restrictADir
+).directive(
+    'maxSize',
+    angular.restrictADir
+).directive(
+    'forceEllipses',
+    angular.restrictADir
+).directive(
+    'boundaryLinkNumbers',
+    angular.restrictADir
+);

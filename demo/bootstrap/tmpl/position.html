@@ -1,345 +1,346 @@
 
-<div data-ng-ignore class="page-header">
-	<h1>Position
-		<small>(
-			<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.position</a>)</small>
-	</h1>
-</div>
-<div class="row">
-	<div class="col-md-6 show-grid">
-		<div ng-controller="demo.bootstrap.controllers.position.ctrl">
+<div data-ng-ignore class="ngm_page">
 
-			<h4>$uibPosition service</h4>
-			<div id="posdemoparent" ng-style="{'overflow': (parentScrollable && 'scroll'), 'position': (parentRelative && 'relative')}" style="border: 1px solid #ccc; padding: 15px;">
-				<div class="checkbox">
-					<label>
-						<input type="checkbox" ng-model="parentScrollable"> Parent scrollable
-					</label>
-				</div>
-				<div class="checkbox">
-					<label>
-						<input type="checkbox" ng-model="parentRelative"> Parent relative
-					</label>
-				</div>
-				<button id="posdemobtn" class="btn btn-default" ng-click="getValues()">Get values</button>
+	<h2 data-ng-ignore>Position
+		<small>(<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.position</a>)</small>
+	</h2>
 
-				<div id="posdemodiv" style="width: 100px; height: 100px; margin: 15px 0; padding: 10px; background-color: #f8f8f8; border: 1px solid #ccc;">
-					Demo element
+	<div class="row">
+		<div class="col-md-6">
+			<div ng-controller="demo.bootstrap.controllers.position.ctrl">
+	
+				<h4>$uibPosition service</h4>
+				<div id="posdemoparent" ng-style="{'overflow': (parentScrollable && 'scroll'), 'position': (parentRelative && 'relative')}" style="border: 1px solid #ccc; padding: 15px;">
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" ng-model="parentScrollable"> Parent scrollable
+						</label>
+					</div>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" ng-model="parentRelative"> Parent relative
+						</label>
+					</div>
+					<button id="posdemobtn" class="btn btn-default" ng-click="getValues()">Get values</button>
+	
+					<div id="posdemodiv" style="width: 100px; height: 100px; margin: 15px 0; padding: 10px; background-color: #f8f8f8; border: 1px solid #ccc;">
+						Demo element
+					</div>
 				</div>
+				<br /> offsetParent: {{elemVals.offsetParent}}
+				<br /> scrollParent: {{elemVals.scrollParent}}
+				<br /> scrollbarWidth: {{scrollbarWidth}}
+				<br /> position: {{elemVals.position}}
+				<br /> offset: {{elemVals.offset}}
+				<br /> viewportOffset: {{elemVals.viewportOffset}}
+				<br /> positionElements: {{elemVals.positionElements}}
 			</div>
-			<br /> offsetParent: {{elemVals.offsetParent}}
-			<br /> scrollParent: {{elemVals.scrollParent}}
-			<br /> scrollbarWidth: {{scrollbarWidth}}
-			<br /> position: {{elemVals.position}}
-			<br /> offset: {{elemVals.offset}}
-			<br /> viewportOffset: {{elemVals.viewportOffset}}
-			<br /> positionElements: {{elemVals.positionElements}}
 		</div>
-	</div>
-	<div data-ng-ignore class="col-md-6">
-		<p>The <code>$uibPosition</code> service provides a set of DOM utilities used internally to absolute-position an element in relation to another element (tooltips, popovers, typeaheads etc...).</p>
-		<h4 id="getrawnode-element-">getRawNode(element)</h4>
-		<p>Takes a jQuery/jqLite element and converts it to a raw DOM element.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li><code>element</code>
-				<em>(Type: <code>object</code>)</em> - The element to convert.</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<ul>
-			<li><em>(Type: <code>element</code>)</em> - A raw DOM element.</li>
-		</ul>
-		<h4 id="parsestyle-element-">parseStyle(element)</h4>
-		<p>Parses a numeric style value to a number. Strips units and will return 0 for invalid (NaN) numbers.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li><code>value</code>
-				<em>(Type: <code>string</code>)</em> - The style value to parse.</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<ul>
-			<li><em>(Type: <code>number</code>)</em> - The numeric value of the style property.</li>
-		</ul>
-		<h4 id="offsetparent-element-">offsetParent(element)</h4>
-		<p>Gets the closest positioned ancestor.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li><code>element</code>
-				<em>(Type: <code>element</code>)</em> - The element to get the offset parent for.</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<ul>
-			<li><em>(Type: <code>element</code>)</em> - The closest positioned ancestor.</li>
-		</ul>
-		<h4 id="scrollbarwidth-isbody-">scrollbarWidth(isBody)</h4>
-		<p>Calculates the browser scrollbar width and caches the result for future calls. Concept from the TWBS measureScrollbar() function in <a href="https://github.com/twbs/bootstrap/blob/master/js/modal.js">modal.js</a>.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li><code>isBody</code>
-				<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Is the requested scrollbar width for the body/html element. IE and Edge overlay the scrollbar on the body/html element and should be considered 0.</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<ul>
-			<li><em>(Type: <code>number</code>)</em> - The width of the browser scrollbar.</li>
-		</ul>
-		<h4 id="scrollbarpadding-element-">scrollbarPadding(element)</h4>
-		<p>Calculates the padding required to replace the scrollbar on an element.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>&#39;element&#39; <em>(Type: <code>element</code>)</em> - The element to calculate the padding on (should be a scrollable element).</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<p>An object with the following properties:</p>
-		<ul>
-			<li>
-				<p><code>scrollbarWidth</code>
-					<em>(Type: <code>number</code>)</em> - The width of the scrollbar.</p>
-			</li>
-			<li>
-				<p><code>widthOverflow</code>
-					<em>(Type: <code>boolean</code>)</em> - Whether the width is overflowing.</p>
-			</li>
-			<li>
-				<p><code>right</code>
-					<em>(Type: <code>number</code>)</em> - The total right padding required to replace the scrollbar.</p>
-			</li>
-			<li>
-				<p><code>originalRight</code>
-					<em>(Type: <code>number</code>)</em> - The oringal right padding on the element.</p>
-			</li>
-			<li>
-				<p><code>heightOverflow</code>
-					<em>(Type: <code>boolean</code>)</em> - Whether the height is overflowing.</p>
-			</li>
-			<li>
-				<p><code>bottom</code>
-					<em>(Type: <code>number</code>)</em> - The total bottom padding required to replace the scrollbar.</p>
-			</li>
-			<li>
-				<p><code>originalBottom</code>
-					<em>(Type: <code>number</code>)</em> - The oringal bottom padding on the element.</p>
-			</li>
-		</ul>
-		<h4 id="isscrollable-element-includehidden-">isScrollable(element, includeHidden)</h4>
-		<p>Determines if an element is scrollable.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>
-				<p><code>element</code>
-					<em>(Type: <code>element</code>)</em> - The element to check.</p>
-			</li>
-			<li>
-				<p><code>includeHidden</code>
-					<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should scroll style of &#39;hidden&#39; be considered.</p>
-			</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<ul>
-			<li><em>(Type: <code>boolean</code>)</em> - Whether the element is scrollable.</li>
-		</ul>
-		<h4 id="scrollparent-element-includehidden-includeself-">scrollParent(element, includeHidden, includeSelf)</h4>
-		<p>Gets the closest scrollable ancestor. Concept from the jQueryUI <a href="https://github.com/jquery/jquery-ui/blob/master/ui/scroll-parent.js">scrollParent.js</a>.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>
-				<p><code>element</code>
-					<em>(Type: <code>element</code>)</em> - The element to get the closest scrollable ancestor for.</p>
-			</li>
-			<li>
-				<p><code>includeHidden</code>
-					<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should scroll style of &#39;hidden&#39; be considered.</p>
-			</li>
-			<li>
-				<p><code>includeSelf</code>
-					<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should the element passed in be included in the scrollable lookup.</p>
-			</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<ul>
-			<li><em>(Type: <code>element</code>)</em> - The closest scrollable ancestor.</li>
-		</ul>
-		<h4 id="position-element-includemargins-">position(element, includeMargins)</h4>
-		<p>A read-only equivalent of jQuery&#39;s <a href="http://api.jquery.com/position/">position</a> function, distance to closest positioned ancestor. Does not account for margins by default like jQuery&#39;s position.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>
-				<p><code>element</code> <em>(Type: <code>element</code>)</em> - The element to get the position for.</p>
-			</li>
-			<li>
-				<p><code>includeMargins</code> <em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should margins be accounted for.</p>
-			</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<p>An object with the following properties:</p>
-		<ul>
-			<li>
-				<p><code>width</code>
-					<em>(Type: <code>number</code>)</em> - The width of the element.</p>
-			</li>
-			<li>
-				<p><code>height</code>
-					<em>(Type: <code>number</code>)</em> - The height of the element.</p>
-			</li>
-			<li>
-				<p><code>top</code>
-					<em>(Type: <code>number</code>)</em> - Distance to top edge of offset parent.</p>
-			</li>
-			<li>
-				<p><code>left</code>
-					<em>(Type: <code>number</code>)</em> - Distance to left edge of offset parent.</p>
-			</li>
-		</ul>
-		<h4 id="offset-element-">offset(element)</h4>
-		<p>A read-only equivalent of jQuery&#39;s <a href="http://api.jquery.com/offset/">offset</a> function, distance to viewport.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li><code>element</code>
-				<em>(Type: <code>element</code>)</em> - The element to get the offset for.</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<p>An object with the following properties:</p>
-		<ul>
-			<li>
-				<p><code>width</code>
-					<em>(Type: <code>number</code>)</em> - The width of the element.</p>
-			</li>
-			<li>
-				<p><code>height</code>
-					<em>(Type: <code>number</code>)</em> - The height of the element.</p>
-			</li>
-			<li>
-				<p><code>top</code>
-					<em>(Type: <code>number</code>)</em> - Distance to top edge of the viewport.</p>
-			</li>
-			<li>
-				<p><code>left</code>
-					<em>(Type: <code>number</code>)</em> - Distance to left edge of the viewport.</p>
-			</li>
-		</ul>
-		<h4 id="viewportoffset-element-usedocument-includepadding-">viewportOffset(element, useDocument, includePadding)</h4>
-		<p>Gets the elements available space relative to the closest scrollable ancestor. Accounts for padding, border, and scrollbar width. Right and bottom dimensions represent the distance to the respective edge of the viewport element, not the top and left edge. If the element edge extends beyond the viewport, a negative value will be reported.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>
-				<p><code>element</code>
-					<em>(Type: <code>element</code>)</em> - The element to get the viewport offset for.</p>
-			</li>
-			<li>
-				<p><code>useDocument</code>
-					<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should the viewport be the document element instead of the first scrollable element.</p>
-			</li>
-			<li>
-				<p><code>includePadding</code>
-					<em>(Type: <code>boolean</code>, Default: <code>true</code>, optional)</em> - Should the padding on the viewport element be accounted for, default is true.</p>
-			</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<p>An object with the following properties:</p>
-		<ul>
-			<li>
-				<p><code>top</code>
-					<em>(Type: <code>number</code>)</em> - Distance to top content edge of the viewport.</p>
-			</li>
-			<li>
-				<p><code>bottom</code>
-					<em>(Type: <code>number</code>)</em> - Distance to bottom content edge of the viewport.</p>
-			</li>
-			<li>
-				<p><code>left</code>
-					<em>(Type: <code>number</code>)</em> - Distance to left content edge of the viewport.</p>
-			</li>
-			<li>
-				<p><code>right</code>
-					<em>(Type: <code>number</code>)</em> - Distance to right content edge of the viewport.</p>
-			</li>
-		</ul>
-		<h4 id="parseplacement-placement-">parsePlacement(placement)</h4>
-		<p>Gets an array of placement values parsed from a placement string. Along with the &#39;auto&#39; indicator, supported placement strings are:</p>
-		<ul>
-			<li>top: element on top, horizontally centered on host element.</li>
-			<li>top-left: element on top, left edge aligned with host element left edge.</li>
-			<li>top-right: element on top, right edge aligned with host element right edge.</li>
-			<li>bottom: element on bottom, horizontally centered on host element.</li>
-			<li>bottom-left: element on bottom, left edge aligned with host element left edge.</li>
-			<li>bottom-right: element on bottom, right edge aligned with host element right edge.</li>
-			<li>left: element on left, vertically centered on host element.</li>
-			<li>left-top: element on left, top edge aligned with host element top edge.</li>
-			<li>left-bottom: element on left, bottom edge aligned with host element bottom edge.</li>
-			<li>right: element on right, vertically centered on host element.</li>
-			<li>right-top: element on right, top edge aligned with host element top edge.</li>
-			<li>right-bottom: element on right, bottom edge aligned with host element bottom edge.</li>
-		</ul>
-		<p>A placement string with an &#39;auto&#39; indicator is expected to be space separated from the placement, i.e: &#39;auto bottom-left&#39;. If the primary and secondary placement values do not match &#39;top, bottom, left, right&#39; then &#39;top&#39; will be the primary placement and &#39;center&#39; will be the secondary placement. If &#39;auto&#39; is passed, true will be returned as the 3rd value of the array.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li><code>placement</code>
-				<em>(Type: <code>string</code>, Example: <code>auto top-left</code>)</em> - The placement string to parse.</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<p>An array with the following values:</p>
-		<ul>
-			<li>
-				<p><code>[0]</code>
-					<em>(Type: <code>string</code>)</em> - The primary placement.</p>
-			</li>
-			<li>
-				<p><code>[1]</code>
-					<em>(Type: <code>string</code>)</em> - The secondary placement.</p>
-			</li>
-			<li>
-				<p><code>[2]</code>
-					<em>(Type: <code>boolean</code>)</em> - Is auto place enabled.</p>
-			</li>
-		</ul>
-		<h4 id="positionelements-hostelement-targetelement-placement-appendtobody-">positionElements(hostElement, targetElement, placement, appendToBody)</h4>
-		<p>Gets gets coordinates for an element to be positioned relative to another element.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>
-				<p><code>hostElement</code>
-					<em>(Type: <code>element</code>)</em> - The element to position against.</p>
-			</li>
-			<li>
-				<p><code>targetElement</code>
-					<em>(Type: <code>element</code>)</em> - The element to position.</p>
-			</li>
-			<li>
-				<p><code>placement</code>
-					<em>(Type: <code>string</code>, Default: <code>top</code>, optional)</em> - The placement for the target element. See the parsePlacement() function for available options. If &#39;auto&#39; placement is used, the viewportOffset() function is used to decide where the targetElement will fit.</p>
-			</li>
-			<li>
-				<p><code>appendToBody</code>
-					<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should the coordinates be cacluated from the body element.</p>
-			</li>
-		</ul>
-		<h5 id="returns">returns</h5>
-		<p>An object with the following properties:</p>
-		<ul>
-			<li>
-				<p><code>top</code>
-					<em>(Type: <code>number</code>)</em> - The targetElement top value.</p>
-			</li>
-			<li>
-				<p><code>left</code>
-					<em>(Type: <code>number</code>)</em> - The targetElement left value.</p>
-			</li>
-			<li>
-				<p><code>right</code>
-					<em>(Type: <code>number</code>)</em> - The resolved placement with &#39;auto&#39; removed.</p>
-			</li>
-		</ul>
-		<h4 id="positionarrow-element-placement-">positionArrow(element, placement)</h4>
-		<p>Positions the tooltip and popover arrow elements when using placement options beyond the standard top, left, bottom, or right.</p>
-		<h5 id="parameters">parameters</h5>
-		<ul>
-			<li>
-				<p><code>element</code>
-					<em>(Type: <code>element</code>)</em> - The element to position the arrow element for.</p>
-			</li>
-			<li>
-				<p><code>placement</code>
-					<em>(Type: <code>string</code>)</em> - The placement for the element.</p>
-			</li>
-		</ul>
+		<div data-ng-ignore class="col-md-6">
+			<p>The <code>$uibPosition</code> service provides a set of DOM utilities used internally to absolute-position an element in relation to another element (tooltips, popovers, typeaheads etc...).</p>
+			<h4 id="getrawnode-element-">getRawNode(element)</h4>
+			<p>Takes a jQuery/jqLite element and converts it to a raw DOM element.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li><code>element</code>
+					<em>(Type: <code>object</code>)</em> - The element to convert.</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<ul>
+				<li><em>(Type: <code>element</code>)</em> - A raw DOM element.</li>
+			</ul>
+			<h4 id="parsestyle-element-">parseStyle(element)</h4>
+			<p>Parses a numeric style value to a number. Strips units and will return 0 for invalid (NaN) numbers.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li><code>value</code>
+					<em>(Type: <code>string</code>)</em> - The style value to parse.</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<ul>
+				<li><em>(Type: <code>number</code>)</em> - The numeric value of the style property.</li>
+			</ul>
+			<h4 id="offsetparent-element-">offsetParent(element)</h4>
+			<p>Gets the closest positioned ancestor.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li><code>element</code>
+					<em>(Type: <code>element</code>)</em> - The element to get the offset parent for.</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<ul>
+				<li><em>(Type: <code>element</code>)</em> - The closest positioned ancestor.</li>
+			</ul>
+			<h4 id="scrollbarwidth-isbody-">scrollbarWidth(isBody)</h4>
+			<p>Calculates the browser scrollbar width and caches the result for future calls. Concept from the TWBS measureScrollbar() function in <a href="https://github.com/twbs/bootstrap/blob/master/js/modal.js">modal.js</a>.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li><code>isBody</code>
+					<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Is the requested scrollbar width for the body/html element. IE and Edge overlay the scrollbar on the body/html element and should be considered 0.</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<ul>
+				<li><em>(Type: <code>number</code>)</em> - The width of the browser scrollbar.</li>
+			</ul>
+			<h4 id="scrollbarpadding-element-">scrollbarPadding(element)</h4>
+			<p>Calculates the padding required to replace the scrollbar on an element.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>&#39;element&#39; <em>(Type: <code>element</code>)</em> - The element to calculate the padding on (should be a scrollable element).</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<p>An object with the following properties:</p>
+			<ul>
+				<li>
+					<p><code>scrollbarWidth</code>
+						<em>(Type: <code>number</code>)</em> - The width of the scrollbar.</p>
+				</li>
+				<li>
+					<p><code>widthOverflow</code>
+						<em>(Type: <code>boolean</code>)</em> - Whether the width is overflowing.</p>
+				</li>
+				<li>
+					<p><code>right</code>
+						<em>(Type: <code>number</code>)</em> - The total right padding required to replace the scrollbar.</p>
+				</li>
+				<li>
+					<p><code>originalRight</code>
+						<em>(Type: <code>number</code>)</em> - The oringal right padding on the element.</p>
+				</li>
+				<li>
+					<p><code>heightOverflow</code>
+						<em>(Type: <code>boolean</code>)</em> - Whether the height is overflowing.</p>
+				</li>
+				<li>
+					<p><code>bottom</code>
+						<em>(Type: <code>number</code>)</em> - The total bottom padding required to replace the scrollbar.</p>
+				</li>
+				<li>
+					<p><code>originalBottom</code>
+						<em>(Type: <code>number</code>)</em> - The oringal bottom padding on the element.</p>
+				</li>
+			</ul>
+			<h4 id="isscrollable-element-includehidden-">isScrollable(element, includeHidden)</h4>
+			<p>Determines if an element is scrollable.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>
+					<p><code>element</code>
+						<em>(Type: <code>element</code>)</em> - The element to check.</p>
+				</li>
+				<li>
+					<p><code>includeHidden</code>
+						<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should scroll style of &#39;hidden&#39; be considered.</p>
+				</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<ul>
+				<li><em>(Type: <code>boolean</code>)</em> - Whether the element is scrollable.</li>
+			</ul>
+			<h4 id="scrollparent-element-includehidden-includeself-">scrollParent(element, includeHidden, includeSelf)</h4>
+			<p>Gets the closest scrollable ancestor. Concept from the jQueryUI <a href="https://github.com/jquery/jquery-ui/blob/master/ui/scroll-parent.js">scrollParent.js</a>.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>
+					<p><code>element</code>
+						<em>(Type: <code>element</code>)</em> - The element to get the closest scrollable ancestor for.</p>
+				</li>
+				<li>
+					<p><code>includeHidden</code>
+						<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should scroll style of &#39;hidden&#39; be considered.</p>
+				</li>
+				<li>
+					<p><code>includeSelf</code>
+						<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should the element passed in be included in the scrollable lookup.</p>
+				</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<ul>
+				<li><em>(Type: <code>element</code>)</em> - The closest scrollable ancestor.</li>
+			</ul>
+			<h4 id="position-element-includemargins-">position(element, includeMargins)</h4>
+			<p>A read-only equivalent of jQuery&#39;s <a href="http://api.jquery.com/position/">position</a> function, distance to closest positioned ancestor. Does not account for margins by default like jQuery&#39;s position.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>
+					<p><code>element</code> <em>(Type: <code>element</code>)</em> - The element to get the position for.</p>
+				</li>
+				<li>
+					<p><code>includeMargins</code> <em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should margins be accounted for.</p>
+				</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<p>An object with the following properties:</p>
+			<ul>
+				<li>
+					<p><code>width</code>
+						<em>(Type: <code>number</code>)</em> - The width of the element.</p>
+				</li>
+				<li>
+					<p><code>height</code>
+						<em>(Type: <code>number</code>)</em> - The height of the element.</p>
+				</li>
+				<li>
+					<p><code>top</code>
+						<em>(Type: <code>number</code>)</em> - Distance to top edge of offset parent.</p>
+				</li>
+				<li>
+					<p><code>left</code>
+						<em>(Type: <code>number</code>)</em> - Distance to left edge of offset parent.</p>
+				</li>
+			</ul>
+			<h4 id="offset-element-">offset(element)</h4>
+			<p>A read-only equivalent of jQuery&#39;s <a href="http://api.jquery.com/offset/">offset</a> function, distance to viewport.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li><code>element</code>
+					<em>(Type: <code>element</code>)</em> - The element to get the offset for.</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<p>An object with the following properties:</p>
+			<ul>
+				<li>
+					<p><code>width</code>
+						<em>(Type: <code>number</code>)</em> - The width of the element.</p>
+				</li>
+				<li>
+					<p><code>height</code>
+						<em>(Type: <code>number</code>)</em> - The height of the element.</p>
+				</li>
+				<li>
+					<p><code>top</code>
+						<em>(Type: <code>number</code>)</em> - Distance to top edge of the viewport.</p>
+				</li>
+				<li>
+					<p><code>left</code>
+						<em>(Type: <code>number</code>)</em> - Distance to left edge of the viewport.</p>
+				</li>
+			</ul>
+			<h4 id="viewportoffset-element-usedocument-includepadding-">viewportOffset(element, useDocument, includePadding)</h4>
+			<p>Gets the elements available space relative to the closest scrollable ancestor. Accounts for padding, border, and scrollbar width. Right and bottom dimensions represent the distance to the respective edge of the viewport element, not the top and left edge. If the element edge extends beyond the viewport, a negative value will be reported.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>
+					<p><code>element</code>
+						<em>(Type: <code>element</code>)</em> - The element to get the viewport offset for.</p>
+				</li>
+				<li>
+					<p><code>useDocument</code>
+						<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should the viewport be the document element instead of the first scrollable element.</p>
+				</li>
+				<li>
+					<p><code>includePadding</code>
+						<em>(Type: <code>boolean</code>, Default: <code>true</code>, optional)</em> - Should the padding on the viewport element be accounted for, default is true.</p>
+				</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<p>An object with the following properties:</p>
+			<ul>
+				<li>
+					<p><code>top</code>
+						<em>(Type: <code>number</code>)</em> - Distance to top content edge of the viewport.</p>
+				</li>
+				<li>
+					<p><code>bottom</code>
+						<em>(Type: <code>number</code>)</em> - Distance to bottom content edge of the viewport.</p>
+				</li>
+				<li>
+					<p><code>left</code>
+						<em>(Type: <code>number</code>)</em> - Distance to left content edge of the viewport.</p>
+				</li>
+				<li>
+					<p><code>right</code>
+						<em>(Type: <code>number</code>)</em> - Distance to right content edge of the viewport.</p>
+				</li>
+			</ul>
+			<h4 id="parseplacement-placement-">parsePlacement(placement)</h4>
+			<p>Gets an array of placement values parsed from a placement string. Along with the &#39;auto&#39; indicator, supported placement strings are:</p>
+			<ul>
+				<li>top: element on top, horizontally centered on host element.</li>
+				<li>top-left: element on top, left edge aligned with host element left edge.</li>
+				<li>top-right: element on top, right edge aligned with host element right edge.</li>
+				<li>bottom: element on bottom, horizontally centered on host element.</li>
+				<li>bottom-left: element on bottom, left edge aligned with host element left edge.</li>
+				<li>bottom-right: element on bottom, right edge aligned with host element right edge.</li>
+				<li>left: element on left, vertically centered on host element.</li>
+				<li>left-top: element on left, top edge aligned with host element top edge.</li>
+				<li>left-bottom: element on left, bottom edge aligned with host element bottom edge.</li>
+				<li>right: element on right, vertically centered on host element.</li>
+				<li>right-top: element on right, top edge aligned with host element top edge.</li>
+				<li>right-bottom: element on right, bottom edge aligned with host element bottom edge.</li>
+			</ul>
+			<p>A placement string with an &#39;auto&#39; indicator is expected to be space separated from the placement, i.e: &#39;auto bottom-left&#39;. If the primary and secondary placement values do not match &#39;top, bottom, left, right&#39; then &#39;top&#39; will be the primary placement and &#39;center&#39; will be the secondary placement. If &#39;auto&#39; is passed, true will be returned as the 3rd value of the array.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li><code>placement</code>
+					<em>(Type: <code>string</code>, Example: <code>auto top-left</code>)</em> - The placement string to parse.</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<p>An array with the following values:</p>
+			<ul>
+				<li>
+					<p><code>[0]</code>
+						<em>(Type: <code>string</code>)</em> - The primary placement.</p>
+				</li>
+				<li>
+					<p><code>[1]</code>
+						<em>(Type: <code>string</code>)</em> - The secondary placement.</p>
+				</li>
+				<li>
+					<p><code>[2]</code>
+						<em>(Type: <code>boolean</code>)</em> - Is auto place enabled.</p>
+				</li>
+			</ul>
+			<h4 id="positionelements-hostelement-targetelement-placement-appendtobody-">positionElements(hostElement, targetElement, placement, appendToBody)</h4>
+			<p>Gets gets coordinates for an element to be positioned relative to another element.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>
+					<p><code>hostElement</code>
+						<em>(Type: <code>element</code>)</em> - The element to position against.</p>
+				</li>
+				<li>
+					<p><code>targetElement</code>
+						<em>(Type: <code>element</code>)</em> - The element to position.</p>
+				</li>
+				<li>
+					<p><code>placement</code>
+						<em>(Type: <code>string</code>, Default: <code>top</code>, optional)</em> - The placement for the target element. See the parsePlacement() function for available options. If &#39;auto&#39; placement is used, the viewportOffset() function is used to decide where the targetElement will fit.</p>
+				</li>
+				<li>
+					<p><code>appendToBody</code>
+						<em>(Type: <code>boolean</code>, Default: <code>false</code>, optional)</em> - Should the coordinates be cacluated from the body element.</p>
+				</li>
+			</ul>
+			<h5 id="returns">returns</h5>
+			<p>An object with the following properties:</p>
+			<ul>
+				<li>
+					<p><code>top</code>
+						<em>(Type: <code>number</code>)</em> - The targetElement top value.</p>
+				</li>
+				<li>
+					<p><code>left</code>
+						<em>(Type: <code>number</code>)</em> - The targetElement left value.</p>
+				</li>
+				<li>
+					<p><code>right</code>
+						<em>(Type: <code>number</code>)</em> - The resolved placement with &#39;auto&#39; removed.</p>
+				</li>
+			</ul>
+			<h4 id="positionarrow-element-placement-">positionArrow(element, placement)</h4>
+			<p>Positions the tooltip and popover arrow elements when using placement options beyond the standard top, left, bottom, or right.</p>
+			<h5 id="parameters">parameters</h5>
+			<ul>
+				<li>
+					<p><code>element</code>
+						<em>(Type: <code>element</code>)</em> - The element to position the arrow element for.</p>
+				</li>
+				<li>
+					<p><code>placement</code>
+						<em>(Type: <code>string</code>)</em> - The placement for the element.</p>
+				</li>
+			</ul>
+		</div>
 	</div>
 </div>
