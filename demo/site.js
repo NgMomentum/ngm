@@ -60,6 +60,7 @@ msos.site.google_analytics = function () {
       }
 };
 
+// "window" and "document" website common setup code
 (function () {
 	"use strict";
 
@@ -76,6 +77,19 @@ msos.site.google_analytics = function () {
 
 		document.head.appendChild(msViewportStyle);
 	}
+
+    window.addEventListener('mousedown', function () {
+            document.body.classList.add('mouse-navigation');
+            document.body.classList.remove('kbd-navigation');
+    });
+
+    window.addEventListener('keydown', function(e) {
+        if (e.keyCode === 9) {
+            document.body.classList.add('kbd-navigation');
+            document.body.classList.remove('mouse-navigation');
+        }
+    });
+
 }());
 
 // --------------------------

@@ -333,11 +333,14 @@ msos.provide = function (register_module) {
     var temp_p = 'msos.provide -> ',
 		mod_id = register_module.replace(/\./g, '_');
 
-    if (msos.registered_modules[mod_id]) {
+    if (msos.registered_modules[mod_id] === true) {
+		// already registered
 		msos.console.warn(temp_p + 'already registered: ' + register_module);
-    } else {
-
+	} else if (msos.registered_modules[mod_id] === false) {
+		// already processed thru "msos.require", so complete registration
 		msos.registered_modules[mod_id] = true;
+	} else {
+		msos.console.error(temp_p + 'call module file using msos.require("' + register_module + '")');
     }
 
 	msos.console.debug(temp_p + 'executing: ' + register_module);
@@ -725,6 +728,7 @@ msos.notify = {
 		}
 
 		if (title) {
+			title = '\u00A0' + title;
 			base_obj.titl_el.append(document.createTextNode(title));
 			base_obj.disp_el.append(base_obj.titl_el);
 		}
@@ -855,7 +859,8 @@ msos.check_deferred_scripts = function () {
 		deferred_flag = true,
 		deferred = msos.registered_files.js,
 		deferred_attr = '',
-		script = '';
+		script = '',
+		global;
 
 	// Record the attempt to verify
 	msos.require_deferred += 1;
@@ -882,9 +887,20 @@ msos.check_deferred_scripts = function () {
 			// Order is important!
 			if (msos.config.mobile) { msos.hide_mobile_url(); }
 
+			// Run once at initial app load
+			if (!msos.registered_globals.msos) { msos.run_intial(); }
+
+			for (global in msos.registered_globals) {
+				// Now available ?
+				if (window[global]) { msos.registered_globals[global] = true; }
+			}
+
 			msos.notify.add();
-			msos.run_intial();
 			msos.run_onload();
+
+			if (msos.config.verbose) {
+				msos.console.debug(temp_cds + 'called, available globals:', msos.registered_globals);
+			}
 
 		} else {
 			setTimeout(msos.check_deferred_scripts, 100);

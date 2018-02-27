@@ -1,9 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
@@ -11,11 +8,12 @@
 msos.provide("demo.widgets.controllers.masonry");
 msos.require("ng.ui.masonry");
 
-demo.widgets.controllers.masonry.version = new msos.set_version(16, 5, 18);
+demo.widgets.controllers.masonry.version = new msos.set_version(18, 1, 13);
 
 
 angular.module(
-    'demo.widgets.controllers.masonry', []
+    'demo.widgets.controllers.masonry',
+	['ng']
 ).controller(
     'demo.widgets.controllers.masonry.ctrl',
     [

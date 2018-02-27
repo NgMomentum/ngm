@@ -1,0 +1,50 @@
+
+    <style data-ng-ignore>
+        h2 small {
+            font-size: 60%;
+        }
+        textarea.ta-bind {
+            width: 100%;
+        }
+		.ta-toolbar {
+			background-color: #F0F0F0;
+			padding: 10px 10px 5px;
+			margin-left: 0px;		/* Override bootstrap */
+			border: 1px solid #EEE;
+		}
+		.ta-toolbar .btn-group {
+			margin-bottom: 5px;
+		}
+		.ta-editor, .white-box {
+			padding: 10px;
+			background-color: #FFF;
+			border: 1px solid #EEE;
+		}
+    </style>
+
+	<div data-ng-controller="demo.widgets.controllers.editor2.ctrl">
+		<h2>
+			<a href="http://github.com/fraywing/textAngular">textAngular <small>{{version}}</small></a> via NgMomentum
+		</h2>
+
+        <h3>Option to masquerade as a fancy text-area</h3>
+
+        <text-angular name="htmlcontenttwo" ng-model="htmlcontenttwo">
+            <p>
+				Any <b>HTML</b> we put in-between the text-angular tags gets automatically put into the editor if there <strong style="font-size: 12pt;"><u><em>is not</em></u></strong> a value assigned to the ngModel.
+			</p>
+            <p>
+				If there is a value assigned to the ngModel, it replaces any html here. To see this, uncomment the line at the bottom of demo.html
+			</p>
+        </text-angular>
+
+        <h3>Bound with ta-bind, our internal html-binding directive</h3>
+
+        <div ta-bind="text" ng-model="htmlcontenttwo" ta-readonly='disabled' class="well"></div>
+
+        <div data-ng-ignore class="container">
+            <div class="text-center">Create by fraywing</div>
+            <div class="text-center">2015 Licensed under <a href="http://opensource.org/licenses/MIT">MIT</a></div>
+        </div>
+
+    </div>

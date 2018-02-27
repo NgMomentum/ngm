@@ -1,53 +1,50 @@
 
+	<style data-ng-ignore>
+		.typeahead-demo .custom-popup-wrapper {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			z-index: 1000;
+			display: none;
+			background-color: #f9f9f9;
+		}
 
-<style data-ng-ignore>
-	.typeahead-demo .custom-popup-wrapper {
-		position: absolute;
-		top: 100%;
-		left: 0;
-		z-index: 1000;
-		display: none;
-		background-color: #f9f9f9;
-	}
+		.typeahead-demo .custom-popup-wrapper>.message {
+			padding: 10px 20px;
+			border-bottom: 1px solid #ddd;
+			color: #868686;
+		}
+
+		.typeahead-demo .custom-popup-wrapper>.dropdown-menu {
+			position: static;
+			float: none;
+			display: block;
+			min-width: 160px;
+			background-color: transparent;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+		}
+	</style>
+
+	<script type="text/ng-template" id="customTemplate.html">
+		<a>
+			<img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
+			<span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+		</a>
+	</script>
+
+	<script type="text/ng-template" id="customPopupTemplate.html">
+		<div class="custom-popup-wrapper" ng-style="{top: position().top+'px', left: position().left+'px'}" style="display: block;" ng-show="isOpen() && !moveInProgress" aria-hidden="{{!isOpen()}}">
+			<p class="message">select location from drop down.</p>
 	
-	.typeahead-demo .custom-popup-wrapper>.message {
-		padding: 10px 20px;
-		border-bottom: 1px solid #ddd;
-		color: #868686;
-	}
-	
-	.typeahead-demo .custom-popup-wrapper>.dropdown-menu {
-		position: static;
-		float: none;
-		display: block;
-		min-width: 160px;
-		background-color: transparent;
-		border: none;
-		border-radius: 0;
-		box-shadow: none;
-	}
-</style>
-
-<script type="text/ng-template" id="customTemplate.html">
-	<a>
-		<img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
-		<span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
-	</a>
-</script>
-
-<script type="text/ng-template" id="customPopupTemplate.html">
-	<div class="custom-popup-wrapper" ng-style="{top: position().top+'px', left: position().left+'px'}" style="display: block;" ng-show="isOpen() && !moveInProgress" aria-hidden="{{!isOpen()}}">
-		<p class="message">select location from drop down.</p>
-
-		<ul class="dropdown-menu" role="listbox">
-			<li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }" ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
-				<div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
-			</li>
-		</ul>
-	</div>
-</script>
-
-<div class="ngm_page">
+			<ul class="dropdown-menu" role="listbox">
+				<li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }" ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
+					<div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+				</li>
+			</ul>
+		</div>
+	</script>
 
 	<h2 data-ng-ignore>Typeahead
 		<small>(<a target="_blank" href="https://github.com/NgMomentum/ngm/tree/master/ng/bootstrap/ui">ng.bootstrap.ui.typeahead</a>)</small>
@@ -208,4 +205,3 @@
 			<p>If a custom template for the popup is used, the wrapper selector used for the match items is the <code>uib-typeahead-match</code> class.</p>
 		</div>
 	</div>
-</div>

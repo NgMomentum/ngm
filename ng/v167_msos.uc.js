@@ -245,6 +245,8 @@ msos.console.time('ng');
         },
         angularModule,
         nodeName_ = function (element) {
+			if (!element) { msos.console.warn('ng - nodeName -> missing element input.'); }
+
             return lowercase(element.nodeName || (element[0] && element[0].nodeName));
         },
         nodeDebugName_ = function (element) {
@@ -338,6 +340,7 @@ msos.console.time('ng');
         ngTranscludeDirective,
         scriptDirective,
         ngOptionsDirective,
+		select_controller,
         SelectController,
         selectDirective,
         optionDirective,
@@ -406,11 +409,11 @@ msos.console.time('ng');
         htmlAttrs = makeMap(
             [
                 'abbr', 'align', 'alt', 'axis', 'bgcolor', 'border', 'cellpadding', 'cellspacing',
-                'class', 'clear', 'color', 'cols', 'colspan', 'compact', 'coords', 'dir', 'face',
-                'headers', 'height', 'hreflang', 'hspace', 'ismap', 'lang', 'language', 'nohref',
-                'nowrap', 'rel', 'rev', 'rows', 'rowspan', 'rules', 'scope', 'scrolling', 'shape',
-                'size', 'span', 'start', 'summary', 'tabindex', 'target', 'title', 'type', 'valign',
-                'value', 'vspace', 'width'
+                'class', 'clear', 'color', 'cols', 'colspan', 'compact', 'contenteditable', 'coords',
+				'dir', 'face', 'for', 'headers', 'height', 'hreflang', 'hspace', 'ismap', 'lang',
+				'language', 'nohref', 'nowrap', 'rel', 'rev', 'rows', 'rowspan', 'rules', 'scope',
+				'scrolling', 'shape', 'size', 'span', 'start', 'step', 'summary', 'tabindex', 'target',
+				'title', 'type', 'unselectable', 'valign', 'value', 'vspace', 'width'
             ]
         ),
         ariaAttrs = makeMap(
@@ -467,7 +470,7 @@ msos.console.time('ng');
             svgElements,
             mediaElements,
             blockedElements,
-            { html: true, body: true, button: true, legend: true, textarea: true, input: true }    // Some of these may need to move to "validStdHtml", ref: button, legend
+            { html: true, body: true, button: true, legend: true, textarea: true, input: true, iframe: true }    // Some of these may need to move to "validStdHtml", ref: button, legend
         ),
         customAttr = {},
         customHtml = {};
@@ -931,13 +934,13 @@ msos.console.time('ng');
     function applyAnimationClassesFactory($$jqLite) {
 
         function $$addClass(element, className) {
-            forEach(element, function(elm) {
+            forEach(element, function (elm) {
                 $$jqLite.addClass(elm, className);
             });
         }
     
         function $$removeClass(element, className) {
-            forEach(element, function(elm) {
+            forEach(element, function (elm) {
                 $$jqLite.removeClass(elm, className);
             });
         }
@@ -1836,8 +1839,32 @@ msos.console.time('ng');
 		return segments.join('/');
 	}
 
+	function decodeEntities(value) {
+
+		if (!value) { return ''; }
+
+		var spaceRe = /^(\s*)([\s\S]*?)(\s*)$/,
+			parts = spaceRe.exec(value),
+			hiddenPre,
+			spaceBefore = parts[1],
+			spaceAfter = parts[3],
+			content = parts[2];
+
+		if (content) {
+
+			hiddenPre = document.createElement('pre');
+			hiddenPre.innerHTML = content.replace(/</g, '&lt;');
+
+			content = 'textContent' in hiddenPre ? hiddenPre.textContent : hiddenPre.innerText;
+		}
+
+		return spaceBefore + content + spaceAfter;
+	}
+
     function encodeEntities(value) {
+
         value = _.escape(value);
+
         return value.
             replace(
                 SURROGATE_PAIR_REGEXP,
@@ -1868,6 +1895,7 @@ msos.console.time('ng');
                 parts.push(encodeUriQuery(key, true) + (value === true ? '' : '=' + encodeUriQuery(value, true)));
             }
         });
+
         return parts.length ? parts.join('&') : '';
     }
 
@@ -1928,7 +1956,7 @@ msos.console.time('ng');
 
                 for (i = 0; elems[i] != null; i += 1) {     // jshint ignore:line
                     // must be "!=" and not "!==" null
-                    events = jQuery._data(elems[i], "events");
+                    events = jQuery._data(elems[i], 'events');
                     if (events && events.$destroy) {
                         jQuery(elems[i]).triggerHandler('$destroy');
                     }
@@ -3037,7 +3065,7 @@ msos.console.time('ng');
             var temp_cii = ' - internal';
 
             function getService(serviceName, caller) {
-                var debug_out = ',\n     name: ' + serviceName;
+                var debug_out = ', name: ' + serviceName;
 
                 if (civ) {
                     msos_debug(temp_ci + temp_cii + ' - getService -> start (' + whichone + ')' + debug_out);
@@ -3059,7 +3087,8 @@ msos.console.time('ng');
 
                     service_path.unshift(serviceName);
                     cache[serviceName] = INSTANTIATING;
-                    debug_out += ' (created for ' + service_path.join(' <- ') + ')';
+
+                    debug_out += ',\n     (created for ' + service_path.join(' <- ') + ')';
 
                     try {
                         cache[serviceName] = factory(serviceName, caller);
@@ -3355,6 +3384,13 @@ msos.console.time('ng');
                 );
             }
 
+			if (bs_modules && !_.isArray(bs_modules)) {
+                throw ngMinErr(
+                    'btstrpd',
+                    'Module(s) (2nd) argument must be an array!'
+                );
+			}
+
             bs_modules = bs_modules || [];
             bs_modules.unshift(['$provide', function ($provide) {
                 $provide.value('$rootElement', bs_element);
@@ -3432,7 +3468,7 @@ msos.console.time('ng');
 
         this.$get = [
             '$window', '$location', '$rootScope',
-            function($window, $location, $rootScope) {
+            function ($window, $location, $rootScope) {
                 var document = $window.document,
                     temp_as = 'ng - $AnchorScrollProvider - $get',
                     anchor_scroll;
@@ -5649,6 +5685,7 @@ msos.console.time('ng');
             set_timeout = br_window.setTimeout,
             clearTimeout = br_window.clearTimeout,
             lastBrowserUrl = location.href,
+			baseElement = document.querySelectorAll('base'),
             urlChangeListeners = [],
             urlChangeInit = false,
             pendingLocation = null,
@@ -5854,6 +5891,12 @@ msos.console.time('ng');
 
         self.$$checkUrlChange = fireStateOrUrlChange;
 
+		self.baseHref = function () {
+			var href = baseElement.attr('href');
+
+			return href ? href.replace(/^(https?:)?\/\/[^/]*/, '') : '';
+		};
+
         self.defer = function (fn, state, delay) {
             var temp_df = ' - defer -> ',
                 timeout_key = 'brw_defer' + nextBrowserUid(),
@@ -5916,7 +5959,7 @@ msos.console.time('ng');
 
         this.$get = ['$window', '$$jqLite', '$$AnimateRunner', '$timeout',
                '$$forceReflow', '$$rAFScheduler', '$$animateQueue',
-            function($window,   $$jqLite,   $$AnimateRunner,   $timeout,
+            function ($window,   $$jqLite,   $$AnimateRunner,   $timeout,
                 $$forceReflow,   $$rAFScheduler, $$animateQueue) {
 
                 var applyAnimationClasses = applyAnimationClassesFactory($$jqLite),
@@ -6496,7 +6539,7 @@ msos.console.time('ng');
                             }
 
                             if (flags.applyAnimationDelay) {
-                                relativeDelay = typeof options.delay !== "boolean" && truthyTimingValue(options.delay) ?
+                                relativeDelay = typeof options.delay !== 'boolean' && truthyTimingValue(options.delay) ?
                                     parseFloat(options.delay) :
                                     relativeDelay;
 
@@ -7133,7 +7176,6 @@ msos.console.time('ng');
             REQUIRE_PREFIX_REGEXP = /^(?:(\^\^?)?(\?)?(\^\^?)?)?/,
             EVENT_HANDLER_ATTR_REGEXP = /^(on[a-z]+|formaction)$/,
             bindingCache = createMap(),
-            preAssignBindingsEnabled_CP = false,
             debugInfoEnabled_CP = msos.config.debug,    // Default in std AngularJS is 'true'
             commentDirectivesEnabledConfig = true,      // Default in std AngularJS is 'true'
             cssClassDirectivesEnabledConfig = true,     // Default in std AngularJS is 'true'
@@ -7362,7 +7404,7 @@ msos.console.time('ng');
                 return this;
             }
 
-            var controller = options.controller || function comp_opt_ctrl() { msos.console.trace('ng - component -> executed (was noop)'); return undefined; };
+			var controller = options.controller || noop;
 
             function factory($injector) {
 
@@ -7382,7 +7424,7 @@ msos.console.time('ng');
                 }
 
                 var template = (!options.template && !options.templateUrl ? '' : options.template),
-                    ctrl_match = identifierForController(options.controller),
+                    ctrl_match = identifierForController(controller),
                     ddo = {
                         controller: controller,
                         controllerAs: (ctrl_match && ctrl_match[3]) || options.controllerAs || '$ctrl',
@@ -7414,7 +7456,9 @@ msos.console.time('ng');
                     if (key.charAt(0) === '$') {
                         factory[key] = val;
                         // Don't try to copy over annotations to named controller
-                        if (_.isFunction(controller)) { controller[key] = val; }
+                        if (controller !== noop && _.isFunction(controller)) {
+							controller[key] = val;
+						}
                     }
                 }
             );
@@ -7446,16 +7490,6 @@ msos.console.time('ng');
                 return this;
             }
             return debugInfoEnabled_CP;
-        };
-
-        this.preAssignBindingsEnabled = function (enabled) {
-            if (isDefined(enabled)) {
-                preAssignBindingsEnabled_CP = enabled;
-
-                return this;
-            }
-
-            return preAssignBindingsEnabled_CP;
         };
 
         this.strictComponentBindingsEnabled = function (enabled) {
@@ -8642,59 +8676,55 @@ msos.console.time('ng');
 
                     node_name = nodeName_(nodeList[l]);
 
-                    // We don't want to process these, ever!
-                    if (node_name !== 'head') {
+					attrs = new Attributes();
 
-                        attrs = new Attributes();
+					// Support: IE 11 only, Workaround for #11781 and #14924
+					if (msie === 11) {
+						mergeConsecutiveTextNodes(nodeList, l, notLiveList);
+					}
 
-                        // Support: IE 11 only, Workaround for #11781 and #14924
-                        if (msie === 11) {
-                            mergeConsecutiveTextNodes(nodeList, l, notLiveList);
-                        }
+					// We must always refer to nodeList[i] hereafter,
+					// since the nodes can be replaced underneath us.
+					directives = collectDirectives(nodeList[l], [], attrs, l === 0 ? maxPriority : undefined, ignoreDirective);
 
-                        // We must always refer to nodeList[i] hereafter,
-                        // since the nodes can be replaced underneath us.
-                        directives = collectDirectives(nodeList[l], [], attrs, l === 0 ? maxPriority : undefined, ignoreDirective);
+					nodeLinkFn_cN = (directives.length) ? applyDirsNode(
+							directives,
+							nodeList[l],
+							attrs,
+							transcludeFn,
+							$rootElement_cN,
+							null,
+							[],
+							[],
+							previousCompileContext_cn
+						) : null;
 
-                        nodeLinkFn_cN = (directives.length) ? applyDirsNode(
-                                directives,
-                                nodeList[l],
-                                attrs,
-                                transcludeFn,
-                                $rootElement_cN,
-                                null,
-                                [],
-                                [],
-                                previousCompileContext_cn
-                            ) : null;
+					if (nodeLinkFn_cN && nodeLinkFn_cN.scope) {
+						if (vc) {
+							debug_cn.push(node_name + ' - add scope class (node: ' + l + ')');
+						}
+						compile.$$addScopeClass(attrs.$$element);
+					}
 
-                        if (nodeLinkFn_cN && nodeLinkFn_cN.scope) {
-                            if (vc) {
-                                debug_cn.push(node_name + ' - add scope class (node: ' + l + ')');
-                            }
-                            compile.$$addScopeClass(attrs.$$element);
-                        }
+					childNodes = nodeList[l].childNodes;
 
-                        childNodes = nodeList[l].childNodes;
+					childLinkFn_cN = (attrs.$attr.ngIgnore || (nodeLinkFn_cN && nodeLinkFn_cN.terminal) || !childNodes || !childNodes.length) ? null : compileNodes(
+							childNodes,
+							nodeLinkFn_cN ? ((nodeLinkFn_cN.transcludeOnThisElement || !nodeLinkFn_cN.templateOnThisElement) && nodeLinkFn_cN.transclude) : transcludeFn
+						);
 
-                        childLinkFn_cN = (attrs.$attr.ngIgnore || (nodeLinkFn_cN && nodeLinkFn_cN.terminal) || !childNodes || !childNodes.length) ? null : compileNodes(
-                                childNodes,
-                                nodeLinkFn_cN ? ((nodeLinkFn_cN.transcludeOnThisElement || !nodeLinkFn_cN.templateOnThisElement) && nodeLinkFn_cN.transclude) : transcludeFn
-                            );
+					if (nodeLinkFn_cN || childLinkFn_cN) {
+						if (vc) {
+							debug_cn.push(node_name + ' - node or child link func. (node: ' + l + ')');
+						}
+						linkFns.push(l, nodeLinkFn_cN, childLinkFn_cN);
+						linkFnFound = true;
+						nodeLinkFnFound = nodeLinkFnFound || nodeLinkFn_cN;
+					}
 
-                        if (nodeLinkFn_cN || childLinkFn_cN) {
-                            if (vc) {
-                                debug_cn.push(node_name + ' - node or child link func. (node: ' + l + ')');
-                            }
-                            linkFns.push(l, nodeLinkFn_cN, childLinkFn_cN);
-                            linkFnFound = true;
-                            nodeLinkFnFound = nodeLinkFnFound || nodeLinkFn_cN;
-                        }
-
-                        // use the previous context only for the first element in the virtual group
-                        previousCompileContext_cn = {};   // ???? {}
-                    }
-                }
+					// use the previous context only for the first element in the virtual group
+					previousCompileContext_cn = {};   // ???? {}
+				}
 
                 function compositeLinkFn(scope, nodeList, $rootElement_cL, parentBoundTranscludeFn) {
                     var nodeLinkFn_cLF,
@@ -9139,7 +9169,11 @@ msos.console.time('ng');
                             su_controllerInstance = $controller(su_controller, locals, true, directive);
 
                             elementControllers[directive.name] = su_controllerInstance;
-                            $element.data('$' + directive.name + 'Controller', su_controllerInstance.instance);
+                            $element.data(
+								'$' + directive.name + 'Controller',
+								su_controllerInstance.instance
+							);
+
                         } else {
                             msos_debug(temp_cp + temp_ap + ' - setupControllers -> skipped for noop: ' + directive.name + 'Controller');
                         }
@@ -9421,7 +9455,6 @@ msos.console.time('ng');
                         controllerDirective,
                         controller,
                         bindings,
-                        controllerResult,
                         scopeToChild;
 
                     // This is the function that is injected as `$transclude`.
@@ -9569,10 +9602,6 @@ msos.console.time('ng');
                         }
                     }
 
-                    if (vc) {
-                        msos_debug(temp_cp + temp_ap + ' -> pre-linking, pre-assigned \'bindToController\' bindings enabled: ' + preAssignBindingsEnabled_CP);
-                    }
-
                     // Initialize bindToController bindings
                     for (ctrlr_key in elementControllers) {     // hasOwnProperty() na in elementControllers
 
@@ -9580,53 +9609,20 @@ msos.console.time('ng');
                         controller = elementControllers[ctrlr_key];
                         bindings = controllerDirective.$$bindings.bindToController;
 
-                        if (preAssignBindingsEnabled_CP) {
+						controller.instance = controller();
 
-                            if (bindings) {
-                                controller.bindingInfo = initializeDirectiveBindings(
-                                    controllerScope,
-                                    attrs,
-                                    controller.instance,
-                                    bindings,
-                                    controllerDirective
-                                );
-                            } else {
-                                controller.bindingInfo = {};
-                            }
+						$element.data(
+							'$' + controllerDirective.name + 'Controller',
+							controller.instance
+						);
 
-                            controllerResult = controller();
-
-                            if (controllerResult !== controller.instance) {
-
-                                controller.instance = controllerResult;
-                                $element.data('$' + controllerDirective.name + 'Controller', controllerResult);
-
-                                if (controller.bindingInfo.removeWatches) {
-                                    controller.bindingInfo.removeWatches();
-                                }
-
-                                controller.bindingInfo = initializeDirectiveBindings(
-                                    controllerScope,
-                                    attrs,
-                                    controller.instance,
-                                    bindings,
-                                    controllerDirective
-                                );
-                            }
-
-                        } else {
-
-                            controller.instance = controller();
-                            $element.data('$' + controllerDirective.name + 'Controller', controller.instance);
-
-                            controller.bindingInfo = initializeDirectiveBindings(
-                                controllerScope,
-                                attrs,
-                                controller.instance,
-                                bindings,
-                                controllerDirective
-                            );
-                        }
+						controller.bindingInfo = initializeDirectiveBindings(
+							controllerScope,
+							attrs,
+							controller.instance,
+							bindings,
+							controllerDirective
+						);
                     }
 
                     // Bind the required controllers to the controller, if `require` is an object and `bindToController` is truthy
@@ -10229,7 +10225,10 @@ msos.console.time('ng');
 
                     if (transcludeControllers) {
                         for (controllerName in transcludeControllers) {     // hasOwnProperty() na in transcludeControllers
-                            $linkNode.data('$' + controllerName + 'Controller', transcludeControllers[controllerName].instance);
+                            $linkNode.data(
+								'$' + controllerName + 'Controller',
+								transcludeControllers[controllerName].instance
+							);
                         }
                     }
 
@@ -10433,7 +10432,7 @@ msos.console.time('ng');
                 } else if (_.isArray(expression) && _.isFunction(expression[expression.length - 1])) {
                     debug_ci += msos_indent + 'type: array';
                     express_fn = expression[expression.length - 1];
-                    cnstr = express_fn.name || express_fn.ng_name || 'annonymous';
+                    cnstr = expression.name || express_fn.name || 'annonymous';
                 } else if (_.isFunction(expression)) {
                     debug_ci += msos_indent + 'type: function';
                     express_fn = expression;
@@ -10443,7 +10442,7 @@ msos.console.time('ng');
                 }
 
                 if (vcp) {
-                    debug_ci += (cnstr  ? msos_indent + 'constructor: ' + cnstr     : '') +
+                    debug_ci += (cnstr  ? msos_indent + 'cnstr: ' + cnstr     : '') +
                                 (ctrlAs ? msos_indent + 'ctrlAs: ' + ctrlAs    : '') + msos_indent + 'later: ' +
                                 (later ? 'true' : 'false');
                     msos_debug(temp_cp + temp_ci + ' -> debugging' + debug_ci);
@@ -10480,17 +10479,17 @@ msos.console.time('ng');
                         function $controller_init() {
 
                             var temp_ii = temp_cp + temp_ci + ' - $controller_init -> ',
-                                instance_later;
+                                result;
 
                             if (vcp) {
                                 msos_debug(temp_ii + 'start' + debug_ci + msos_indent + 'expression:', expression);
                             }
 
-                            instance_later = $injector.invoke(expression, instance_prototype, locals, cnstr);
+                            result = $injector.invoke(expression, instance_prototype, locals, cnstr);
 
-                            if (instance_later !== instance_prototype && (isObject(instance_later) || _.isFunction(instance_later))) {
+                            if (result !== instance_prototype && (isObject(result) || _.isFunction(result))) {
 
-                                instance_prototype = instance_later;
+                                instance_prototype = result;
 
                                 if (ctrlAs) {
                                     addIdentifier(
@@ -10531,6 +10530,7 @@ msos.console.time('ng');
                 if (vcp) {
                     msos_debug(temp_cp + temp_ci + ' ->  done!');
                 }
+
                 return instance;
             };
         }];
@@ -11240,14 +11240,14 @@ msos.console.time('ng');
                     promise_$http = promise_$http['finally'](completeOutstandingRequest);
 
                     promise_$http.success = function () {
-                        throw new Error('promise_$http.success is gone!');
+                        throw new Error(temp_hp + temp_tt + ' -> $http.success is gone!');
                     };
 
                     promise_$http.error = function () {
-                        throw new Error('promise_$http.error is gone!');
+                        throw new Error(temp_hp + temp_tt + ' -> $http.error is gone!');
                     };
 
-                    msos_debug(temp_hp + ' - $get - $http ->  done: ' + promise_$http.$$prom_state.name);
+                    msos_debug(temp_hp + temp_tt + ' ->  done: ' + promise_$http.$$prom_state.name);
                     return promise_$http;
                 }
 
@@ -11959,7 +11959,7 @@ msos.console.time('ng');
 		path = prefixed && match.pathname.charAt(0) === '/' ? match.pathname.substring(1) : match.pathname;
 
         for (param in match.params) {
-            if (match.params[param] === "") {
+            if (match.params[param] === '') {
                 match.params[param] = true;    // Default is "true" for key only parameter in url
             }
         }
@@ -12380,7 +12380,7 @@ msos.console.time('ng');
 
     function $LocationProvider() {
         var temp_lp = 'ng - $LocationProvider',
-            hashPrefix = '',    // AngularJS v1.6.0 sets this to '!'???
+            hashPrefix = '',	// AngularJS default is '!'
             html5Mode = {
                 enabled: false,
                 requireBase: true,
@@ -12403,7 +12403,7 @@ msos.console.time('ng');
                 html5Mode.enabled = mode;
                 return this;
             }
-            
+
             if (_.isObject(mode)) {
 
                 if (_.isBoolean(mode.enabled)) {
@@ -12442,7 +12442,7 @@ msos.console.time('ng');
                 if (!baseHref && html5Mode.requireBase) {
                     throw $locationMinErr(
                         'nobase',
-                        "$location in HTML5 mode requires a <base> tag to be present!"
+                        '$location in HTML5 mode requires a <base> tag to be present!'
                     );
                 }
                 appBase = serverBase(initialUrl) + (baseHref || '/');
@@ -12500,6 +12500,8 @@ msos.console.time('ng');
             }
 
             function afterLocationChange(oldUrl, oldState) {
+				msos_debug(temp_lp + ' - $get - afterLocationChange -> called' + msos_indent + 'oldUrl: ' + oldUrl + msos_indent + 'oldState:', oldState);
+
                 $rootScope.$broadcast(
                     '$locationChangeSuccess',
                     $location_LP.absUrl(),
@@ -12539,7 +12541,7 @@ msos.console.time('ng');
 
                         elm = elm.parent();
 
-                        if (!elm || elm[0]) {
+                        if (!elm[0]) {
                             msos_debug(temp_lp + temp_re + ' done, target: ' + tar_name + ' na, no parent element');
                             return;
                         }
@@ -12587,14 +12589,14 @@ msos.console.time('ng');
                     msos_debug(temp_lp + temp_bo + ' -> start.');
 
                     if (!startsWith(newUrl, appBaseNoFile)) {
-                            // If we are navigating outside of the app then force a reload
-                            if (msos_verbose) {
-                                msos.console.warn(temp_lp + temp_bo + ' -> done, leaving app for a new url:\n     ' + newUrl);
-                                alert(temp_lp + temp_bo + ': Leaving the app for a new url (' + newUrl + ')');
-                            }
+						// If we are navigating outside of the app then force a reload
+						if (msos_verbose) {
+							msos.console.warn(temp_lp + temp_bo + ' -> done, leaving app for a new url:\n     ' + newUrl);
+							alert(temp_lp + temp_bo + ': Leaving the app for a new url (' + newUrl + ')');
+						}
 
-                            $window.location.href = newUrl;
-                            return;
+						$window.location.href = newUrl;
+						return;
                     }
 
                     $rootScope.$evalAsync(
@@ -12609,7 +12611,7 @@ msos.console.time('ng');
                             $location_LP.$$parse(newUrl);
                             $location_LP.$$loc_state = newState;
 
-                            msos_debug(temp_lp + temp_bo + 'start' + msos_indent + 'new url: ' + newUrl + '\n     new state:', newState);
+                            msos_debug(temp_lp + temp_bo + 'start' + msos_indent + 'new url: ' + newUrl + msos_indent + 'new state:', newState);
 
                             defaultPrevented = $rootScope.$broadcast(
                                 '$locationChangeStart',
@@ -16059,7 +16061,7 @@ msos.console.time('ng');
                         current,
                         self;
 
-                    msos_debug(temp_rsp + temp_on + 'called, for: ' + name);
+                    msos_debug(temp_rsp + temp_on + 'start, for: ' + name);
 
                     if (!namedListeners) {
                         this.$$listeners[name] = namedListeners = [];
@@ -16067,12 +16069,17 @@ msos.console.time('ng');
 
                     namedListeners.push(listener);
 
+					if (msos_verbose === 'events') {
+						msos_debug(temp_rsp + temp_on + 'input, for name: ' + name +  ', listener:', listener);
+					}
+
                     current = this;
 
                     do {
                         if (!current.$$listenerCount[name]) {
                             current.$$listenerCount[name] = 0;
                         }
+
                         current.$$listenerCount[name] += 1;
 
                         current = current.$parent;
@@ -16080,6 +16087,8 @@ msos.console.time('ng');
                     } while (current);
 
                     self = this;
+
+					msos_debug(temp_rsp + temp_on + ' done, for: ' + name + ', listeners: ' + namedListeners.length);
 
                     return function null_on_listener() {
                         var indexOfListener = namedListeners.indexOf(listener);
@@ -16367,7 +16376,8 @@ msos.console.time('ng');
             }
 
             function isResourceUrlAllowedByPolicy(url) {
-                var parsedUrl = urlResolve(url.toString(), temp_sd + ' - $get - isResourceUrlAllowedByPolicy'),
+                var temp_ra = ' - $get - isResourceUrlAllowedByPolicy',
+					parsedUrl = urlResolve(url.toString(), temp_sd + temp_ra),
                     i,
                     n,
                     allowed = false;
@@ -16379,6 +16389,9 @@ msos.console.time('ng');
                         break;
                     }
                 }
+
+				msos_debug(temp_sd + temp_ra + ' -> passed whitelist: ' + allowed);
+
                 if (allowed) {
                     // Ensure that no item from the blacklist blocked this url.
                     for (i = 0, n = resourceUrlBlacklist.length; i < n; i += 1) {
@@ -16388,6 +16401,9 @@ msos.console.time('ng');
                         }
                     }
                 }
+
+				msos_debug(temp_sd + temp_ra + ' -> passed blacklist: ' + allowed + '\n     for: ' +  parsedUrl.href);
+
                 return allowed;
             }
 
@@ -16467,7 +16483,7 @@ msos.console.time('ng');
                 // 2. throw an exception.
                 if (type === SCE_CONTEXTS.RESOURCE_URL) {
                     if (isResourceUrlAllowedByPolicy(maybeTrusted)) {
-                        msos_debug(temp_sd + temp_gt + 'done, policy');
+                        msos_debug(temp_sd + temp_gt + 'done, policy compliant.');
                         return maybeTrusted;
                     }
 
@@ -17443,7 +17459,7 @@ msos.console.time('ng');
 
     function timeZoneGetter(date_na, formats_na, offset) {
         var zone = -1 * offset,
-            paddedZone = (zone >= 0) ? "+" : "";
+            paddedZone = (zone >= 0) ? '+' : '';
 
         paddedZone += padNumber(Math[zone > 0 ? 'floor' : 'ceil'](zone / 60), 2) + padNumber(Math.abs(zone % 60), 2);
 
@@ -17694,7 +17710,7 @@ msos.console.time('ng');
     // boolean attrs are evaluated
     forEach(BOOLEAN_ATTR, function (propName, attrName) {
         // binding to multiple is not supported
-        if (propName === "multiple") { return; }
+        if (propName === 'multiple') { return; }
 
         var normalized = directiveNormalize('ng-' + attrName),
             linkFn;
@@ -19358,7 +19374,7 @@ msos.console.time('ng');
                 this
             );
         },
-        $setViewValue: function(value, trigger) {
+        $setViewValue: function (value, trigger) {
             this.$viewValue = value;
 
             if (this.$options.getOption('updateOnDefault')) {
@@ -19553,7 +19569,7 @@ msos.console.time('ng');
     function shallow_defaults(dst, src) {
         forEach(
             src,
-            function(value, key) {
+            function (value, key) {
                 if (!isDefined(dst[key])) {
                     dst[key] = value;
                 }
@@ -20957,7 +20973,7 @@ msos.console.time('ng');
                     attrs.ngSwitchWhenSeparator
                 ).sort().filter(
                     // Filter duplicate cases
-                    function(element, index, array) {
+                    function (element, index, array) {
                         return array[index - 1] !== element;
                     }
                 );
@@ -21592,7 +21608,7 @@ msos.console.time('ng');
         optionEl.attr('selected', value);
     }
 
-    function select_ctrl($element, $scope) {
+    select_controller = function ($element, $scope) {
         var self = this,
             optionsMap = new NgMap(),
             renderScheduled = false,
@@ -21903,11 +21919,11 @@ msos.console.time('ng');
                 }
             );
         };
-    }
+    };
 
-    select_ctrl.$$moduleName = 'ng';
+    select_controller.$$moduleName = 'ng';
 
-    SelectController = ['$element', '$scope', select_ctrl];
+    SelectController = ['$element', '$scope', select_controller];
 
     selectDirective = function () {
 
@@ -22101,9 +22117,12 @@ msos.console.time('ng');
             'isDate': _.isDate,
             'lowercase': lowercase,
             'uppercase': uppercase,
+			'history_pushstate': history_pushstate,
             'mergeClasses': mergeClasses,
             'removeComments': removeComments,
             'extractElementNode': extractElementNode,
+			'decodeEntities': decodeEntities,
+			'encodeEntities': encodeEntities,
             'isPromiseLike': isPromiseLike,
             'splitClasses': splitClasses,
             'ngnodeName': nodeName_,
@@ -22123,14 +22142,14 @@ msos.console.time('ng');
 
         angularModule = setupModuleLoader(window);
 
-        angularModule("ngLocale", ['ng'], ["$provide", function ngLocaleModule($provide) {
+        angularModule('ngLocale', ['ng'], ['$provide', function ngLocaleModule($provide) {
             var PLURAL_CATEGORY = {
-                    ZERO: "zero",
-                    ONE: "one",
-                    TWO: "two",
-                    FEW: "few",
-                    MANY: "many",
-                    OTHER: "other"
+                    ZERO: 'zero',
+                    ONE: 'one',
+                    TWO: 'two',
+                    FEW: 'few',
+                    MANY: 'many',
+                    OTHER: 'other'
                 };
 
             function getDecimals(n) {
@@ -22159,123 +22178,123 @@ msos.console.time('ng');
                 };
             }
         
-            $provide.value("$locale", {
-                "DATETIME_FORMATS": {
-                    "AMPMS": [
-                        "AM",
-                        "PM"
+            $provide.value('$locale', {
+                'DATETIME_FORMATS': {
+                    'AMPMS': [
+                        'AM',
+                        'PM'
                     ],
-                    "DAY": [
-                        "Sunday",
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                        "Saturday"
+                    'DAY': [
+                        'Sunday',
+                        'Monday',
+                        'Tuesday',
+                        'Wednesday',
+                        'Thursday',
+                        'Friday',
+                        'Saturday'
                     ],
-                    "ERANAMES": [
-                        "Before Christ",
-                        "Anno Domini"
+                    'ERANAMES': [
+                        'Before Christ',
+                        'Anno Domini'
                     ],
-                    "ERAS": [
-                        "BC",
-                        "AD"
+                    'ERAS': [
+                        'BC',
+                        'AD'
                     ],
-                    "FIRSTDAYOFWEEK": 6,
-                    "MONTH": [
-                        "January",
-                        "February",
-                        "March",
-                        "April",
-                        "May",
-                        "June",
-                        "July",
-                        "August",
-                        "September",
-                        "October",
-                        "November",
-                        "December"
+                    'FIRSTDAYOFWEEK': 6,
+                    'MONTH': [
+                        'January',
+                        'February',
+                        'March',
+                        'April',
+                        'May',
+                        'June',
+                        'July',
+                        'August',
+                        'September',
+                        'October',
+                        'November',
+                        'December'
                     ],
-                    "SHORTDAY": [
-                        "Sun",
-                        "Mon",
-                        "Tue",
-                        "Wed",
-                        "Thu",
-                        "Fri",
-                        "Sat"
+                    'SHORTDAY': [
+                        'Sun',
+                        'Mon',
+                        'Tue',
+                        'Wed',
+                        'Thu',
+                        'Fri',
+                        'Sat'
                     ],
-                    "SHORTMONTH": [
-                        "Jan",
-                        "Feb",
-                        "Mar",
-                        "Apr",
-                        "May",
-                        "Jun",
-                        "Jul",
-                        "Aug",
-                        "Sep",
-                        "Oct",
-                        "Nov",
-                        "Dec"
+                    'SHORTMONTH': [
+                        'Jan',
+                        'Feb',
+                        'Mar',
+                        'Apr',
+                        'May',
+                        'Jun',
+                        'Jul',
+                        'Aug',
+                        'Sep',
+                        'Oct',
+                        'Nov',
+                        'Dec'
                     ],
-                    "STANDALONEMONTH": [
-                        "January",
-                        "February",
-                        "March",
-                        "April",
-                        "May",
-                        "June",
-                        "July",
-                        "August",
-                        "September",
-                        "October",
-                        "November",
-                        "December"
+                    'STANDALONEMONTH': [
+                        'January',
+                        'February',
+                        'March',
+                        'April',
+                        'May',
+                        'June',
+                        'July',
+                        'August',
+                        'September',
+                        'October',
+                        'November',
+                        'December'
                     ],
-                    "WEEKENDRANGE": [
+                    'WEEKENDRANGE': [
                         5,
                         6
                     ],
-                    "fullDate": "EEEE, MMMM d, y",
-                    "longDate": "MMMM d, y",
-                    "medium": "MMM d, y h:mm:ss a",
-                    "mediumDate": "MMM d, y",
-                    "mediumTime": "h:mm:ss a",
-                    "short": "M/d/yy h:mm a",
-                    "shortDate": "M/d/yy",
-                    "shortTime": "h:mm a"
+                    'fullDate': 'EEEE, MMMM d, y',
+                    'longDate': 'MMMM d, y',
+                    'medium': 'MMM d, y h:mm:ss a',
+                    'mediumDate': 'MMM d, y',
+                    'mediumTime': 'h:mm:ss a',
+                    'short': 'M/d/yy h:mm a',
+                    'shortDate': 'M/d/yy',
+                    'shortTime': 'h:mm a'
                 },
-                "NUMBER_FORMATS": {
-                    "CURRENCY_SYM": "$",
-                    "DECIMAL_SEP": ".",
-                    "GROUP_SEP": ",",
-                    "PATTERNS": [{
-                        "gSize": 3,
-                        "lgSize": 3,
-                        "maxFrac": 3,
-                        "minFrac": 0,
-                        "minInt": 1,
-                        "negPre": "-",
-                        "negSuf": "",
-                        "posPre": "",
-                        "posSuf": ""
+                'NUMBER_FORMATS': {
+                    'CURRENCY_SYM': '$',
+                    'DECIMAL_SEP': '.',
+                    'GROUP_SEP': ',',
+                    'PATTERNS': [{
+                        'gSize': 3,
+                        'lgSize': 3,
+                        'maxFrac': 3,
+                        'minFrac': 0,
+                        'minInt': 1,
+                        'negPre': '-',
+                        'negSuf': '',
+                        'posPre': '',
+                        'posSuf': ''
                     }, {
-                        "gSize": 3,
-                        "lgSize": 3,
-                        "maxFrac": 2,
-                        "minFrac": 2,
-                        "minInt": 1,
-                        "negPre": "-\u00a4",
-                        "negSuf": "",
-                        "posPre": "\u00a4",
-                        "posSuf": ""
+                        'gSize': 3,
+                        'lgSize': 3,
+                        'maxFrac': 2,
+                        'minFrac': 2,
+                        'minInt': 1,
+                        'negPre': "-\u00a4",
+                        'negSuf': '',
+                        'posPre': "\u00a4",
+                        'posSuf': ''
                     }]
                 },
-                "id": "en-us",
-                "localeID": "en_US",
-                "pluralCat": function (n, opt_precision) {
+                'id': 'en-us',
+                'localeID': 'en_US',
+                'pluralCat': function (n, opt_precision) {
                     var i = n | 0,
                         vf = getVF(n, opt_precision);
 
@@ -22406,7 +22425,7 @@ msos.console.time('ng');
 
             msos_debug(temp_pe + ' - ngModule ~~~> done!');
 
-        }]).info({ angularVersion: '1.6.5' });
+        }]).info({ angularVersion: '1.6.7' });
 
         msos_debug(temp_pe + ' ~~~> done!');
     }
@@ -22476,10 +22495,11 @@ msos.console.time('ng');
 								}
 							);
 
-							// Run MSOS module loading
-							msos.run_onload();
+							// Runs MSOS script checking and module loading
+							msos.check_deferred_scripts();
 
 							msos_debug(temp_rr + ' ->  done!');
+
 							return defer.promise;
 						}
 					};
@@ -22487,36 +22507,11 @@ msos.console.time('ng');
 			];
         }]
     ).run(
-                ['$location', '$timeout',
-        function ($location,   $timeout) {
-            var temp_rn = 'ng.postloader - run -> ',
-                org_location;
-
-            msos_debug(temp_rn + 'start.');
-
-            // Important: Record the modules "initially" loaded in the previous "msos.run_onload()" cycle
+        function () {
+			msos_debug('ng.postloader - run -> called.');
+            // Important: Record modules "initially" loaded by previous "msos.run_onload()" cycle
             msos_prev_modules = _.keys(msos.registered_modules);
-
-            // Special case: MSOS module(s) won't have time to load for initial hashtag.
-            if ($location.path() !== '' || $location.path() !== '/') {
-                msos.console.info(temp_rn + 'init content to show: ' + $location.path());
-                // Save specific hashtag fragment
-                org_location = $location.path().substring(1);
-                // Set to use default page content (before routing)
-                $location.path('/');
-                // Reset $location, which updates page content (just like internal link routing)
-                $timeout(
-                    function ng_postloader_run() {
-                        msos.console.info(temp_rn + 'do $location replace.');
-                        $location.path(org_location).replace();
-                    },
-                    200,
-                    false
-                );
-            }
-
-            msos_debug(temp_rn + ' done!');
-        }]
+        }
     );
 
     /**
@@ -22745,6 +22740,136 @@ msos.console.time('ng');
             }
         }
 
+		function validStyles(lkey, styleString) {
+			var result = '',
+				styleArray = styleString.split(';') || [];
+
+			// Do nothing
+			if (lkey !== 'style') { return result; }
+
+			function get_result(k, v) {
+				return (result ? ' ' : '') + k + ': ' + v + ';';
+			}
+
+			angular.forEach(
+				styleArray,
+				function (value) {
+					var v = value.split(':'),
+						key;
+
+					if (v.length === 2) {
+
+						key = trim(lowercase(v[0]));
+						value = trim(lowercase(v[1]));
+
+						switch (key) {
+							case 'color':
+							case 'background-color':
+								if (
+									value.match(/^rgb\([0-9%,\. ]*\)$/i) ||
+									value.match(/^rgba\([0-9%,\. ]*\)$/i) ||
+									value.match(/^hsl\([0-9%,\. ]*\)$/i) ||
+									value.match(/^hsla\([0-9%,\. ]*\)$/i) ||
+									value.match(/^#[0-9a-f]{3,6}$/i) ||
+									value.match(/^[a-z]*$/i)
+								) {
+									result += get_result(key, value);
+								}
+								break;
+							case 'text-align':
+								if (
+									value === 'left' ||
+									value === 'right' ||
+									value === 'center' ||
+									value === 'justify'
+								) {
+									result += get_result(key, value);
+								}
+								break;
+							case 'text-decoration':
+								if (value === 'underline' || value === 'line-through') {
+									result += get_result(key, value);
+								}
+								break;
+							case 'font-weight':
+								if (value === 'bold') {
+									result += get_result(key, value);
+								}
+								break;
+							case 'font-style':
+								if (value === 'italic') {
+									result += get_result(key, value);
+								}
+								break;
+							case 'float':
+								if (value === 'left' || value === 'right' || value === 'none') {
+									result += get_result(key, value);
+								}
+								break;
+							case 'vertical-align':
+								if (
+									value === 'baseline' ||
+									value === 'sub' ||
+									value === 'super' ||
+									value === 'test-top' ||
+									value === 'text-bottom' ||
+									value === 'middle' ||
+									value === 'top' ||
+									value === 'bottom' ||
+									value.match(/[0-9]*(px|em)/) ||
+									value.match(/[0-9]+?%/)
+								) {
+									result += get_result(key, value);
+								}
+								break;
+							case 'font-size':
+								if (
+									value === 'xx-small' ||
+									value === 'x-small' ||
+									value === 'small' ||
+									value === 'medium' ||
+									value === 'large' ||
+									value === 'x-large' ||
+									value === 'xx-large' ||
+									value === 'larger' ||
+									value === 'smaller' ||
+									value.match(/[0-9]*\.?[0-9]*(px|em|rem|mm|q|cm|in|pt|pc|%)/)
+								) {
+									result += get_result(key, value);
+								}
+								break;
+							case 'width':
+							case 'height':
+								if (value.match(/[0-9\.]*(px|em|rem|%)/)) {
+									result += get_result(key, value);
+								}
+								break;
+							case 'direction':
+								if (value.match(/^ltr|rtl|initial|inherit$/)) {
+									result += get_result(key, value);
+								}
+								break;
+							default:
+								msos.console.warn('ng.sanitize - validStyles -> skipped (na), key: ' + key);
+						}
+					}
+				}
+			);
+
+			return result;
+		}
+
+		function validCustomTag(tag, attrs, lkey, value){
+
+			if (tag === 'img' && attrs['ta-insert-video']) {
+				if (lkey === 'ta-insert-video' || lkey === 'allowfullscreen' || lkey === 'frameborder' || (lkey === 'contenteditable' && value === 'false')) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
         function htmlSanitizeWriter(buf, uriValidator) {
             var ignoreCurrentElement = false,
                 out = ng_bind(buf, buf.push);
@@ -22765,9 +22890,12 @@ msos.console.time('ng');
                             attrs,
                             function (value, key) {
                                 var lkey = lowercase(key),
-                                    isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
+                                    isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background'),
+									isStyle = validStyles(lkey, value);
 
-                                if (validAttrs[lkey] === true && (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
+									if (isStyle) { value = isStyle; }
+
+                                if (isStyle || validCustomTag(tag, attrs, lkey, value) || validAttrs[lkey] === true && (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
                                     out(' ');
                                     out(key);
                                     out('="');

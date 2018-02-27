@@ -9,6 +9,14 @@
 msos.provide("demo.start");
 msos.require("ng.bootstrap.ui.dropdown");
 
+if (msos.config.run_analytics) {
+	msos.require("ng.google.ga");
+}
+
+// Start by loading our demo.start specific stylesheet
+demo.start.css = new msos.loader();
+demo.start.css.load(msos.resource_url('demo', 'site.css'));
+
 
 msos.onload_functions.push(
 	function () {
@@ -33,7 +41,11 @@ msos.onload_functions.push(
 				'like', 'share', 'send', 'post', 'video',
 				'comments', 'page', 'follow', 'easyfb'
 			],
-			widget_ctrls = ['widgets', 'culture', 'switchable', 'localstorage', 'editor', 'masonry'];
+			widget_ctrls = [
+				'widgets', 'culture', 'smarttable', 'ngreacttable', 'localstorage',
+				'editor', 'editor2', 'editor3', 'masonry', 'tictactoe', 'visualizer'
+			],
+			prefetch_dependent = ['tictactoe', 'ngreacttable'];
 
 		msos.console.debug(temp_sd + ' -> start.');
 
@@ -49,7 +61,7 @@ msos.onload_functions.push(
 
 		demo.start = angular.module(
 			'demo.start', [
-				'ui.router',
+				'ng.ui.router',
 				'ng.sanitize',
 				'ng.postloader',
 				'ng.bootstrap.ui',
@@ -109,7 +121,6 @@ msos.onload_functions.push(
 
 								// Then, start AngularJS module registration process
 								return $postload.run_registration();
-								
 							}]
 						}
 					};
@@ -244,6 +255,24 @@ msos.onload_functions.push(
 							url: '/about',
 							templateUrl: msos.resource_url('demo', 'contacts/tmpl/about.html')
 						}
+					).state(
+						'directive_menu',
+						{
+							url: '/directive_menu',
+							templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/directive_menu.html')
+						}
+					).state(
+						'widgets_menu',
+						{
+							url: '/widgets_menu',
+							templateUrl: msos.resource_url('demo', 'widgets/tmpl/widgets_menu.html')
+						}
+					).state(
+						'router_menu',
+						{
+							url: '/router_menu',
+							templateUrl: msos.resource_url('demo', 'contacts/tmpl/router_menu.html')
+						}
 					);
 
 				// Angular-UI-Bootstrap examples
@@ -323,13 +352,32 @@ msos.onload_functions.push(
 		demo.start.run(
 					['$rootScope', '$state', '$stateParams',
 			function ($rootScope,   $state,   $stateParams) {
+				var redirect_url = '';
 
 				msos.console.debug('demo.start.run -> called.');
+
+				// Special case pages requiring prefetch files (which aren't ready on initial page load)
+				redirect_url = msos.check_prefetch_dependent(prefetch_dependent, 'home');
+
+				if (redirect_url) {
+
+					if (msos.config.verbose) {
+						alert('demo.start.run -> page not ready, redirecting to: ' + redirect_url);
+					}
+
+					location.assign(redirect_url);
+				}
+
 				// Grab state output for diagnostic output display
 				$rootScope.diagnostic_state = $state;
 				$rootScope.diagnostic_stateParams = $stateParams;
 			}]
 		);
+
+		if (ng.google && ng.google.ga) {
+			// Add Google Analytics page transition tracking
+			demo.start.config(ng.google.ga);
+		}
 
 		msos.console.debug(temp_sd + ' -> done!');
 	}

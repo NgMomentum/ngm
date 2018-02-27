@@ -1,5 +1,5 @@
 
-var app = angular.module('app', ['react']);
+var app = angular.module('app', ['ng', 'ng.react']);
 
 app.controller(
     'mainCtrl',
@@ -34,70 +34,72 @@ app.controller(
     }]
 );
 
-app.value("MyTable", createReactClass({
-
-    propTypes: {
-        table: PropTypes.object.isRequired
-    },
-
-    getDefaultProps: function () {
-        return {
-            table: {
-                rows: [],
-                cols: []
-            }
-        };
-    },
-
-    render: function () {
-        var cols = this.props.table.cols.map(
-				function (col, i) {
-					return React.createElement(
-						'th',
-						{ key: i },
-						col
-					);
-				}
-			),
-			header = React.createElement(
-				'thead',
-				{ key: 'table' },
-				React.createElement(
-					'tr',
-					{ key: 'header' },
-					cols
-				)
-			);
-
-        var body = React.createElement(
-				'tbody',
-				{ key: 'thead' },
-				this.props.table.rows.map(
-					function (row, i) {
-						return React.createElement(
-							'tr',
-							{ key: i },
-							row.map(
-								function (cell, j) {
-									return React.createElement(
-										'td',
-										{ key: j },
-										cell
-									);
-								}
-							)
-						);
+app.value(
+	"MyTable",
+	createReactClass(
+		{
+			propTypes: {
+				table: PropTypes.object.isRequired
+			},
+			getDefaultProps: function () {
+				return {
+					table: {
+						rows: [],
+						cols: []
 					}
-				)
-			);
+				};
+			},
+			render: function () {
+				var cols = this.props.table.cols.map(
+						function (col, i) {
+							return React.createElement(
+								'th',
+								{ key: i },
+								col
+							);
+						}
+					),
+					header = React.createElement(
+						'thead',
+						{ key: 'table' },
+						React.createElement(
+							'tr',
+							{ key: 'header' },
+							cols
+						)
+					);
 
-        return React.createElement(
-			'table',
-			{ key: 'body', className: 'pure-table' },
-			[header, body]
-		);
-    }
-}));
+				var body = React.createElement(
+						'tbody',
+						{ key: 'thead' },
+						this.props.table.rows.map(
+							function (row, i) {
+								return React.createElement(
+									'tr',
+									{ key: i },
+									row.map(
+										function (cell, j) {
+											return React.createElement(
+												'td',
+												{ key: j },
+												cell
+											);
+										}
+									)
+								);
+							}
+						)
+					);
+
+				return React.createElement(
+					'table',
+					{ key: 'body', className: 'pure-table' },
+					[header, body]
+				);
+			}
+		}
+	)
+);
 
 app.directive(
     'myTable',

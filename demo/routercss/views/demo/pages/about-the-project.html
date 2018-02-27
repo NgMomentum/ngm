@@ -1,0 +1,19 @@
+<div class="page page-about-the-project">
+	<h3>About the project</h3>
+
+	<p>
+		Note that the <code>about.css</code> stylesheet from state <code>root.demo.about</code> is no longer loaded. This is because it has been overwritten within this state like so:
+	</p>
+	<pre class="code" apply-content highlight-lang="js">
+		.state('root.demo.about.the-project', {
+			url: '/the-project',
+			templateUrl: 'views/demo/pages/about-the-project.html',
+			data: {
+				css: {
+					about: null,
+					aboutTheProject: 'styles/demo/pages/about-the-project.css'
+				}
+			}
+		})
+	</pre>
+</div>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>Page Transitions2 (ngRoute)</title>
+
+	<link rel="stylesheet" type="text/css" href="../../css/site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+
+</head>
+<body>
+
+	<noscript data-ng-ignore>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div id='body' class="ng-cloak">
+
+		<ng-view class="page {{ pageClass }}"></ng-view>
+
+		<div data-ng-ignore id="about">
+			<p>A demo on Angular Animations: ng-view</p>
+			<p>View the <a href="http://scotch.io/tutorials/javascript/animating-angularjs-apps-ngview">Scotch.io Tutorial</a></p>
+		</div>
+	</div>
+
+	<script data-ng-ignore>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info("Page index.html loaded!");
+
+				msos.require("demo.transitions2.start");
+			}
+		);
+	</script>
+
+</body>
+</html>

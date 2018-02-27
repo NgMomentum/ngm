@@ -2,7 +2,7 @@
 @license textAngular
 Author : Austin Anderson
 License : 2013 MIT
-Version 1.5.3
+Version 1.5.16
 
 See README.md or https://github.com/fraywing/textAngular/wiki for requirements and use.
 */
@@ -10,9 +10,6 @@ See README.md or https://github.com/fraywing/textAngular/wiki for requirements a
 /*global
     msos: false,
     ng: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     rangy: false
 */
@@ -22,7 +19,8 @@ msos.require("ng.textng.setup");	// Duplicate, but emphasizes this is required (
 msos.require("rangy.core");
 msos.require("rangy.selectionsaverestore");
 
-ng.textng.core.version = new msos.set_version(16, 10, 27);
+ng.textng.core.version = new msos.set_version(18, 1, 11);
+ng.textng.core.ta_version = 'v1.5.16';
 
 // Start by loading our ngTextEditor specific.css stylesheet
 ng.textng.core.css = new msos.loader();
@@ -109,7 +107,7 @@ ng.textng.core.remove_css_rule = function (rm_rule) {
 var textAngular = angular.module(
 	"textAngular",
 	[
-		'ngSanitize',
+		'ng.sanitize',
 		'textAngular.factories',
 		'textAngular.DOM',
 		'textAngular.validators',
@@ -124,6 +122,7 @@ var textAngular = angular.module(
 
 		// need to dereference the document else the calls don't work correctly
 		var _document = $document[0],
+			bShiftState,
 			brException = function (element, offset) {
 				if (element.tagName && element.tagName.match(/^br$/i) && offset === 0 && !element.previousSibling) {
 					return {
@@ -219,8 +218,12 @@ var textAngular = angular.module(
 					}
 					rangy.core.getSelection().setSingleRange(range);
 				},
-				// from http://stackoverflow.com/questions/6690752/insert-html-at-caret-in-a-contenteditable-div
-				// topNode is the contenteditable normally, all manipulation MUST be inside this.
+				setStateShiftKey: function (bS) {
+					bShiftState = bS;
+				},
+				getStateShiftKey: function () {
+					return bShiftState;
+				},
 				insertHtml: function (html, topNode) {
 					var parent,
 						secondParent,
@@ -512,19 +515,27 @@ var textAngular = angular.module(
                     if (commonElement && commonElement.nodeName === '#document') { return result; }
 
                     if (commonElement) {
-                        result =
-                            commonElement.css('text-align') === 'left' ||
-                            commonElement.attr('align') === 'left' ||
-                            ((
-                                commonElement.css('text-align') !== 'right' &&
-                                commonElement.css('text-align') !== 'center' &&
-                                commonElement.css('text-align') !== 'justify' && !this.$editor().queryCommandState('justifyRight') && !this.$editor().queryCommandState('justifyCenter')
-                             ) && !this.$editor().queryCommandState('justifyFull')
-							);
+						// commonELement.css('text-align') can throw an error 'Cannot read property 'defaultView' of null' in rare conditions
+						// so we do try catch here...
+						try {
+							result =
+								commonElement.css('text-align') === 'left' ||
+								commonElement.attr('align') === 'left' ||
+								(
+									commonElement.css('text-align') !== 'right' &&
+									commonElement.css('text-align') !== 'center' &&
+									commonElement.css('text-align') !== 'justify' &&
+									!this.$editor().queryCommandState('justifyRight') &&
+									!this.$editor().queryCommandState('justifyCenter')
+								) && !this.$editor().queryCommandState('justifyFull');
+						} catch (e) {
+
+							msos.console.warn('ng.testng - app_ngText_run - taRegisterTool (justifyLeft) -> failed:', e);
+							result = false;
+						}
 					}
 
                     result = result || this.$editor().queryCommandState('justifyLeft');
-
                     return result;
                 }
             });
@@ -540,8 +551,18 @@ var textAngular = angular.module(
 
                     /* istanbul ignore next: */
                     if (commonElement && commonElement.nodeName === '#document') { return result; }
-                    
-                    if (commonElement) { result = commonElement.css('text-align') === 'right'; }
+
+					if (commonElement) {
+						// commonELement.css('text-align') can throw an error 'Cannot read property 'defaultView' of null' in rare conditions
+						// so we do try catch here...
+						try {
+							result = commonElement.css('text-align') === 'right';
+						} catch (e) {
+
+							msos.console.warn('ng.testng - app_ngText_run - taRegisterTool (justifyRight) -> failed:', e);
+							result = false;
+						}
+					}
 
                     result = result || this.$editor().queryCommandState('justifyRight');
                     return result;
@@ -557,7 +578,17 @@ var textAngular = angular.module(
                 activeState: function (commonElement) {
                     var result = false;
 
-                    if (commonElement) { result = commonElement.css('text-align') === 'justify'; }
+                    if (commonElement) {
+						// commonELement.css('text-align') can throw an error 'Cannot read property 'defaultView' of null' in rare conditions
+						// so we do try catch here...
+						try {
+							result = commonElement.css('text-align') === 'justify';
+						} catch (e) {
+
+							msos.console.warn('ng.testng - app_ngText_run - taRegisterTool (justifyFull) -> failed:', e);
+							result = false;
+						}
+					}
 
                     result = result || this.$editor().queryCommandState('justifyFull');
                     return result;
@@ -575,8 +606,18 @@ var textAngular = angular.module(
 
                     /* istanbul ignore next: */
                     if (commonElement && commonElement.nodeName === '#document') { return result; }
-                    
-                    if (commonElement) { result = commonElement.css('text-align') === 'center'; }
+
+                    if (commonElement) {
+						// commonELement.css('text-align') can throw an error 'Cannot read property 'defaultView' of null' in rare conditions
+						// so we do try catch here...
+						try {
+							result = commonElement.css('text-align') === 'center';
+						} catch( e) {
+
+							msos.console.warn('ng.testng - app_ngText_run - taRegisterTool (justifyCenter) -> failed:', e);
+							result = false;
+						}
+					}
 
                     result = result || this.$editor().queryCommandState('justifyCenter');
                     return result;
@@ -732,11 +773,13 @@ var textAngular = angular.module(
                     angular.forEach(possibleNodes, recursiveRemoveClass);
 
                     // check if in list. If not in list then use formatBlock option
-                    if (possibleNodes[0].tagName.toLowerCase() !== 'li' &&
-                        possibleNodes[0].tagName.toLowerCase() !== 'ol' &&
-                        possibleNodes[0].tagName.toLowerCase() !== 'ul') {
+					if (possibleNodes[0] &&
+						possibleNodes[0].tagName.toLowerCase() !== 'li' &&
+						possibleNodes[0].tagName.toLowerCase() !== 'ol' &&
+						possibleNodes[0].tagName.toLowerCase() !== 'ul' &&
+						possibleNodes[0].getAttribute("contenteditable") !== "true") {
 							$editor.wrapSelection("formatBlock", "default");
-                    }
+					}
 
                     restoreSelection();
                 }
@@ -752,27 +795,13 @@ var textAngular = angular.module(
                     imageLink = prompt(taTranslations.insertImage.dialogPrompt, 'http://');
 
                     if (imageLink && imageLink !== '' && imageLink !== 'http://') {
-                        /* istanbul ignore next: don't know how to test this... since it needs a dialogPrompt */
-                        // block javascript here
-                        if (!blockJavascript(imageLink)) {
-                            if (taSelection.getSelectionElement().tagName.toLowerCase() === 'a') {
-                                // due to differences in implementation between FireFox and Chrome, we must move the
-                                // insertion point past the <a> element, otherwise FireFox inserts inside the <a>
-                                // With this change, both FireFox and Chrome behave the same way!
-                                taSelection.setSelectionAfterElement(taSelection.getSelectionElement());
-                            }
-                            // In the past we used the simple statement:
-                            //return this.$editor().wrapSelection('insertImage', imageLink, true);
-                            //
-                            // However on Firefox only, when the content is empty this is a problem
-                            // See Issue #1201
-                            // Investigation reveals that Firefox only inserts a <p> only!!!!
-                            // So now we use insertHTML here and all is fine.
-                            // NOTE: this is what 'insertImage' is supposed to do anyway!
-                            embed = '<img src="' + imageLink + '">';
-
-                            return this.$editor().wrapSelection('insertHTML', embed, true);
-                        }
+ 						if (!blockJavascript(imageLink)) {
+							if (taSelection.getSelectionElement().tagName && taSelection.getSelectionElement().tagName.toLowerCase() === 'a') {
+								taSelection.setSelectionAfterElement(taSelection.getSelectionElement());
+							}
+							embed = '<img src="' + imageLink + '">';
+							return this.$editor().wrapSelection('insertHTML', embed, true);
+						}
                     }
 
 					return undefined;
@@ -805,17 +834,11 @@ var textAngular = angular.module(
                             if (videoId) {
                                 // create the embed link
                                 urlLink = "https://www.youtube.com/embed/" + videoId;
-                                // create the HTML
-                                // for all options see: http://stackoverflow.com/questions/2068344/how-do-i-get-a-youtube-video-thumbnail-from-the-youtube-api
-                                // maxresdefault.jpg seems to be undefined on some.
                                 embed = '<img class="ta-insert-video" src="https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg" ta-insert-video="' + urlLink + '" contenteditable="false" allowfullscreen="true" frameborder="0" />';
                                 /* istanbul ignore next: don't know how to test this... since it needs a dialogPrompt */
-                                if (taSelection.getSelectionElement().tagName.toLowerCase() === 'a') {
-                                    // due to differences in implementation between FireFox and Chrome, we must move the
-                                    // insertion point past the <a> element, otherwise FireFox inserts inside the <a>
-                                    // With this change, both FireFox and Chrome behave the same way!
-                                    taSelection.setSelectionAfterElement(taSelection.getSelectionElement());
-                                }
+								if (taSelection.getSelectionElement().tagName && taSelection.getSelectionElement().tagName.toLowerCase() === 'a') {
+									taSelection.setSelectionAfterElement(taSelection.getSelectionElement());
+								}
                                 // insert
                                 return this.$editor().wrapSelection('insertHTML', embed, true);
                             }
@@ -833,17 +856,24 @@ var textAngular = angular.module(
             taRegisterTool('insertLink', {
                 tooltiptext: taTranslations.insertLink.tooltip,
                 iconclass: 'fa fa-link',
-                action: function () {
-                    var urlLink;
-                    urlLink = prompt(taTranslations.insertLink.dialogPrompt, 'http://');
-                    if (urlLink && urlLink !== '' && urlLink !== 'http://') {
-                        // block javascript here
-                        /* istanbul ignore else: if it's javascript don't worry - though probably should show some kind of error message */
-                        if (!blockJavascript(urlLink)) {
-                            return this.$editor().wrapSelection('createLink', urlLink, true);
-                        }
-                    }
-                },
+				action: function () {
+					var urlLink;
+					// if this link has already been set, we need to just edit the existing link
+					/* istanbul ignore if: we do not test this */
+					if (taSelection.getSelectionElement().tagName && taSelection.getSelectionElement().tagName.toLowerCase() === 'a') {
+						urlLink = $window.prompt(taTranslations.insertLink.dialogPrompt, taSelection.getSelectionElement().href);
+					} else {
+						urlLink = $window.prompt(taTranslations.insertLink.dialogPrompt, 'http://');
+					}
+
+					if (urlLink && urlLink !== '' && urlLink !== 'http://') {
+						// block javascript here
+						/* istanbul ignore else: if it's javascript don't worry - though probably should show some kind of error message */
+						if (!blockJavascript(urlLink)) {
+							return this.$editor().wrapSelection('createLink', urlLink, true);
+						}
+					}
+				},
                 activeState: function (commonElement) {
                     if (commonElement) { return commonElement[0].tagName === 'A'; }
                     return false;
@@ -902,13 +932,76 @@ var textAngular = angular.module(
             msos.console.debug(temp_rn + ' done!');
         }
 	]
+).directive(
+    'taTextEditorClass',
+    angular.restrictADir
+).directive(
+    'taHtmlEditorClass',
+    angular.restrictADir
+).directive(
+    'taFocussedClass',
+    angular.restrictADir
+).directive(
+    'taDefaultWrap',
+    angular.restrictADir
+).directive(
+    'taPaste',
+    angular.restrictADir
+).directive(
+    'taReadonly',
+    angular.restrictADir
+).directive(
+    'taShowHtml',
+    angular.restrictADir
+).directive(
+    'taDisabled',
+    angular.restrictADir
+).directive(
+    'taResizeForceAspectRatio',
+    angular.restrictADir
+).directive(
+    'taTargetToolbars',
+    angular.restrictADir
+).directive(
+    'taKeepStyles',
+    angular.restrictADir
+).directive(
+    'taFocussedClass',
+    angular.restrictADir
+).directive(
+    'taToolbarActiveButtonClass',
+    angular.restrictADir
+).directive(
+    'taToolbarButtonClass',
+    angular.restrictADir
+).directive(
+    'taToolbarGroupClass',
+    angular.restrictADir
+).directive(
+    'taToolbarClass',
+    angular.restrictADir
+).directive(
+    'taToolbar',
+    angular.restrictADir
+).directive(
+    'taFileDrop',
+    angular.restrictADir
+).directive(
+    'taHtmlEditorSetup',
+    angular.restrictADir
+).directive(
+    'taTextEditorSetup',
+    angular.restrictADir
+).directive(
+    'taDefaultTagAttributes',
+    angular.restrictADir
 );
 
 angular.module(
 	'textAngular.factories', []
 ).factory(
 	'taApplyCustomRenderers',
-	[ 'taDOM', function (taDOM) {
+	['taDOM', function (taDOM) {
 		"use strict";
 
 		return function (val) {
@@ -932,10 +1025,10 @@ angular.module(
 						function (_element) {
 							_element = angular.element(_element);
 
-							if (renderer.selector
-							 && renderer.selector !== ''
-							 && renderer.customAttribute
-							 && renderer.customAttribute !== '') {
+							if (renderer.selector &&
+								renderer.selector !== '' &&
+								renderer.customAttribute &&
+								renderer.customAttribute !== '') {
 								if (_element.attr(renderer.customAttribute) !== undefined) {
 									renderer.renderLogic(_element);
 								}
@@ -951,61 +1044,69 @@ angular.module(
 ).factory(
 	'taFixChrome',
 	function () {
-		"use strict";
 
-		var taFixChrome = function (html) {
-			var spanMatch = /<([^>\/]+?)style=("([^\"]+)"|'([^']+)')([^>]*)>/ig,
-				appleConvertedSpaceMatch = /<span class="Apple-converted-space">([^<]+)<\/span>/ig,
-				match,
-				styleVal,
-				appleSpaceVal,
-				newTag,
-				finalHtml = '',
-				lastIndex = 0;
+		var betterSpanMatch = /style\s?=\s?(["'])(?:(?=(\\?))\2.)*?\1/ig,
+			taFixChrome = function (html, keepStyles) {
 
-			if (!html || !angular.isString(html) || html.length <= 0) { return html; }
+				if (!html || !angular.isString(html) || html.length <= 0) {
+					return html;
+				}
+ 
+				var appleConvertedSpaceMatch = /<span class="Apple-converted-space">([^<]+)<\/span>/ig,
+					match,
+					styleVal,
+					appleSpaceVal,
+					finalHtml = '',
+					lastIndex = 0,
+					fe;
 
-			while(match = appleConvertedSpaceMatch.exec(html)) {
-				console.log('1', match);
-				appleSpaceVal = match[1];
-				appleSpaceVal = appleSpaceVal.replace(/&nbsp;/ig, ' ');
-				finalHtml += html.substring(lastIndex, match.index) + appleSpaceVal;
-				lastIndex = match.index + match[0].length;
-			}
-
-			if (lastIndex) {
-				html = finalHtml;
-				finalHtml = '';
-				lastIndex = 0;
-			}
-
-			while(match = spanMatch.exec(html)) {
-				console.log('2', match);
-				styleVal = match[3] || match[4];
-				// test for chrome inserted junk
-				if (styleVal && styleVal.match(/line-height: 1.[0-9]{3,12};|color: inherit; line-height: 1.1;|color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);|background-color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);/i)) {
-					// replace original tag with new tag
-					styleVal = styleVal.replace(/( |)font-family: inherit;|( |)line-height: 1.[0-9]{3,12};|( |)color: inherit;|( |)color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);|( |)background-color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);/ig, '');
-					newTag = '<' + match[1].trim();
-					if (styleVal.trim().length > 0) {
-						newTag += ' style=' + match[2].substring(0,1) + styleVal + match[2].substring(0,1);
-					}
-					newTag += match[5].trim() + ">";
-					finalHtml += html.substring(lastIndex, match.index) + newTag;
+				while (match = appleConvertedSpaceMatch.exec(html)) {
+					appleSpaceVal = match[1];
+					appleSpaceVal = appleSpaceVal.replace(/&nbsp;/ig, ' ');
+					finalHtml += html.substring(lastIndex, match.index) + appleSpaceVal;
 					lastIndex = match.index + match[0].length;
 				}
-			}
 
-			finalHtml += html.substring(lastIndex);
+				if (lastIndex) {
+					// modified....
+					finalHtml += html.substring(lastIndex);
+					html=finalHtml;
+					finalHtml='';
+					lastIndex=0;
+				}
 
-			// only replace when something has changed, else we get focus problems on inserting lists
-			if (lastIndex > 0) {
-				// replace all empty strings
-				return finalHtml.replace(/<span\s?>(.*?)<\/span>(<br(\/|)>|)/ig, '$1');
-			}
+				if (!keepStyles) {
+					while (match = betterSpanMatch.exec(html)) {
 
-			return html;
-		};
+						finalHtml += html.substring(lastIndex, match.index-1);
+						styleVal = match[0];
+						// test for chrome inserted junk
+						 match = /font-family: inherit;|line-height: 1.[0-9]{3,12};|color: inherit; line-height: 1.1;|color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);|background-color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);/gi.exec(styleVal);
+
+						if (match) {
+							styleVal = styleVal.replace(/( |)font-family: inherit;|( |)line-height: 1.[0-9]{3,12};|( |)color: inherit;|( |)color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);|( |)background-color: rgb\(\d{1,3}, \d{1,3}, \d{1,3}\);/ig, '');
+
+							if (styleVal.length > 8) {
+								finalHtml += ' ' + styleVal;
+							}
+						} else {
+							finalHtml += ' ' + styleVal;
+						}
+
+						 lastIndex = betterSpanMatch.lastIndex;
+					}
+
+					finalHtml += html.substring(lastIndex);
+				}
+
+				if (lastIndex > 0) {
+					// replace all empty strings
+					fe = finalHtml.replace(/<span\s?>(.*?)<\/span>(<br(\/|)>|)/ig, '$1');
+					return fe;
+				} else {
+					return html;
+				}
+			};
 
 		return taFixChrome;
 	}
@@ -1263,6 +1364,168 @@ angular.module(
 				listElement.remove();
 				taSelection.setSelectionToElementEnd($target[0]);
 			},
+			listElementToSelfTag = function (list, listElement, selfTag, bDefault, defaultWrap){
+				var $target,
+					i,
+					priorElement,
+					nextElement,
+					children = list.find('li'),
+					foundIndex,
+					html = '',
+					p,
+					html1 = '',
+					listTag,
+					html2 = '';
+
+				for (i = 0; i<children.length; i += 1) {
+					if (children[i].outerHTML === listElement[0].outerHTML) {
+						// found it...
+						foundIndex = i;
+
+						if (i > 0) {
+							priorElement = children[i - 1];
+						}
+						if (i + 1 < children.length) {
+							nextElement = children[i + 1];
+						}
+						break;
+					}
+				}
+
+				if (bDefault) {
+					html += '<' + defaultWrap + '>' + listElement[0].innerHTML + '</' + defaultWrap + '>';
+				} else {
+					html += '<' + taBrowserTag(selfTag) + '>';
+					html += '<li>' + listElement[0].innerHTML + '</li>';
+					html += '</' + taBrowserTag(selfTag) + '>';
+				}
+
+				$target = angular.element(html);
+
+				if (!priorElement) {
+					// this is the first the list, so we just remove it...
+					listElement.remove();
+					list.after(angular.element(list[0].outerHTML));
+					list.after($target);
+					list.remove();
+					taSelection.setSelectionToElementEnd($target[0]);
+					return;
+				} else if (!nextElement) {
+					// this is the last in the list, so we just remove it..
+					listElement.remove();
+					list.after($target);
+					taSelection.setSelectionToElementEnd($target[0]);
+				} else {
+					p = list.parent();
+					listTag = list[0].nodeName.toLowerCase();
+					html1 += '<' + listTag + '>';
+
+					for (i = 0; i < foundIndex; i += 1) {
+						html1 += '<li>' + children[i].innerHTML + '</li>';
+					}
+
+					html1 += '</' + listTag + '>';
+					html2 += '<' + listTag + '>';
+
+					for (i = foundIndex + 1; i < children.length; i += 1) {
+						html2 += '<li>' + children[i].innerHTML + '</li>';
+					}
+
+					html2 += '</' + listTag + '>';
+
+					list.after(angular.element(html2));
+					list.after($target);
+					list.after(angular.element(html1));
+					list.remove();
+
+					taSelection.setSelectionToElementEnd($target[0]);
+				}
+			},
+			listElementsToSelfTag = function(list, listElements, selfTag, bDefault, defaultWrap){
+				var $target,
+					i,
+					j,
+					priorElement,
+					afterElement,
+					children = list.find('li'),
+					foundIndexes = [],
+					html = '',
+					html1 = '',
+					listTag,
+					html2 = '';
+
+				for (i = 0; i < children.length; i += 1) {
+					for (j = 0; j < listElements.length; j += 1) {
+						if (children[i].isEqualNode(listElements[j])) {
+							foundIndexes[j] = i;
+						}
+					}
+				}
+
+				if (foundIndexes[0] > 0) {
+					priorElement = children[foundIndexes[0] - 1];
+				}
+				if (foundIndexes[listElements.length - 1] + 1 < children.length) {
+					afterElement = children[foundIndexes[listElements.length - 1] + 1];
+				}
+
+
+				if (bDefault) {
+					for (j = 0; j < listElements.length; j += 1) {
+						html += '<' + defaultWrap + '>' + listElements[j].innerHTML + '</' + defaultWrap + '>';
+						listElements[j].remove();
+					}
+				} else {
+					html += '<' + taBrowserTag(selfTag) + '>';
+
+					for (j = 0; j < listElements.length; j += 1) {
+						html += listElements[j].outerHTML;
+						listElements[j].remove();
+					}
+
+					html += '</' + taBrowserTag(selfTag) + '>';
+				}
+
+				$target = angular.element(html);
+
+				if (!priorElement) {
+					// this is the first the list, so we just remove it...
+					list.after(angular.element(list[0].outerHTML));
+					list.after($target);
+					list.remove();
+					taSelection.setSelectionToElementEnd($target[0]);
+					return;
+				} else if (!afterElement) {
+					// this is the last in the list, so we just remove it..
+					list.after($target);
+					taSelection.setSelectionToElementEnd($target[0]);
+					return;
+				} else {
+					// okay it was some where in the middle... so we need to break apart the list...
+					listTag = list[0].nodeName.toLowerCase();
+					html1 += '<' + listTag + '>';
+
+					for (i = 0; i < foundIndexes[0]; i += 1) {
+						html1 += '<li>' + children[i].innerHTML + '</li>';
+					}
+
+					html1 += '</' + listTag + '>';
+					html2 += '<' + listTag + '>';
+
+					for(i = foundIndexes[listElements.length-1]+1; i < children.length; i++){
+						html2 += '<li>' + children[i].innerHTML + '</li>';
+					}
+
+					html2 += '</' + listTag + '>';
+
+					list.after(angular.element(html2));
+					list.after($target);
+					list.after(angular.element(html1));
+					list.remove();
+	
+					taSelection.setSelectionToElementEnd($target[0]);
+				}
+			},
 			selectLi = function (liElement) {
 				if (/(<br(|\/)>)$/i.test(liElement.innerHTML.trim())) {
 					taSelection.setSelectionBeforeElement(angular.element(liElement).find("br")[0]);
@@ -1292,6 +1555,33 @@ angular.module(
 				listElement.remove();
 
 				selectLi($target.find('li')[0]);
+			},
+			turnBlockIntoBlocks = function (element, options) {
+				var i = 0,
+					_n,
+					$target;
+
+				for(i = 0; i < element.childNodes.length; i += 1) {
+					_n = element.childNodes[i];
+
+					if (_n.tagName && angular.blockElements[_n.tagName.toLowerCase()]) {
+						turnBlockIntoBlocks(_n, options);
+					}
+				}
+
+				if (element.parentNode === null) {
+					return element;
+				}
+
+				if (options === '<br>') {
+					return element;
+				} else {
+					$target = angular.element(options);
+					$target[0].innerHTML = element.innerHTML;
+					element.parentNode.insertBefore($target[0], element);
+					element.parentNode.removeChild(element);
+					return $target;
+				}
 			};
 
 		msos.console.debug(temp_ex + ' -> called.');
@@ -1310,11 +1600,15 @@ angular.module(
 					_nodes,
 					next,
 					optionsTagName,
+					ourSelection,
 					selectedElement,
 					defaultWrapper = angular.element('<' + taDefaultWrap + '>'),
+					__h,
+					_innerNode,
 					$selected,
 					tagName,
 					selfTag,
+					selectedElements,
 					childBlockElements = false,
 					$nodes = [],
 					$n,
@@ -1328,8 +1622,108 @@ angular.module(
 
 				msos.console.debug(temp_ex + ' - command -> called.');
 
-				try{
+				try {
+					if (taSelection.getSelection) {
+						ourSelection = taSelection.getSelection();
+					}
+
 					selectedElement = taSelection.getSelectionElement();
+
+					if (selectedElement.tagName !== undefined) {
+
+						if (selectedElement.tagName.toLowerCase() === 'div' &&
+							/taTextElement.+/.test(selectedElement.id) &&
+							ourSelection && ourSelection.start &&
+							ourSelection.start.offset === 1 &&
+							ourSelection.end.offset === 1) {
+
+							__h = selectedElement.innerHTML;
+
+							if (/<br>/i.test(__h)) {
+								// Firefox adds <br>'s and so we remove the <br>
+								__h = __h.replace(/<br>/i, '&#8203;');  // no space-space
+							}
+							if (/<br\/>/i.test(__h)) {
+								// Firefox adds <br/>'s and so we remove the <br/>
+								__h = __h.replace(/<br\/>/i, '&#8203;');  // no space-space
+							}
+							// remove stacked up <span>'s
+							if (/<span>(<span>)+/i.test(__h)) {
+								__h = __.replace(/<span>(<span>)+/i, '<span>');
+							}
+							// remove stacked up </span>'s
+							if (/<\/span>(<\/span>)+/i.test(__h)) {
+								__h = __.replace(/<\/span>(<\/span>)+/i, '<\/span>');
+							}
+							if (/<span><\/span>/i.test(__h)) {
+								// if we end up with a <span></span> here we remove it...
+								__h = __h.replace(/<span><\/span>/i, '');
+							}
+							//console.log('inner whole container', selectedElement.childNodes);
+							_innerNode = '<div>' + __h + '</div>';
+							selectedElement.innerHTML = _innerNode;
+							//console.log('childNodes:', selectedElement.childNodes);
+							taSelection.setSelectionToElementEnd(selectedElement.childNodes[0]);
+							selectedElement = taSelection.getSelectionElement();
+						} else if (selectedElement.tagName.toLowerCase() === 'span' &&
+							ourSelection && ourSelection.start &&
+							ourSelection.start.offset === 1 &&
+							ourSelection.end.offset === 1) {
+							// just a span -- this is a problem...
+							//console.log('selecting span!');
+							__h = selectedElement.innerHTML;
+							if (/<br>/i.test(__h)) {
+								// Firefox adds <br>'s and so we remove the <br>
+								__h = __h.replace(/<br>/i, '&#8203;');  // no space-space
+							}
+							if (/<br\/>/i.test(__h)) {
+								// Firefox adds <br/>'s and so we remove the <br/>
+								__h = __h.replace(/<br\/>/i, '&#8203;');  // no space-space
+							}
+							// remove stacked up <span>'s
+							if (/<span>(<span>)+/i.test(__h)) {
+								__h = __.replace(/<span>(<span>)+/i, '<span>');
+							}
+							// remove stacked up </span>'s
+							if (/<\/span>(<\/span>)+/i.test(__h)) {
+								__h = __.replace(/<\/span>(<\/span>)+/i, '<\/span>');
+							}
+							if (/<span><\/span>/i.test(__h)) {
+								// if we end up with a <span></span> here we remove it...
+								__h = __h.replace(/<span><\/span>/i, '');
+							}
+							//console.log('inner span', selectedElement.childNodes);
+							// we wrap this in a <div> because otherwise the browser get confused when we attempt to select the whole node
+							// and the focus is not set correctly no matter what we do
+							_innerNode = '<div>' + __h + '</div>';
+							selectedElement.innerHTML = _innerNode;
+							taSelection.setSelectionToElementEnd(selectedElement.childNodes[0]);
+							selectedElement = taSelection.getSelectionElement();
+							//console.log(selectedElement.innerHTML);
+						} else if (selectedElement.tagName.toLowerCase() === 'p' &&
+							ourSelection && ourSelection.start &&
+							ourSelection.start.offset === 1 &&
+							ourSelection.end.offset === 1) {
+							//console.log('p special');
+							// we need to remove the </br> that firefox adds!
+							__h = selectedElement.innerHTML;
+							if (/<br>/i.test(__h)) {
+								// Firefox adds <br>'s and so we remove the <br>
+								__h = __h.replace(/<br>/i, '&#8203;');  // no space-space
+								selectedElement.innerHTML = __h;
+							}
+						} else if (selectedElement.tagName.toLowerCase() === 'li' &&
+							ourSelection && ourSelection.start &&
+							ourSelection.start.offset === ourSelection.end.offset) {
+							// we need to remove the </br> that firefox adds!
+							__h = selectedElement.innerHTML;
+							if (/<br>/i.test(__h)) {
+								// Firefox adds <br>'s and so we remove the <br>
+								__h = __h.replace(/<br>/i, '');  // nothing
+								selectedElement.innerHTML = __h;
+							}
+						}
+					}
 				} catch (e1) {
 					msos.console.warn(temp_ex + ' - command -> getSelectionElement failed:', e1);
 				}
@@ -1342,23 +1736,46 @@ angular.module(
 					if (command.toLowerCase() === 'insertorderedlist' || command.toLowerCase() === 'insertunorderedlist') {
 
 						selfTag = ng.textng.core.ta_tag((command.toLowerCase() === 'insertorderedlist')? 'ol' : 'ul');
+						selectedElements = taSelection.getOnlySelectedElements();
+
+						if (selectedElements.length > 1 && (tagName === 'ol' || tagName === 'ul')) {
+							return listElementsToSelfTag($selected, selectedElements, selfTag, selfTag === tagName, taDefaultWrap);
+						}
 
 						if (tagName === selfTag) {
-							// if all selected then we should remove the list
-							// grab all li elements and convert to taDefaultWrap tags
+
+							if ($selected[0].childNodes.length !== selectedElements.length && selectedElements.length === 1) {
+								$selected = angular.element(selectedElements[0]);
+								return listElementToSelfTag($selected.parent(), $selected, selfTag, true, taDefaultWrap);
+							}
+
 							return listToDefault($selected, taDefaultWrap);
 						}
-						if (tagName === 'li' && $selected.parent()[0].tagName.toLowerCase() === selfTag && $selected.parent().children().length === 1) {
+						if (
+							tagName === 'li' &&
+							$selected.parent()[0].tagName.toLowerCase() === selfTag &&
+							$selected.parent().children().length === 1) {
 							// catch for the previous statement if only one li exists
 							return listToDefault($selected.parent(), taDefaultWrap);
 						}
-						if (tagName === 'li' && $selected.parent()[0].tagName.toLowerCase() !== selfTag && $selected.parent().children().length === 1) {
+						if (
+							tagName === 'li' &&
+							$selected.parent()[0].tagName.toLowerCase() !== selfTag &&
+							$selected.parent().children().length === 1) {
 							// catch for the previous statement if only one li exists
 							return listToList($selected.parent(), selfTag);
 						}
-						if (angular.blockElements[tagName] && !$selected.hasClass('ta-bind')) {
-							// if it's one of those block elements we have to change the contents
-							// if it's a ol/ul we are changing from one to the other
+						if (
+							angular.blockElements[tagName] &&
+							!$selected.hasClass('ta-bind')) {
+
+							if (selectedElements.length) {
+								if ($selected[0].childNodes.length !== selectedElements.length && selectedElements.length === 1) {
+									$selected = angular.element(selectedElements[0]);
+									return listElementToSelfTag($selected.parent(), $selected, selfTag, selfTag === tagName, taDefaultWrap);
+								}
+							}
+
 							if (tagName === 'ol' || tagName === 'ul') {
 								return listToList($selected, selfTag);
 							}
@@ -1393,7 +1810,9 @@ angular.module(
 									return listToDefault(angular.element(_nodes[0]), taDefaultWrap);
 								}
 								return listToList(angular.element(_nodes[0]), selfTag);
+
 							} else {
+
 								html = '';
 
 								for (i = 0; i < _nodes.length; i += 1) {
@@ -1453,6 +1872,7 @@ angular.module(
 							for (i = 0; i < _nodes.length; i += 1) {
 								hasBlock = hasBlock || angular.blockElements[_nodes[i].tagName.toLowerCase()];
 							}
+
 							if (hasBlock) {
 								$target.after(_nodes);
 								next = $target.next();
@@ -1464,6 +1884,7 @@ angular.module(
 								$target.remove();
 								$target = defaultWrapper;
 							}
+
 						} else if ($target.parent()[0].tagName.toLowerCase() === optionsTagName && !$target.parent().hasClass('ta-bind')) {
 							//unwrap logic for parent
 							blockElement = $target.parent();
@@ -1504,6 +1925,14 @@ angular.module(
 								}
 							);
 
+							if (_nodes.length > 1) {
+								_nodes = _nodes.filter(
+									function (value) {
+										return !(value.nodeName.toLowerCase() === 'div' && /^taTextElement/.test(value.id));
+									}
+								);
+							}
+
 							if (angular.element(_nodes[0]).hasClass('ta-bind')) {
 								$target = angular.element(options);
 								$target[0].innerHTML = _nodes[0].innerHTML;
@@ -1511,6 +1940,7 @@ angular.module(
 							} else if (optionsTagName === 'blockquote') {
 								// blockquotes wrap other block elements
 								html = '';
+
 								for (i = 0; i < _nodes.length; i += 1) {
 									html += _nodes[i].outerHTML;
 								}
@@ -1523,26 +1953,49 @@ angular.module(
 								for (i = _nodes.length - 1; i >= 0; i -= 1) {
 									if (_nodes[i].parentNode) { _nodes[i].parentNode.removeChild(_nodes[i]); }
 								}
+
+							} else if (optionsTagName === 'pre' && taSelection.getStateShiftKey()) {
+			
+								html = '';
+
+								for (i = 0; i < _nodes.length; i += 1) {
+									html += _nodes[i].outerHTML;
+								}
+
+								$target = angular.element(options);
+								$target[0].innerHTML = html;
+
+								_nodes[0].parentNode.insertBefore($target[0], _nodes[0]);
+
+								for (i = _nodes.length - 1; i >= 0; i -= 1) {
+									if (_nodes[i].parentNode) { _nodes[i].parentNode.removeChild(_nodes[i]); }
+								}
 							} else {
 								// regular block elements replace other block elements
 								for (i = 0; i < _nodes.length; i += 1) {
-									$target = angular.element(options);
-									$target[0].innerHTML = _nodes[i].innerHTML;
-									_nodes[i].parentNode.insertBefore($target[0],_nodes[i]);
-									_nodes[i].parentNode.removeChild(_nodes[i]);
+									var newBlock = turnBlockIntoBlocks(_nodes[i], options);
+									if (_nodes[i] === $target[0]) {
+										$target = angular.element(newBlock);
+									}
 								}
 							}
 						}
 
 						taSelection.setSelectionToElementEnd($target[0]);
+						$target[0].focus();
 
 						return undefined;
 
 					} else if (command.toLowerCase() === 'createlink') {
 
-						tagBegin = '<a href="' + options
-							+ '" target="' + (defaultTagAttributes.a.target || '') + '">';
+						if (tagName === 'a') {
+							taSelection.getSelectionElement().href = options;
+							return;
+						}
+
+						tagBegin = '<a href="' + options + '" target="' + (defaultTagAttributes.a.target || '') + '">';
 						tagEnd = '</a>';
+
 						_selection = taSelection.getSelection();
 
 						if (_selection.collapsed) {
@@ -1775,7 +2228,7 @@ angular.module(
 		"use strict";
 
 		return {
-			link: function (scope, element, attrs) {
+			link: function (scope, element) {
 				element.attr('unselectable', 'on');
 				element.on('mousedown', function (ev, eventData) {
 					if (eventData) { angular.extend(ev, eventData); }
@@ -1814,6 +2267,8 @@ angular.module(
 				_isReadonly = false,
 				_focussed = false,
 				_skipRender = false,
+				_disableSanitizer = attrs.taUnsafeSanitizer || ng.textng.setup.options.disableSanitizer,
+				_keepStyles = attrs.taKeepStyles || ng.textng.setup.options.keepStyles,
 				_lastKey,
 				BLOCKED_KEYS = /^(9|19|20|27|33|34|35|36|37|38|39|40|45|112|113|114|115|116|117|118|119|120|121|122|123|144|145)$/i,
 				UNDO_TRIGGER_KEYS = /^(8|13|32|46|59|61|107|109|173|186|187|188|189|190|191|192|219|220|221|222)$/i,
@@ -1824,6 +2279,11 @@ angular.module(
 				_META_KEY = 0x0002,
 				_ALT_KEY = 0x0004,
 				_SHIFT_KEY = 0x0008,
+				_ENTER_KEYCODE = 13,
+				_SHIFT_KEYCODE = 16,
+				_TAB_KEYCODE = 9,
+				_LEFT_ARROW_KEYCODE = 37,
+				_RIGHT_ARROW_KEYCODE = 39,
 				_keyMappings = [
 					//		ctrl/command + z
 					{
@@ -1881,6 +2341,7 @@ angular.module(
 				_renderTimeout,
 				_renderInProgress = false,
 				_keyupTimeout,
+				_inputTimeout,
 				_rule,
 				_selectorClickHandler,
 				_fileDropHandler,
@@ -1919,18 +2380,10 @@ angular.module(
 
 			if (attrs.taDefaultWrap === '') {
 				_defaultVal = '';
-				_defaultTest = msie === undefined
-					? '<div><br></div>'
-					: window.document.documentMode >= 11
-						? '<p><br></p>'
-						: '<p>&nbsp;</p>';
+				_defaultTest = msie === undefined ? '<div><br></div>' : window.document.documentMode >= 11 ? '<p><br></p>' : '<p>&nbsp;</p>';
 			} else {
-				_defaultVal = (msie === undefined || msie >= 11)
-					? '<' + attrs.taDefaultWrap + '><br></' + attrs.taDefaultWrap + '>'
-					: '<' + attrs.taDefaultWrap + '></' + attrs.taDefaultWrap + '>';
-				_defaultTest = (msie === undefined || msie >= 11)
-					? '<' + attrs.taDefaultWrap + '><br></' + attrs.taDefaultWrap + '>'
-					: '<' + attrs.taDefaultWrap + '>&nbsp;</' + attrs.taDefaultWrap + '>';
+				_defaultVal = (msie === undefined || msie >= 11)  ? '<' + attrs.taDefaultWrap + '><br></' + attrs.taDefaultWrap + '>' : '<' + attrs.taDefaultWrap + '></' + attrs.taDefaultWrap + '>';
+				_defaultTest = (msie === undefined || msie >= 11) ? '<' + attrs.taDefaultWrap + '><br></' + attrs.taDefaultWrap + '>' : '<' + attrs.taDefaultWrap + '>&nbsp;</' + attrs.taDefaultWrap + '>';
 			}
 
 			if (!ngModelOptions.$options) {
@@ -2016,8 +2469,7 @@ angular.module(
 				_index: 0,
 				_max: 1000,
 				push: function (value) {
-					if ((value === undefined || value === null)
-					|| ((this.current() !== undefined && this.current() !== null) && value === this.current())) { return value; }
+					if ((value === undefined || value === null) || ((this.current() !== undefined && this.current() !== null) && value === this.current())) { return value; }
 					if (this._index < this._stack.length - 1) {
 						this._stack = this._stack.slice(0,this._index+1);
 					}
@@ -2126,7 +2578,7 @@ angular.module(
 			// catch DOM XSS via taSanitize
 			// Sanitizing both ways is identical
 			_sanitize = function (unsafe) {
-				return (ngModel.$oldViewValue = taSanitize(taFixChrome(unsafe), ngModel.$oldViewValue));
+				return (ngModel.$oldViewValue = taSanitize(taFixChrome(unsafe, _keepStyles), ngModel.$oldViewValue, _disableSanitizer));
 			};
 
 			// trigger the validation calls
@@ -2253,23 +2705,9 @@ angular.module(
 						_html += '\n' + _repeat('\t', tablevel-1) + listNode.outerHTML.substring(listNode.outerHTML.lastIndexOf('<'));
 						return _html;
 					};
-					// handle formating of something like:
-					// <ol><!--First comment-->
-					//  <li>Test Line 1<!--comment test list 1--></li>
-					//    <ul><!--comment ul-->
-					//      <li>Nested Line 1</li>
-					//        <!--comment between nested lines--><li>Nested Line 2</li>
-					//    </ul>
-					//  <li>Test Line 3</li>
-					// </ol>
+
 					ngModel.$formatters.unshift(function (htmlValue) {
-						// tabulate the HTML so it looks nicer
-						//
-						// first get a list of the nodes...
-						// we do this by using the element parser...
-						//
-						// doing this -- which is simpiler -- breaks our tests...
-						//var _nodes=angular.element(htmlValue);
+
 						var _nodes = angular.element('<div>' + htmlValue + '</div>')[0].childNodes;
 
 						if (_nodes.length > 0) {
@@ -2375,7 +2813,15 @@ angular.module(
 										continue;
 									} else {
 										tagName = dom[0].childNodes[i].tagName.toLowerCase();
-										if (tagName !== "p" && tagName !== "h1" && tagName !== "h2" && tagName !== "h3" && tagName !== "h4" && tagName !== "h5" && tagName !== "h6") {
+										if (
+											tagName !== 'p' &&
+											tagName !== 'h1' &&
+											tagName !== 'h2' &&
+											tagName !== 'h3' &&
+											tagName !== 'h4' &&
+											tagName !== 'h5' &&
+											tagName !== 'h6' &&
+											tagName !== 'table') {
 											continue;
 										}
 									}
@@ -2389,7 +2835,7 @@ angular.module(
 											continue;
 										}
 
-										isUl = _listMatch[1].toLowerCase() === "bullet" || (_listMatch[1].toLowerCase() !== "number" && !(/^[^0-9a-z<]*[0-9a-z]+[^0-9a-z<>]</i.test(el[0].childNodes[1].innerHTML) || /^[^0-9a-z<]*[0-9a-z]+[^0-9a-z<>]</i.test(el[0].childNodes[1].childNodes[0].innerHTML)));
+										isUl = _listMatch[1].toLowerCase() === 'bullet' || (_listMatch[1].toLowerCase() !== "number" && !(/^[^0-9a-z<]*[0-9a-z]+[^0-9a-z<>]</i.test(el[0].childNodes[1].innerHTML) || /^[^0-9a-z<]*[0-9a-z]+[^0-9a-z<>]</i.test(el[0].childNodes[1].childNodes[0].innerHTML)));
 										_indentMatch = (el.attr('style') || '').match(/margin-left:([\-\.0-9]*)/i);
 										indent = parseFloat((_indentMatch)?_indentMatch[1]:0);
 										_levelMatch = (el.attr('style') || '').match(/mso-list:l([0-9]+) level([0-9]+) lfo[0-9+]($|;)/i);
@@ -2398,11 +2844,11 @@ angular.module(
 										if (_levelMatch && _levelMatch[2]) {
 											indent = parseInt(_levelMatch[2], 10); 
 										}
-										if ((_levelMatch && (!_list.lastLevelMatch || _levelMatch[1] !== _list.lastLevelMatch[1])) || !_listMatch[3] || _listMatch[3].toLowerCase() === "first" || (_list.lastIndent.peek() === null) || (_list.isUl !== isUl && _list.lastIndent.peek() === indent)) {
+										if ((_levelMatch && (!_list.lastLevelMatch || _levelMatch[1] !== _list.lastLevelMatch[1])) || !_listMatch[3] || _listMatch[3].toLowerCase() === 'first' || (_list.lastIndent.peek() === null) || (_list.isUl !== isUl && _list.lastIndent.peek() === indent)) {
 											_resetList(isUl);
 											targetDom.append(_list.element);
 										} else if (_list.lastIndent.peek() != null && _list.lastIndent.peek() < indent) {
-											_list.element = angular.element(isUl ? "<ul>" : "<ol>");
+											_list.element = angular.element(isUl ? '<ul>' : '<ol>');
 											_list.lastLi.append(_list.element);
 										} else if (_list.lastIndent.peek() != null && _list.lastIndent.peek() > indent) {
 											while(_list.lastIndent.peek() != null && _list.lastIndent.peek() > indent) {
@@ -2416,7 +2862,7 @@ angular.module(
 												}
 												_list.lastIndent.pop();
 											}
-											_list.isUl = _list.element[0].tagName.toLowerCase() === "ul";
+											_list.isUl = _list.element[0].tagName.toLowerCase() === 'ul';
 											if (isUl !== _list.isUl) {
 												_resetList(isUl);
 												targetDom.append(_list.element);
@@ -2425,7 +2871,7 @@ angular.module(
 
 										_list.lastLevelMatch = _levelMatch;
 										if (indent !== _list.lastIndent.peek()) { _list.lastIndent.push(indent); }
-										_list.lastLi = angular.element("<li>");
+										_list.lastLi = angular.element('<li>');
 										_list.element.append(_list.lastLi);
 										_list.lastLi.html(el.html().replace(/<!(--|)\[if !supportLists\](--|)>[\s\S]*?<!(--|)\[endif\](--|)>/ig, ''));
 										el.remove();
@@ -2458,6 +2904,8 @@ angular.module(
                                 if (_isOneNote) {
                                     text = targetDom.html() || dom.html();
                                 }
+								// LF characters instead of spaces in some spots and they are replaced by "/n", so we need to just swap them to spaces
+								text = text.replace(/\n/g, ' ');
 							} else {
 								// remove unnecessary chrome insert
 								text = text.replace(/<(|\/)meta[^>]*?>/ig, '');
@@ -2465,8 +2913,10 @@ angular.module(
 								if (text.match(/<[^>]*?(ta-bind)[^>]*?>/)) {
 									// entire text-angular or ta-bind has been pasted, REMOVE AT ONCE!!
 									if (text.match(/<[^>]*?(text-angular)[^>]*?>/)) {
-										_el = angular.element("<div>" + text + "</div>");
+
+										_el = angular.element('<div>' + text + '</div>');
 										_el.find('textarea').remove();
+
 										binds = taDOM.getByAttribute(_el, 'ta-bind');
 										for (_b = 0; _b < binds.length; _b += 1) {
 											_target = binds[_b][0].parentNode.parentNode;
@@ -2508,7 +2958,10 @@ angular.module(
 
 							if (_pasteHandler) { text = _pasteHandler(scope, {$html: text}) || text; }
 
-							text = taSanitize(text, '');
+							// turn span vertical-align:super into <sup></sup>
+							text = text.replace(/<span style=("|')([^<]*?)vertical-align\s*:\s*super;?([^>]*?)("|')>([^<]+?)<\/span>/g, "<sup style='$2$3'>$5</sup>");
+
+							text = taSanitize(text, '', _disableSanitizer);
 
 							taSelection.insertHtml(text, element[0]);
 
@@ -2547,6 +3000,14 @@ angular.module(
 						element.addClass('processing-paste');
 
 						clipboardData = (evt.originalEvent || evt).clipboardData;
+
+                        if (!clipboardData && window.clipboardData && window.clipboardData.getData) {
+                            pastedContent = window.clipboardData.getData("Text");
+                            processpaste(pastedContent);
+                            e.stopPropagation();
+                            e.preventDefault();
+                            return false;
+                        }
 
 						if (clipboardData && clipboardData.getData && clipboardData.types.length > 0) {
 
@@ -2607,14 +3068,22 @@ angular.module(
 							_moveOutsideElements,
 							_parent;
 
-						if (eventData) { angular.extend(event, eventData); }
+						if (eventData) {
+							angular.extend(event, eventData);
+						}
+
+						if (event.keyCode === _SHIFT_KEYCODE) {
+                            taSelection.setStateShiftKey(true);
+                        } else {
+                            taSelection.setStateShiftKey(false);
+                        }
 
 						event.specialKey = _mapKeys(event);
 
 						ng.textng.setup.options.keyMappings.forEach(
 							function (mapping) {
 								if (event.specialKey === mapping.commandKeyCode) {
-									// taOptions has remapped this binding... so
+									// ng.textng.setup.options has remapped this binding... so
 									// we disable our own
 									event.specialKey = undefined;
 								}
@@ -2651,7 +3120,7 @@ angular.module(
 								event.preventDefault();
 							}
 
-							if (event.keyCode === 13 && !event.shiftKey) {
+							if (event.keyCode === _ENTER_KEYCODE && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
 
 								contains = function (a, obj) {
 									for (var i = 0; i < a.length; i += 1) {
@@ -2700,82 +3169,135 @@ angular.module(
 						var _selection,
 							_new,
 							_val,
-							_triggerUndo;
+							_triggerUndo,
+							tagName,
+							ps;
 
 						if (eventData) { angular.extend(event, eventData); }
 
-						if (event.keyCode === 9) {
-							_selection = taSelection.getSelection();
+						taSelection.setStateShiftKey(false);	// clear the ShiftKey state
 
+						if (event.keyCode === _TAB_KEYCODE) {
+							_selection = taSelection.getSelection();
 							if (_selection.start.element === element[0] && element.children().length) {
 								taSelection.setSelectionToElementStart(element.children()[0]);
 							}
 							return;
 						}
-
+						// we do this here during the 'keyup' so that the browser has already moved the slection by one character...
+						if (event.keyCode === _LEFT_ARROW_KEYCODE && !event.shiftKey) {
+							taSelection.updateLeftArrowKey(element);
+						}
+						// we do this here during the 'keyup' so that the browser has already moved the slection by one character...
+						if (event.keyCode === _RIGHT_ARROW_KEYCODE && !event.shiftKey) {
+							taSelection.updateRightArrowKey(element);
+						}
 						if (_undoKeyupTimeout) {
 							$timeout.cancel(_undoKeyupTimeout);
 						}
-
 						if (!_isReadonly && !BLOCKED_KEYS.test(event.keyCode)) {
-							// if enter - insert new taDefaultWrap, if shift+enter insert <br/>
-							if (_defaultVal !== '' && event.keyCode === 13) {
-								if (!event.shiftKey) {
-									// new paragraph, br should be caught correctly
+
+							if (event.keyCode === _ENTER_KEYCODE && (event.ctrlKey || event.metaKey || event.altKey)) {
+
+							} else {
+
+								if (_defaultVal !== '' && _defaultVal !== '<br><br>' && event.keyCode === _ENTER_KEYCODE && !event.ctrlKey && !event.metaKey && !event.altKey) {
 									_selection = taSelection.getSelectionElement();
 
-									while(!angular.validElements[_selection.tagName.toLowerCase()] && _selection !== element[0]) {
+									while(!angular.validElements[_selection.nodeName.toLowerCase()] && _selection !== element[0]) {
 										_selection = _selection.parentNode;
 									}
 
-									if (_selection.tagName.toLowerCase() !== attrs.taDefaultWrap && _selection.tagName.toLowerCase() !== 'li' && (_selection.innerHTML.trim() === '' || _selection.innerHTML.trim() === '<br>')) {
-										_new = angular.element(_defaultVal);
-										angular.element(_selection).replaceWith(_new);
-										taSelection.setSelectionToElementStart(_new[0]);
+									if (!event.shiftKey) {
+										if (_selection.tagName.toLowerCase() !==
+											attrs.taDefaultWrap &&
+											_selection.nodeName.toLowerCase() !== 'li' &&
+											(_selection.innerHTML.trim() === '' || _selection.innerHTML.trim() === '<br>')
+										) {
+											// Chrome starts with a <div><br></div> after an EnterKey
+											// so we replace this with the _defaultVal
+											_new = angular.element(_defaultVal);
+											angular.element(_selection).replaceWith(_new);
+											taSelection.setSelectionToElementStart(_new[0]);
+										}
+									} else {
+										// shift + Enter
+										tagName = _selection.tagName.toLowerCase();
+
+										if ((tagName === attrs.taDefaultWrap ||
+											tagName === 'li' ||
+											tagName === 'pre' ||
+											tagName === 'div') &&
+											!/.+<br><br>/.test(_selection.innerHTML.trim())) {
+											ps = _selection.previousSibling;
+
+											if (ps) {
+												ps.innerHTML = ps.innerHTML + '<br><br>';
+												angular.element(_selection).remove();
+												taSelection.setSelectionToElementEnd(ps);
+											}
+										}
 									}
 								}
-							}
 
-							_val = _compileHtml();
+								_val = _compileHtml();
 
-							if (_val === '<br>') {
-								// on Firefox this comes back sometimes as <br> which is strange, so we remove this here
-								//console.log('*************BAD****');
-								_val='';
-							}
-							if (_defaultVal !== '' && _val.trim() === '') {
-								_setInnerHTML(_defaultVal);
-								taSelection.setSelectionToElementStart(element.children()[0]);
-							} else if (_val.substring(0, 1) !== '<' && attrs.taDefaultWrap !== '') {
-								/* we no longer do this, since there can be comments here and white space
-								var _savedSelection = rangy.saveSelection();
-								val = _compileHtml();
-								val = "<" + attrs.taDefaultWrap + ">" + val + "</" + attrs.taDefaultWrap + ">";
-								_setInnerHTML(val);
-								rangy.restoreSelection(_savedSelection);
-								*/
-							}
+								if (_defaultVal !== '' && (_val.trim() === '' || _val.trim() === '<br>')) {
+									_setInnerHTML(_defaultVal);
+									taSelection.setSelectionToElementStart(element.children()[0]);
+								} else if (_val.substring(0, 1) !== '<' && attrs.taDefaultWrap !== '') {
+									// do nothing
+								}
 
-							_triggerUndo = _lastKey !== event.keyCode && UNDO_TRIGGER_KEYS.test(event.keyCode);
+								_triggerUndo = _lastKey !== event.keyCode && UNDO_TRIGGER_KEYS.test(event.keyCode);
 
-							if (_keyupTimeout) { $timeout.cancel(_keyupTimeout); }
+								if(_keyupTimeout) {
+									$timeout.cancel(_keyupTimeout);
+								}
 
-							_keyupTimeout = $timeout(
-								function () {
-									_setViewValue(_val, _triggerUndo, true);
-								},
-								ngModelOptions.$options.debounce || 400
-							);
-
-							if (!_triggerUndo) {
-								_undoKeyupTimeout = $timeout(
-									function () { ngModel.$undoManager.push(_val); },
-									250
+								_keyupTimeout = $timeout(
+									function () {
+										_setViewValue(_val, _triggerUndo, true);
+									},
+									ngModelOptions.$options.debounce || 400
 								);
+
+								if (!_triggerUndo) {
+									_undoKeyupTimeout = $timeout(
+										function () { ngModel.$undoManager.push(_val); },
+										250
+									);
+								}
+
+								_lastKey = event.keyCode;
 							}
-							_lastKey = event.keyCode;
 						}
 					});
+
+					element.on(
+						'input',
+						function () {
+							if (_compileHtml() !== ngModel.$viewValue) {
+								if(_inputTimeout) { $timeout.cancel(_inputTimeout); }
+
+								_inputTimeout = $timeout(
+									function () {
+										var _savedSelection = rangy.core.saveSelection(),
+											_val = _compileHtml();
+
+										if (_val !== ngModel.$viewValue) {
+											_setViewValue(_val, true);
+										}
+
+										if (ngModel.$viewValue.length !== 0) {
+											rangy.core.restoreSelection(_savedSelection);
+										}
+									},
+									1000
+								);
+							}
+						}
+					);
 
 					element.on('blur', scope.events.blur = function () {
 						_focussed = false;
@@ -3056,6 +3578,7 @@ textAngular.directive(
 			link: function (scope, element, attrs, ngModel) {
 				// all these vars should not be accessable outside this directive
 				var oneEvent,
+					isScrollable,
 					_keydown,
 					_keyup,
 					_keypress,
@@ -3070,7 +3593,9 @@ textAngular.directive(
 					_resizeMouseDown,
 					_updateSelectedStylesTimeout,
 					_savedSelection,
-					_firstRun;
+					_firstRun,
+					_resizeTimeout,
+					testAndSet;
 
 				msos.console.debug(temp_td + ' - link -> start.');
 
@@ -3078,13 +3603,7 @@ textAngular.directive(
 
 				oneEvent = function (_element, event, action) {
 					$timeout(function () {
-						// shim the .one till fixed
-						var _func = function () {
-							_element.off(event, _func);
-							action.apply(this, arguments);
-						};
-
-						_element.on(event, _func);
+						_element.one(event, action);
 					}, 100);
 				};
 
@@ -3183,16 +3702,105 @@ textAngular.directive(
 					}
 				);
 
+				scope.handlePopoverEvents = function () {
+					if (scope.displayElements.popover.css('display') === 'block') {
+						if (_resizeTimeout) { $timeout.cancel(_resizeTimeout); }
+
+						_resizeTimeout = $timeout(
+							function () {
+								//console.log('resize', scope.displayElements.popover.css('display'));
+								scope.reflowPopover(scope.resizeElement);
+								scope.reflowResizeOverlay(scope.resizeElement);
+							},
+							100
+						);
+					}
+				};
+
+				angular.element(window).on('resize', scope.handlePopoverEvents);
+				angular.element(window).on('scroll', scope.handlePopoverEvents);
+
+				isScrollable = function (node) {
+					var cs,
+						_notScrollable = {
+							vertical: false,
+							horizontal: false,
+						},
+						overflowY,
+						overflowX;
+
+					try {
+						cs = window.getComputedStyle(node);
+						if (cs === null) {
+							return _notScrollable;
+						}
+					} catch (e) {
+						return _notScrollable;
+					}
+
+					overflowY = cs['overflow-y'];
+					overflowX = cs['overflow-x'];
+
+					return {
+						vertical: (overflowY === 'scroll' || overflowY === 'auto') &&
+									node.scrollHeight > node.clientHeight,
+						horizontal: (overflowX === 'scroll' || overflowX === 'auto') &&
+						    		node.scrollWidth > node.clientWidth,
+					};
+				};
+
+				scope.getScrollTop = function (_el, bAddListener) {
+					var scrollTop = _el.scrollTop;
+
+					if (typeof scrollTop === 'undefined') {
+						scrollTop = 0;
+					}
+
+					if (bAddListener && isScrollable(_el).vertical) {
+						// remove element eventListener
+						_el.removeEventListener('scroll', scope._scrollListener, false);
+						   _el.addEventListener('scroll', scope._scrollListener, false);
+					}
+
+					if (scrollTop !== 0) {
+						return { node: _el.nodeName, top: scrollTop };
+					}
+
+					if (_el.parentNode) {
+						return scope.getScrollTop(_el.parentNode, bAddListener);
+					} else {
+						return { node: '<none>', top: 0 };
+					}
+				};
+
 				// define the popover show and hide functions
 				scope.showPopover = function (_el) {
+					scope.getScrollTop(scope.displayElements.scrollWindow[0], true);
 					scope.displayElements.popover.css('display', 'block');
+
+					$timeout(function () {
+						scope.displayElements.resize.overlay.css('display', 'block');
+					});
+
+					scope.resizeElement = _el;
 					scope.reflowPopover(_el);
 					$animate.addClass(scope.displayElements.popover, 'in');
-					oneEvent($document.find('body'), 'click keyup', function () { scope.hidePopover(); });
+					oneEvent($document.find('body'), 'click keyup', function () { scope.hidePopover();} );
+				};
+
+				scope._scrollListener = function (){
+					scope.handlePopoverEvents();
 				};
 
 				scope.reflowPopover = function (_el) {
-					if (scope.displayElements.text[0].offsetHeight - 51 > _el[0].offsetTop) {
+					var scrollTop = scope.getScrollTop(scope.displayElements.scrollWindow[0], false),
+						spaceAboveImage = _el[0].offsetTop-scrollTop.top,
+						_maxLeft,
+						_targetLeft,
+						_rleft,
+						_marginLeft;
+
+					if (spaceAboveImage < 51) {
 						scope.displayElements.popover.css('top', _el[0].offsetTop + _el[0].offsetHeight + scope.displayElements.scrollWindow[0].scrollTop + 'px');
 						scope.displayElements.popover.removeClass('top').addClass('bottom');
 					} else {
@@ -3200,18 +3808,24 @@ textAngular.directive(
 						scope.displayElements.popover.removeClass('bottom').addClass('top');
 					}
 
-					var _maxLeft = scope.displayElements.text[0].offsetWidth - scope.displayElements.popover[0].offsetWidth,
-						_targetLeft = _el[0].offsetLeft + (_el[0].offsetWidth / 2.0) - (scope.displayElements.popover[0].offsetWidth / 2.0);
+					_maxLeft = scope.displayElements.text[0].offsetWidth - scope.displayElements.popover[0].offsetWidth;
+					_targetLeft = _el[0].offsetLeft + (_el[0].offsetWidth / 2.0) - (scope.displayElements.popover[0].offsetWidth / 2.0);
+					_rleft = Math.max(0, Math.min(_maxLeft, _targetLeft));
+					_marginLeft = (Math.min(_targetLeft, (Math.max(0, _targetLeft - _maxLeft))) - 11);
 
-					scope.displayElements.popover.css('left', Math.max(0, Math.min(_maxLeft, _targetLeft)) + 'px');
-					scope.displayElements.popoverArrow.css('margin-left', (Math.min(_targetLeft, (Math.max(0, _targetLeft - _maxLeft))) - 11) + 'px');
+					_rleft += window.scrollX;
+					_marginLeft -= window.scrollX;
+
+					scope.displayElements.popover.css('left', _rleft + 'px');
+					scope.displayElements.popoverArrow.css('margin-left', _marginLeft + 'px');
 				};
 
 				scope.hidePopover = function () {
-					scope.displayElements.popover.css('display', '');
+					scope.displayElements.popover.css('display', 'none');
 					scope.displayElements.popoverContainer.attr('style', '');
 					scope.displayElements.popoverContainer.attr('class', 'popover-content');
 					scope.displayElements.popover.removeClass('in');
+					scope.displayElements.resize.overlay.css('display', 'none');
 				};
 
 				// setup the resize overlay
@@ -3223,6 +3837,9 @@ textAngular.directive(
 
 				scope.displayElements.resize.overlay.append(scope.displayElements.resize.info);
 				scope.displayElements.scrollWindow.append(scope.displayElements.resize.overlay);
+				scope.displayElements.resize.background.on('click', function () {
+					scope.displayElements.text[0].focus();
+				});
 
 				// define the show and hide events
 				scope.reflowResizeOverlay = function (_el) {
@@ -3353,6 +3970,11 @@ textAngular.directive(
 					scope.displayElements.html.attr('ta-unsafe-sanitizer', attrs.taUnsafeSanitizer);
 				}
 
+                if (attrs.taKeepStyles) {
+                    scope.displayElements.text.attr('ta-keep-styles', attrs.taKeepStyles);
+                    scope.displayElements.html.attr('ta-keep-styles', attrs.taKeepStyles);
+                }
+
 				// add the main elements to the origional element
 				scope.displayElements.scrollWindow.append(scope.displayElements.text);
 				element.append(scope.displayElements.scrollWindow);
@@ -3405,18 +4027,46 @@ textAngular.directive(
 				scope.displayElements.scrollWindow.addClass("ta-text ta-editor " + scope.classes.textEditor);
 				scope.displayElements.html.addClass("ta-html ta-editor " + scope.classes.htmlEditor);
 
+				testAndSet = function (choice, beforeState) {
+					/* istanbul ignore next: this is only here because of a bug in rangy where rangy.saveSelection() has cleared the state */
+					if (beforeState !== $document[0].queryCommandState(choice)) {
+						$document[0].execCommand(choice, false, null);
+					}
+				};
+
 				// used in the toolbar actions
 				scope._actionRunning = false;
 
 				_savedSelection = false;
 
 				scope.startAction = function () {
+					var _beforeStateBold = false,
+						_beforeStateItalic = false,
+						_beforeStateUnderline = false,
+						_beforeStateStrikethough = false;
+
 					scope._actionRunning = true;
 
+					_beforeStateBold = $document[0].queryCommandState('bold');
+					_beforeStateItalic = $document[0].queryCommandState('italic');
+					_beforeStateUnderline = $document[0].queryCommandState('underline');
+					_beforeStateStrikethough = $document[0].queryCommandState('strikeThrough');
+
+					//console.log('B', _beforeStateBold, 'I', _beforeStateItalic, '_', _beforeStateUnderline, 'S', _beforeStateStrikethough);
 					// if rangy library is loaded return a function to reload the current selection
 					_savedSelection = rangy.core.saveSelection();
+					// rangy.saveSelection() clear the state of bold, italic, underline, strikethrough
+					// so we reset them here....!!!
+					// this fixes bugs #423, #1129, #1105, #693 which are actually rangy bugs!
+					testAndSet('bold', _beforeStateBold);
+					testAndSet('italic', _beforeStateItalic);
+					testAndSet('underline', _beforeStateUnderline);
+					testAndSet('strikeThrough', _beforeStateStrikethough);
+					//console.log('B', $document[0].queryCommandState('bold'), 'I', $document[0].queryCommandState('italic'), '_', $document[0].queryCommandState('underline'), 'S', $document[0].queryCommandState('strikeThrough') );
 					return function () {
-						if (_savedSelection) { rangy.core.restoreSelection(_savedSelection); }
+						if(_savedSelection) rangy.core.restoreSelection(_savedSelection);
+						// perhaps if we restore the selections here, we would do better overall???
+						// BUT what we do above does well in 90% of the cases...
 					};
 				};
 				scope.endAction = function () {
@@ -3428,7 +4078,6 @@ textAngular.directive(
 						} else {
 							scope.displayElements.text[0].focus();
 						}
-						// rangy.restoreSelection(_savedSelection);
 						rangy.core.removeMarkers(_savedSelection);
 					}
 
@@ -3579,9 +4228,10 @@ textAngular.directive(
 				scope.$on('$destroy', function () {
 					textAngularManager.unregisterEditor(scope._name);
 					angular.element(window).off('blur');
+					angular.element(window).off('resize', scope.handlePopoverEvents);
+					angular.element(window).off('scroll', scope.handlePopoverEvents);
 				});
 
-				// catch element select event and pass to toolbar tools
 				scope.$on(
 					'ta-element-select',
 					function (event, element) {
@@ -3594,9 +4244,12 @@ textAngular.directive(
 				scope.$on(
 					'ta-drop-event',
 					function (event, element, dropEvent, dataTransfer) {
-						scope.displayElements.text[0].focus();
 
 						if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
+							scope.displayElements.text[0].focus();
+
+							taSelection.setSelectionToElementEnd(dropEvent.target);
+
 							angular.forEach(
 								dataTransfer.files,
 								function (file) {
@@ -3617,7 +4270,7 @@ textAngular.directive(
 											}
 										);
 									} catch (error) {
-										msos.console.warn(temp_td + ' - link - ta-drop-event -> failed:', error)
+										msos.console.warn(temp_td + ' - link - ta-drop-event -> failed:', error);
 									}
 								}
 							);
@@ -4225,6 +4878,7 @@ textAngular.service(
 				return undefined;
 			},
 			updateStyles: updateStyles,
+			getVersion: function () { return ng.textng.core.ta_version; },
 			getToolbarScopes: function () { return toolbarScopes; }
 		};
 	}]
@@ -4315,7 +4969,7 @@ textAngular.directive(
 						}
 						// add the icon to the front of the button if there is content
 						if (toolDefinition.iconclass) {
-							icon = angular.element('<i>'),
+							icon = angular.element('<i>');
 							content = toolElement[0].innerHTML;
 							icon.addClass(toolDefinition.iconclass);
 							toolElement[0].innerHTML = '';

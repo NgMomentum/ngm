@@ -12101,8 +12101,13 @@ var DomEvent = {
 			for (var type in events) {
 				var func = events[type],
 					parts = type.split(/[\s,]+/g);
-				for (var i = 0, l = parts.length; i < l; i++)
-					el.addEventListener(parts[i], func, false);
+				for (var i = 0, l = parts.length; i < l; i++) {
+					if (parts[i] === 'touchstart') {
+						el.addEventListener(parts[i], func, Modernizr.passiveeventlisteners ? { passive: true } : false);
+					} else {
+						el.addEventListener(parts[i], func, false);
+					}
+				}
 			}
 		}
 	},

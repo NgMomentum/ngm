@@ -2,15 +2,12 @@
 /*global
     msos: false,
     ng: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false
 */
 
 msos.provide("ng.textng.setup");
 
-ng.textng.setup.version = new msos.set_version(16, 8, 23);
+ng.textng.setup.version = new msos.set_version(18, 1, 11);
 
 
 ng.textng.setup.tools = {};
@@ -19,7 +16,8 @@ ng.textng.setup.tools.selectable_elements = ['a', 'img'];
 
 ng.textng.setup.options = {
 
-	forceTextAngularSanitize: true,
+	disableSanitizer: false,
+	keepStyles: true,
 	keyMappings: [],
 	toolbar: [
 		['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre', 'quote'],
@@ -44,14 +42,14 @@ ng.textng.setup.options = {
 	},
 	setup: {
 		// wysiwyg mode
-		textEditorSetup: function ($element) {
+		textEditorSetup: function () {
 			"use strict";
-			/* Do some processing here */
+			/* Do some processing here with $element as input */
 		},
 		// raw html
-		htmlEditorSetup: function ($element) {
+		htmlEditorSetup: function () {
 			"use strict";
-			/* Do some processing here */
+			/* Do some processing here with $element as input */
 		}
 	},
 	defaultFileDropHandler: function (file, insertAction) {

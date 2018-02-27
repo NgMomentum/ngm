@@ -1,0 +1,40 @@
+
+	<h2 data-ng-ignore>UI-Router State and Transition Visualizer Demo</h2>
+
+	<div>
+		UI-Router Visualizer is used to monitor the state tree and transitions when using UI-Router 1.0+.
+	</div>
+
+	<p>
+		This script is used to augment your apps with two components:
+	</p>
+
+	<ol>
+		<li>
+			<p>
+				State Visualizer: Visualize your UI-Router state tree, showing the active state and
+				its active ancestors (green nodes)
+			</p>
+			<ul>
+				<li>Clicking a state will transition to that state.</li>
+				<li>If your app is large, state trees can be collapsed by double-clicking a state.</li>
+				<li>Supports different layouts and zoom.</li>
+			</ul>
+		</li>
+		<li>
+			<p>
+				Transition Visualizer: A list of each transition (from one state to another)
+			</p>
+			<ul>
+				<li>Color coded Transition status (success/error/ignored/redirected)</li>
+				<li>Hover over a Transition to show which states were entered/exited, or retained during the transition.</li>
+				<li>Click the Transition to see details (parameter values and resolve data)</li>
+			</ul>
+		</li>
+	</ol>
+
+	<div>
+		<button ui-sref="vishome" ui-sref-active="active">home</button>
+		<button ui-sref="visabout" ui-sref-active="active">about</button>
+		<button ui-sref="deepnest" ui-sref-active="active">deepnest</button>
+	</div>

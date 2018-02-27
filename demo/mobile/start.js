@@ -1,11 +1,7 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
-    ng: false,
 	demo: false
 */
 
@@ -29,18 +25,18 @@ msos.onload_func_done.push(
         demo.mobile.start = angular.module(
             'demo.mobile.start',
             [
-                'ngRoute',
-                'ngPostloader',
+				'ng',
+                'ng.route',
+                'ng.postloader',
                 'ng.mobile.core',
                 'ng.mobile.ui.sidebars',
                 'ng.mobile.ui.navbars',
                 'ng.mobile.ui.switcher',
                 'ng.mobile.ui.scrollable'
             ]
-        );
-
-        demo.mobile.start.config(
+        ).config(
             ['$routeProvider', function ($routeProvider) {
+
                 $routeProvider.when('/home', {
                     templateUrl: 'tmpl/home.html',
                     reloadOnSearch: false
@@ -90,7 +86,7 @@ msos.onload_func_done.push(
 						load: ['$postload', function ($postload) {
 
 							// Request specific demo module
-							msos.require('demo.mobile.touch');
+							msos.require('demo.mobile.controller.touch');
 
 							// Start AngularJS module registration process
 							return $postload.run_registration();
@@ -108,7 +104,7 @@ msos.onload_func_done.push(
 						load: ['$postload', function ($postload) {
 
 							// Request specific demo module
-							msos.require('demo.mobile.drag');
+							msos.require('demo.mobile.controller.drag');
 
 							// Start AngularJS module registration process
 							return $postload.run_registration();
@@ -122,7 +118,7 @@ msos.onload_func_done.push(
 						load: ['$postload', function ($postload) {
 
 							// Request specific demo module
-							msos.require('demo.mobile.drag2');
+							msos.require('demo.mobile.controller.drag2');
 
 							// Start AngularJS module registration process
 							return $postload.run_registration();
@@ -136,7 +132,7 @@ msos.onload_func_done.push(
 						load: ['$postload', function ($postload) {
 
 							// Request specific demo module
-							msos.require('demo.mobile.carousel');
+							msos.require('demo.mobile.controller.carousel');
 
 							// Start AngularJS module registration process
 							return $postload.run_registration();
@@ -146,13 +142,7 @@ msos.onload_func_done.push(
 						redirectTo: '/home'
 				});
             }]
-        );
-
-        //
-        // For this trivial demo we have just a unique MainController 
-        // for everything
-        //
-        demo.mobile.start.controller(
+        ).controller(
             'MainController',
             ['$rootScope', '$scope', function ($rootScope, $scope) {
                 var i = 0,

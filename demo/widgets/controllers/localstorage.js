@@ -1,12 +1,19 @@
 
+/*global
+    msos: false,
+    angular: false,
+    demo: false
+*/
+
 msos.provide("demo.widgets.controllers.localstorage");
 msos.require('ng.util.localstorage');
 
-demo.widgets.controllers.localstorage.version = new msos.set_version(16, 7, 20);
+demo.widgets.controllers.localstorage.version = new msos.set_version(18, 1, 13);
 
 
 angular.module(
-    'demo.widgets.controllers.localstorage', ['ng.util.localstorage']
+    'demo.widgets.controllers.localstorage',
+	['ng', 'ng.util.localstorage']
 ).config(
     [
         'localStorageServiceProvider',

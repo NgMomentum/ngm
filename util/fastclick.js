@@ -1,11 +1,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
-    angular: false,
-    ng: false,
 	util: false
 */
 
@@ -100,7 +95,6 @@ msos.provide("util.fastclick");
 	var deviceIsIOS = /iP(ad|hone|od)/.test(navigator.userAgent) && !deviceIsWindowsPhone;
 	var deviceIsIOS4 = deviceIsIOS && (/OS 4_\d(_\d)?/).test(navigator.userAgent);
 	var deviceIsIOSWithBadTarget = deviceIsIOS && (/OS [6-7]_\d/).test(navigator.userAgent);
-	var deviceIsBlackBerry10 = navigator.userAgent.indexOf('BB10') > 0;
 
 	FastClick.prototype.needsClick = function(target) {
 		switch (target.nodeName.toLowerCase()) {

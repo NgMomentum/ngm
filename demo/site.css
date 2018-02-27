@@ -1,14 +1,17 @@
 
 html,
-body,
-#body {
-	position: relative;
+body {
 	height: 100%;
 }
 
-#ui_view {
+#body {
 	position: relative;
-	min-height: 100%;
+	top: 4em;
+	height: 85%;
+	padding: 0;
+	margin: 0;
+	-ms-touch-action: manipulation;
+		touch-action: manipulation;
 }
 
 #ngm_iframe {
@@ -20,15 +23,18 @@ body,
 	position: absolute;
 	top: 0;
 	left: 0;
-	opacity: 0.3;
+	opacity: 0.2;
 	-webkit-transition: opacity 2s ease;
 	-moz-transition: opacity 2s ease;
 	transition: opacity 2s;
 	z-index: 100;
 }
 
+.ngm_header {
+	z-index: 101;
+}
 .ngm_page {
-	margin-bottom: 2em;
+	margin-bottom: 3em;
 }
 .ngm_page h2 > small > a {
     color: #999;
@@ -36,15 +42,8 @@ body,
 .ngm_page h2 > small > a:hover {
     text-decoration: none;
 }
-
-.ngm_overview {
-	margin-top: 2em;
-	margin-right: 1em;
-	margin-left: 1em;
-}
-
-.ngm_header {
-	z-index: 101;
+.ngm_hint {
+	
 }
 .ngm_footer {
 	width: 100%;
@@ -56,6 +55,7 @@ body,
 	background-color: #f5f5f5;
 	z-index: 101;
 }
+
 .state {
 	text-align: left;
 	margin: 2px 0;
@@ -253,15 +253,10 @@ body,
     margin-right: inherit;
     margin-left: inherit;
 }
-.header-placeholder {
-    height: 50px;
-}
+
 @media screen and (min-width: 768px) {
     .dropdown.open > .navbar-brand + .dropdown-menu {
         left: 10px;
-    }
-    .header-placeholder {
-        height: 50px;
     }
     .navbar-nav .dropdown .navbar-brand {
         max-width: 200px;
