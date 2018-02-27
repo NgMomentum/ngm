@@ -1,9 +1,7 @@
 
-<section>
     <div data-ng-controller="demo.widgets.controllers.culture.ctrl">
         <input type="number" data-ng-model="amount"><br />
         Default Currency: <span id="currency-default">{{amount | currency}}</span><br />
         Custom Currency by Identifier (USD$): <span>{{amount | currency:"USD$"}}</span><br />
         Date: {{current_date | date:'mediumDate'}}
     </div>
-</section>

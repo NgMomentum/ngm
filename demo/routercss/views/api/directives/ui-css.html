@@ -1,0 +1,21 @@
+<h1 class="page-title"><code>ui-css</code></h1>
+<p>
+	Allows you to choose the position of the linked CSS files in the HTML's head
+</p>
+<p>
+	This directive is optional. If it's not applied, newly added stylesheets will simply be appended as the last node in the <code>head</code> node.
+	If you for example have stylesheets that need to be loaded after all the Angular UI Router CSS stylesheets, this directive will help solve this problem.
+</p>
+<p>
+	Place the following line somewhere in your head like this:
+</p>
+<pre class="code">
+&lt;html&gt;
+&lt;head&gt;
+	&lt;link ui-css&gt;
+&lt;/head&gt;
+&lt;/html&gt;
+</pre>
+<p>
+	<i>Note: it can only be the <code>head</code> of your document</i>
+</p>

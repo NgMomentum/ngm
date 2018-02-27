@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>SmartTable Toggle</title>
+
+    <style>
+		/* Prepare page */
+		body {
+			font-family: Arial, Verdana, Helvetica, sans-serif;
+			opacity: 1;
+			-webkit-transition: opacity 1s ease;
+			-moz-transition: opacity 1s ease;
+			transition: opacity 1s;
+		}
+
+        /* Std AngularJS CSS: Load in page so cloaking starts immediately */
+		[ng-cloak],
+		[data-ng-cloak],
+		[x-ng-cloak],
+		.ng-cloak,
+		.ng-hide:not(.ng-hide-animate) {
+			display: none !important;
+		}
+		ng\:form {
+			display: block;
+		}
+		.ng-cloak {
+			opacity: 0;
+		}
+		.ng-animate-shim{
+			visibility:hidden;
+		}
+		.ng-anchor{
+			position:absolute;
+		}
+
+		/* Std MSOS CSS: notify popup */
+		#notify_container {
+			display: none;
+			position: absolute;
+			top: 10em;
+			left: 0;
+			right: 0;
+			margin-right: auto;
+			margin-left: auto;
+			width: 22em;
+			z-index: 9999;
+		}
+		.notify {
+			background-color: #111;
+			border-radius: 0.4em;
+			margin-bottom: 1em;
+			opacity: 0.9;
+			padding: 1.2em;
+		}
+		.notify:hover {
+			opacity: 1;
+		}
+		.notify_title {
+			font-weight: bold;
+		}
+		.notify_title,
+		.notify_msg {
+			color: #FFF;
+			font-size: larger;
+			margin-bottom: 0.4em;
+			padding: 0 0.4em;
+		}
+		.notify > i {
+			float: left;
+		}
+		.notify_display > button {
+			float: right;
+		}
+		.notify > i.info {
+			color: blue;
+		}
+		.notify > i.warning {
+			color: yellow;
+		}
+		.notify > i.error {
+			color: red;
+		}
+		.notify > i.success {
+			color: green;
+		}
+		.notify > i.loading {
+			color: orange;
+		}
+		.notify {
+			-webkit-box-shadow: 0 0 12px #999;
+					box-shadow: 0 0 12px #999;
+		}
+		.notify:hover {
+			-webkit-box-shadow: 0 0 12px #000;
+					box-shadow: 0 0 12px #000;
+		}
+
+		/* Std MSOS CSS: No JavaScript message */
+		#no_javascript {
+			background-color: #FFF;
+			border: 2px solid #999;
+			border-radius: 0.4em;
+			margin-left: auto;
+			margin-right: auto;
+			width: 60%;
+		}
+		#no_javascript > i {
+			color: red;
+		}
+    </style>
+
+	<link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+	<script src="../../../msos/base.uc.js"></script>
+	<script src="../../config.js"></script>
+
+</head>
+<body>
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<h2>SmartTable Toggle Menu Demo</h2>
+
+	<div id='body' ng-controller="demo.smarttable.toggle.start.ctrl" class="ng-cloak">
+
+		<style data-ng-ignore>
+			.st-sort-ascent:before {
+				content: '\25B2';
+			}
+			.st-sort-descent:before {
+				content: '\25BC';
+			}
+			.lr-drop-target-before {
+				border-left: 2px solid orange;
+			}
+			.lr-drop-target-after {
+				border-right: 2px solid orange;
+			}
+			.loading-indicator {
+				position: absolute;
+				top: 12em;
+				left: 0;
+				right: 0;
+				margin-right: auto;
+				margin-left: auto;
+				z-index: 9999;
+			}
+			.loading-indicator {
+				box-sizing: border-box;
+				-webkit-box-sizing: border-box;
+				-moz-box-sizing: border-box;
+				width: 100%;
+				text-align: center;
+				padding: 0.7em;
+			}
+			.loading-indicator:before {
+				display: inline-block;
+				margin: 0 0.4em;
+				min-width: 1em;
+				min-height: 1em;
+				border-top: 4px solid #646464;
+				border-right: 4px solid #e6e6e6;
+				border-left: 4px solid #e6e6e6;
+				border-bottom: 4px solid #646464;
+				content: "";
+				-webkit-animation: halfspin 1s ease infinite;
+				-moz-animation: halfspin 1s ease infinite;
+				-o-animation: halfspin 1s ease infinite;
+				animation: halfspin 1s ease infinite;
+				border-radius: 100%;
+			}
+			@-webkit-keyframes halfspin {
+				to {
+					-webkit-transform: rotate(180deg);
+					-moz-transform: rotate(180deg);
+					transform: rotate(180deg);
+				}
+			}
+			@-moz-keyframes halfspin {
+				to {
+					-webkit-transform: rotate(180deg);
+					-moz-transform: rotate(180deg);
+					transform: rotate(180deg);
+				}
+			}
+			@keyframes halfspin {
+				to {
+					-webkit-transform: rotate(180deg);
+					-moz-transform: rotate(180deg);
+					transform: rotate(180deg);
+				}
+			}
+		</style>
+
+		<div ng-show="isLoading" class="loading-indicator"></div>
+
+		<div class="table-container" st-table="displayed">
+			<div st-toggle-menu></div>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th st-toggle-column st-sort="firstName">First Name</th>
+						<th st-toggle-column st-sort="lastName">Last Name</th>
+						<th st-toggle-column st-sort="birthDate">Birth Date</th>
+						<th st-toggle-column st-sort="balance">Balance</th>
+						<th st-toggle-column>Email</th>
+					</tr>
+					<tr>
+						<th>
+							<input st-search="firstName" placeholder="search for firstname" class="input-sm form-control" type="search"/>
+						</th>
+						<th colspan="4">
+							<input st-search placeholder="global search" class="input-sm form-control" type="search"/>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="row in displayed">
+						<td st-toggle-item>{{row.firstName | uppercase}}</td>
+						<td st-toggle-item>{{row.lastName}}</td>
+						<td st-toggle-item>{{row.birthDate | date}}</td>
+						<td st-toggle-item>{{row.balance | currency}}</td>
+						<td st-toggle-item><a ng-href="mailto:{{row.email}}">email</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<script data-ng-ignore>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.smarttable.toggle.start");
+			}
+		);
+
+		msos.onload_func_done.push(
+			function () {
+				"use strict";
+
+				angular.bootstrap('#body', ['demo.smarttable.toggle.start']);
+			}
+		);
+	</script>
+
+</body>
+</html>

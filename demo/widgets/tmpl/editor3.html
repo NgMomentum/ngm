@@ -1,0 +1,56 @@
+
+    <style data-ng-ignore>
+        h2 small {
+            font-size: 60%;
+        }
+        textarea.ta-bind {
+            width: 100%;
+        }
+		.ta-toolbar {
+			background-color: #F0F0F0;
+			padding: 10px 10px 5px;
+			margin-left: 0px;		/* Override bootstrap */
+			border: 1px solid #EEE;
+		}
+		.ta-toolbar .btn-group {
+			margin-bottom: 5px;
+		}
+		.ta-editor, .white-box {
+			padding: 10px;
+			background-color: #FFF;
+			border: 1px solid #EEE;
+		}
+    </style>
+
+	<div data-ng-controller="demo.widgets.controllers.editor3.ctrl">
+		<h2>
+			<a href="http://github.com/fraywing/textAngular">textAngular <small>{{version}}</small></a> via NgMomentum
+		</h2>
+
+		<h3>Reset - Disable Toggle <button ng-click="disabled = !disabled" unselectable>Disable text-angular Toggle</button></h3>
+
+		<div text-angular ng-model="htmlContent" name="demo-editor" ta-text-editor-class="clearfix border-around" ta-html-editor-class="border-around" ta-disabled="disabled"></div>
+
+        <h3>Raw HTML in a text area</h3>
+        <textarea ng-model="htmlContent" style="width: 100%"></textarea>
+
+        <h3>Bound with ng-bind-html</h3>
+        <div ng-bind-html="htmlContent"></div>
+
+        <h3>Bound with ta-bind, our internal html-binding directive</h3>
+
+        <div ta-bind="text" ng-model="htmlContent" ta-readonly='disabled'></div>
+
+        <button type="button" ng-click="htmlContent = orightml">Reset</button>
+
+        <p>
+			Note: although we support classes and styles, angularjs' ng-bind-html directive will strip
+			out all style attributes.
+		</p>
+
+        <div data-ng-ignore class="container">
+            <div class="text-center">Create by fraywing</div>
+            <div class="text-center">2015 Licensed under <a href="http://opensource.org/licenses/MIT">MIT</a></div>
+        </div>
+
+    </div>

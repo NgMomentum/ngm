@@ -46,6 +46,17 @@
             margin-top: 2em;
         }
     </style>
+
+    <script src="../../../msos/base.uc.js"></script>
+    <script src="../../../jquery/v321.uc.js"></script>
+    <script src="../../../msos/core.uc.js"></script>
+    <script src="../../../ng/v167_msos.uc.js"></script>
+	<script src='../../../react/v1620_msos.uc.js'></script>
+    <script src='../../../react/v1620_msos_dom.uc.js'></script>
+	<script src='../../../react/prop_types/v1560.uc.js'></script>
+	<script src='../../../react/create_react_class/v1562.uc.js'></script>
+    <script src="./app.js"></script>
+
 </head>
 <body ng-controller="mainCtrl">
     <div class="content">
@@ -75,18 +86,10 @@
         </table>
     </div>
 
-    <script data-ng-ignore src="../../../msos/base.uc.js"></script>
-    <script data-ng-ignore src="../../../jquery/v321.uc.js"></script>
-    <script data-ng-ignore src="../../../msos/core.uc.js"></script>
-    <script data-ng-ignore src="../../../ng/v167_msos.uc.js"></script>
-	<script data-ng-ignore src='../../../react/v1620_dev.js'></script>
-    <script data-ng-ignore src='../../../react/v1620_dev_dom.js'></script>
-	<script data-ng-ignore src='../../../react/prop_types/v1560.js'></script>
-	<script data-ng-ignore src='../../../react/create_react_class/v1562.js'></script>
-    <script data-ng-ignore src="../../../ng/react.js"></script>
-    <script data-ng-ignore src="app.js"></script>
-
     <script data-ng-ignore>
+
+		msos.require("ng.react");
+
         // Bootstrap our simple demo
         msos.onload_func_done.push(
             function() {

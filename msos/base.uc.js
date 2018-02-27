@@ -2438,6 +2438,31 @@
 
     Modernizr.addTest('csstransitions', testAllProps('transition', 'all', true));
 
+	Modernizr.addTest(
+		'passiveeventlisteners',
+		function () {
+			var supportsPassiveOption = false;
+	
+			try {
+				var opts = Object.defineProperty(
+						{},
+						'passive',
+						{
+							get: function () {
+								supportsPassiveOption = true;
+							}
+						}
+					);
+	
+				window.addEventListener('test', null, opts);
+				window.removeEventListener('test', null, opts);
+
+			} catch (e) {}
+	
+			return supportsPassiveOption;
+		}
+	);
+
     // Run each test
     testRunner();
 
@@ -2498,6 +2523,7 @@ var msos = {
 	base_msos_folder: '',
 	base_config_url: '',
 	base_images_url: '',
+	base_site_purl: {},
 
     body: null,
     head: null,
@@ -2531,6 +2557,51 @@ var msos = {
 
     i18n_order: [],
     i18n_queue: 0,
+	i18n_normalize: 'default',
+    i18n_resolver: {
+        'default': function (tag) {
+            return (tag || '').split('-').join('_');
+        },
+        java: function (tag) {
+            var temp = (tag || '').split('-').join('_'),
+				parts = temp.split('_');
+
+            return parts.length > 1 ? (parts[0].toLowerCase() + '_' + parts[1].toUpperCase()) : temp;
+        },
+        bcp47: function (tag) {
+            var temp = (tag || '').split('_').join('-'),
+				parts = temp.split('-');
+
+			switch (parts.length) {
+				case 1: // language only
+					parts[0] = parts[0].toLowerCase();
+					break;
+				case 2: // language-script or language-region
+					parts[0] = parts[0].toLowerCase();
+					if (parts[1].length === 4) { // parts[1] is script
+						parts[1] = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
+					} else { // parts[1] is region
+						parts[1] = parts[1].toUpperCase();
+					}
+					break;
+				case 3: // language-script-region
+					parts[0] = parts[0].toLowerCase();
+					parts[1] = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
+					parts[2] = parts[2].toUpperCase();
+					break;
+				default:
+					return temp;
+			}
+
+			return parts.join('-');
+		},
+        'iso639-1': function (tag) {
+            var temp = (tag || '').split('_').join('-'),
+				parts = temp.split('-');
+
+			return parts[0].toLowerCase();
+        }
+    },
 
 	log_methods: ['error', 'warn', 'info', 'debug', 'time', 'timeEnd', 'log', 'assert', 'dir', 'clear', 'profile', 'profileEnd', 'trace'],
 
@@ -2565,6 +2636,19 @@ var msos = {
     },
     registered_templates: {},
     registered_tools: {},
+	registered_globals: {
+		msos: false,
+		_: false,
+		Modernizr: false,
+		jQuery: false,
+		angular: false,
+		firebase: false,
+		React: false,
+		ReactDOM: false,
+		createReactClass: false,
+		PropTypes: false,
+		hello: false
+	},
     require_attempts: 0,
 	require_deferred: 0,
     require_queue: 0
@@ -2725,9 +2809,10 @@ msos.config = {
         select_calendar: {}
     },
 
-    // i18n Internationalization config and object definitions
-     locale: (navigator.language || navigator.userLanguage || msos.default_locale).replace('-', '_').toLowerCase(),
-    culture: (navigator.language || navigator.userLanguage || msos.default_locale).replace('-', '_').toLowerCase(),
+    // i18n Internationalization
+	locale_keys: ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'],
+    locale: null,
+    culture: null,
     calendar: 'standard',
 
     json: (typeof JSON === 'object' && typeof JSON.stringify === 'function' && typeof JSON.parse === 'function' ? true : false),
@@ -3055,10 +3140,11 @@ msos.config = {
 msos.parse_query = function () {
     "use strict";
 
-	var url = msos.purl(),	// Get current page url
-		key = '',
+	msos.base_site_purl = msos.purl();	// Get current page url
+
+	var key = '',
         cfg = '',
-		result = url.param();
+		result = msos.base_site_purl.param();
 
     for (key in result) {
 		// only allow std word characters
@@ -3316,6 +3402,72 @@ msos.obj_stringify = function (o, simple) {
 	}
 
 	return json;
+};
+
+msos._createClass = function () {
+	"use strict";
+
+    function defineProperties(target, props) {
+		var i = 0,
+			descriptor;
+
+        for (i = 0; i < props.length; i += 1) {
+
+            descriptor = props[i];
+            descriptor.enumerable = descriptor.enumerable || false;
+            descriptor.configurable = true;
+
+            if ("value" in descriptor) { descriptor.writable = true; }
+
+            Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+        if (protoProps)		{ defineProperties(Constructor.prototype, protoProps); }
+        if (staticProps)	{ defineProperties(Constructor, staticProps); }
+        return Constructor;
+    };
+
+}();
+
+msos._inherits = function (subClass, superClass) {
+
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("msos._inherits -> super expression must either be null or a function, not " + typeof superClass);
+    }
+
+    subClass.prototype = Object.create(
+		superClass && superClass.prototype,
+		{
+			constructor: {
+				value: subClass,
+				enumerable: false,
+				writable: true,
+				configurable: true
+			}
+		}
+	);
+
+    if (superClass) {
+		Object.setPrototypeOf(subClass, superClass);
+    }
+};
+
+msos._classCallCheck = function (instance, Constructor) {
+	"use strict";
+
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("msos._classCallCheck -> cannot call a class as a function");
+    }
+};
+
+msos._constructCallCheck = function (self, call) {
+    if (!self) {
+        throw new ReferenceError("msos._constructCallCheck -> this hasn't been initialised - super() hasn't been called");
+    }
+
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
 msos.remote_origin = 'https://jsconsole.com';
@@ -3950,6 +4102,11 @@ msos.gen_namespace = function (b) {
 
 	b = b.split('.');
 
+	if (!a[b[0]]) {
+		// A new global is being initialized
+		msos.registered_globals[b[0]] = false;
+	}
+
 	for (c = 0; c < b.length; c += 1) {
 		a = a[b[c]] || (a[b[c]] = {});
 	}
@@ -4021,6 +4178,43 @@ msos.resource_url = function (folder, resource_file) {
     return msos.base_script_url.replace(/\/msos\//, '/' + (folder ? folder + '/' : '')) + resource_file;
 };
 
+msos.browser_locale = function () {
+	var nav = window.navigator,
+		i = 0,
+		language;
+
+	// support for HTML 5.1 "navigator.languages"
+	if (_.isArray(nav.languages)) {
+		for (i = 0; i < nav.languages.length; i += 1) {
+			language = nav.languages[i];
+			if (language && language.length) {
+				return language;
+			}
+		}
+	}
+
+	// support for other well known properties in browsers
+	for (i = 0; i < cfg.locale_keys.length; i += 1) {
+		language = nav[cfg.locale_keys[i]];
+		if (language && language.length) {
+			return language;
+		}
+	}
+
+	return null;
+};
+
+msos.get_locale = function (override) {
+	var locale = msos.browser_locale() || '',
+		normalize = override || msos.i18n_normalize;
+
+	if (msos.i18n_resolver[normalize]) {
+		locale = msos.i18n_resolver[normalize](locale);
+	}
+
+	return locale;
+};
+
 msos.set_locale = function () {
 	"use strict";
 
@@ -4033,9 +4227,9 @@ msos.set_locale = function () {
 
 	msos.console.debug(temp_gl + 'start, stored local: ' + (store_obj.value || 'na'));
 
-    // Check user input, then stored, then browser or default value
-    cfg.locale =   cfg.query.locale		|| store_array[0] || cfg.locale		|| msos.default_locale;
-    cfg.culture =  cfg.query.culture	|| store_array[1] || cfg.culture	|| cfg.locale;
+    // Check user input, then stored, then browser, default. Note: msos.i18n_normalize is 'default' for msos, lowercase
+    cfg.locale =   cfg.query.locale		|| store_array[0] || (msos.get_locale() || msos.default_locale).toLowerCase();
+    cfg.culture =  cfg.query.culture	|| store_array[1] || (msos.get_locale() || msos.default_locale).toLowerCase();
     cfg.calendar = cfg.query.calendar	|| store_array[2] || cfg.calendar;
 
 	msos.console.debug(temp_gl + ' done, locale: ' + cfg.locale + ', culture: ' + cfg.culture + ', calendar: ' + cfg.calendar);
@@ -4148,7 +4342,8 @@ msos.browser_current = function () {
     "use strict";
 
     var temp_txt = 'msos.browser_current -> ',
-		failed = [];
+		failed = [],
+		isOldBrowser;
 
 	// Hoped for features
 	if (!Array.prototype.indexOf)	{ failed.push('Array.indexOf'); }
@@ -4161,6 +4356,42 @@ msos.browser_current = function () {
     if (!JSON || !JSON.stringify || !JSON.stringify.length || JSON.stringify.length < 3) {
 		failed.push('JSON.stringify');
 	}
+
+	(function () {
+
+		var supportsFile = (window.File && window.FileReader && window.FileList && window.Blob),
+			url,
+			svg,
+			objectUrl,
+			img_el;
+
+		function failback() { isOldBrowser = true; }
+
+		/**
+		 * Based on:
+		 *   Blob Feature Check v1.1.0
+		 *   https://github.com/ssorallen/blob-feature-check/
+		 *   License: Public domain (http://unlicense.org)
+		 */
+		url = window.URL;
+		svg = new Blob(
+				['<svg xmlns=\'http://www.w3.org/2000/svg\'></svg>'],
+				{ type: 'image/svg+xml;charset=utf-8' }
+			);
+		objectUrl = url.createObjectURL(svg);
+
+		if (/^blob:/.exec(objectUrl) === null || !supportsFile) {
+			failback();
+		} else {
+			img_el = document.createElement('img');
+			img_el.onload = function () { isOldBrowser = false; };
+			img_el.onerror = failback;
+			img_el.src = objectUrl;
+		}
+
+	}());
+
+	if (isOldBrowser) { failed.push('Blob check'); }
 
     if (failed.length === 0) {
         msos.console.debug(temp_txt + 'browser is current');
@@ -4426,6 +4657,7 @@ msos.loader = function (win) {
 	this.deferred_done = true;
 
 	this.add_resource_onload = [];
+	this.add_resource_onerror = [];
 
     // Load the resource
     this.load = function (url, type, attribs) {
@@ -4434,6 +4666,7 @@ msos.loader = function (win) {
 			ext = base.substr(base.lastIndexOf('.') + 1),
 			pattern = /^js|css|ico|prefetch$/,
 			lo = ' - load -> ',
+			blow = '',
 			load_resource_func = null;
 
 		if (type === 'prefetch') {
@@ -4451,15 +4684,28 @@ msos.loader = function (win) {
 		// If file type passed in use it, otherwise determine from url
 		if (!type) { type = ext || 'na'; }
 
-		if (!pattern.test(type) || !name) {
+		blow = 'url: ' + url + ', type: ' + type + ', ext: ' + ext;
 
-			msos.console.error(temp_mod + lo + 'missing or invalid input for url: ' + url + ', type: ' + type);
+		if (!pattern.test(type) || !name) {
+			msos.console.error(temp_mod + lo + 'missing or invalid input for ' + blow);
+			return;
+		}
+
+		// Check for prefetch, or type <=> ext mismatch
+		if (type === 'prefetch') {
+			if (!(ext === 'js' || ext === 'css')) {
+				msos.console.error(temp_mod + lo + 'prefetch only for css, js files, ' + blow);
+				return;
+			}
+		// Check for type, ext match...
+		} else if (type !== ext || type === 'na') {
+			msos.console.error(temp_mod + lo + 'ext <=> type mismatch, or na for ' + blow);
 			return;
 		}
 
 		if (ld_obj.check(name, url, type)) {
 
-			msos.console.debug(temp_mod + lo + 'already loaded: ' + name + ', url: ' + url);
+			msos.console.debug(temp_mod + lo + 'already loaded: ' + name + ', ' + blow);
 
 		} else {
 
@@ -4504,8 +4750,11 @@ msos.loader = function (win) {
 		}
 
 		if (msos.config.verbose) {
-			msos.console.debug(temp_mod + lo + 'done!');
+			msos.console.debug(temp_mod + lo + 'done, name: ' + name);
 		}
+
+		// Can be use to lookup the loaded element in msos.registered_files, after loading
+		return name;
     };
 
     this.check = function (file_name, file_url, file_type) {
@@ -4595,9 +4844,15 @@ msos.loader = function (win) {
 
 		node.msos_load_state = 'loading';
 
-		if ((type === 'js' || type === 'prefetch') && msos.config.script_onerror) {
-			node.onerror = function (e) { msos.console.error(temp_mod + ' -> failed for: ' + name, e); };
-		}
+		node.onerror = function (e) {
+			var i = 0;
+
+			msos.console.error(temp_mod + ' -> failed for: ' + name, e);
+
+			for (i = 0; i < ld_obj.add_resource_onerror.length; i += 1) {
+				ld_obj.add_resource_onerror[i]();
+			}
+		};
 
 		if (msos.config.verbose) {
 			msos.console.debug(temp_mod + icn + 'done!');
@@ -4665,6 +4920,8 @@ msos.loader = function (win) {
 			win.msos.registered_files[file_type][file_name] = node;
 
 			msos.console.debug(temp_mod + ls + 'done!');
+		} else {
+			msos.console.error(temp_mod + ls + 'failed, no node created!');
 		}
     };
 
@@ -4831,6 +5088,9 @@ msos.script_loader = function (url_array) {
 		loader_obj.load(script_url, 'js', { defer: 'defer' });
 	}
 
+	// Set to new array, For next possible invocation
+	url_array = [];
+
 	msos.console.debug(temp_esl + 'done!');
 };
 
@@ -4855,27 +5115,52 @@ msos.script_prefetcher = function (url_array) {
 		loader_obj.load(script_url, 'prefetch');
 	}
 
-	// On next 'msos.run_onload', setup prefetched scripts for use
-	msos.onload_func_pre.push(
-		function initialize_prefetched() {
-			var temp_ip = ' - initialize_prefetched -> ',
-				pf_loader_obj,
-				j = 0;
-
-			msos.console.debug(temp_spf + temp_ip + 'start.');
-
-			// Now, load (the already prefetched scripts)
-			pf_loader_obj = new msos.loader();
-
-			for (j = 0; j < url_array.length; j += 1) {
-				pf_loader_obj.load(url_array[j], 'js');
-			}
-
-			msos.console.debug(temp_spf + temp_ip + ' done!');
-		}
-	);
-
 	msos.console.debug(temp_spf + ' ->  done!');
+};
+
+msos.check_prefetch_dependent = function (prefetch_fragment_array, redirect) {
+	"use strict";
+
+	var temp_cp = 'msos.check_prefetch_dependent -> ',
+		mrg = msos.registered_globals,
+		purl = msos.base_site_purl,
+		i = 0,
+		fragment = (purl.attr('fragment')).split('/'),
+		found = false,
+		global,
+		ready = false,
+		out_url;
+
+	for (i = 0; i < prefetch_fragment_array.length; i += 1) {
+		if (prefetch_fragment_array[i] === fragment[1]) { found = true; }
+	}
+
+	if (found) {
+
+		for (global in mrg) {
+			if (mrg[global] !== true) { ready = false; }
+		}
+
+		msos.console.debug(temp_cp + 'found fragment: ' + fragment[1]);
+
+		if (ready === false) {
+
+			out_url =
+				purl.attr('protocol') + '://' +
+				purl.attr('host') + purl.attr('path') +
+			   (purl.attr('query') ? '?' + purl.attr('query') : '') +
+			   '#' + fragment[0] + '/' + (redirect ? redirect : '');
+
+			msos.console.debug(temp_cp + ',\n     redirect url: ' + out_url);
+			return out_url;
+		}
+	}
+
+	if (msos.config.verbose) {
+		msos.console.debug(temp_cp + 'current available globals: ', mrg);
+	}
+
+	return undefined;
 };
 
 // *******************************************
@@ -4884,6 +5169,7 @@ msos.script_prefetcher = function (url_array) {
 msos.set_environment();
 msos.set_locale();
 msos.get_display_size();
+
 
 msos.console.info('msos/base -> done!');
 msos.console.timeEnd('base');

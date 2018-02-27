@@ -1,5 +1,5 @@
 
-var app = angular.module('app', ['react']);
+var app = angular.module('app', ['ng.react']);
 
 app.controller(
 	'mainCtrl',

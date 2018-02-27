@@ -19,7 +19,7 @@ msos.onload_func_done.push(
 
 		demo.route.start = angular.module(
 			'demo.route.start',
-			['ngRoute']
+			['ng', 'ng.route']
 		).config(
 			['$routeProvider', function ($routeProvider) {
 				$routeProvider

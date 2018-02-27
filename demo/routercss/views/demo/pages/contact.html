@@ -1,0 +1,28 @@
+<div class="page page-contact">
+	<h3>Contact</h3>
+
+	<p>
+		Contact a specific employee.
+	</p>
+	<ul class="nav nav-tabs">
+		<li ui-sref-active="active"><a ui-sref="root.demo.contact.employee({employee: 'billy'})">Billy</a></li>
+		<li ui-sref-active="active"><a ui-sref="root.demo.contact.employee({employee: 'nathan'})">Nathan</a></li>
+	</ul>
+
+	<ui-view></ui-view>
+
+	<h4>Array short-hand</h4>
+	<p>
+		If you don't want to overwrite a specific css files or you want to add more than 1 stylesheet without any id, you can use an array:
+	</p>
+
+	<pre class="code" apply-content highlight-lang="js">
+		.state('root.demo.contact', {
+			url: '/contact',
+			templateUrl: 'views/demo/pages/contact.html',
+			data: {
+				css: ['styles/demo/pages/contact.css']
+			}
+		});
+	</pre>
+</div>

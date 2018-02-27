@@ -1,3 +1,4 @@
+
 // # ngReact
 //
 // Composed of
@@ -6,19 +7,23 @@
 
 /*global
     msos: false,
-    _: false,
-    angular: false
+    angular: false,
+    React: false,
+    ReactDOM: false
 */
 
-(function(root, factory) {
-    root.ngReact = factory(root.React, root.ReactDOM);
-}(this, function ngReact(React, ReactDOM) {
+msos.provide("ng.react");
+
+ng.react.version = new msos.set_version(18, 1, 15);
+
+
+(function (_angular, _react, _reactdom) {
     "use strict";
 
     function getReactComponent(name, $injector) {
 		var reactComponent;
 
-        if (angular.isFunction(name)) {
+        if (_angular.isFunction(name)) {
             return name;
         }
 
@@ -84,7 +89,7 @@
 				var value = obj[key],
 					config = (propsConfig || {})[key] || {};
 
-				prev[key] = angular.isFunction(value) && config.wrapApply !== false ? applied(value, scope) : value;
+				prev[key] = _angular.isFunction(value) && config.wrapApply !== false ? applied(value, scope) : value;
 
 				return prev;
 			},
@@ -93,8 +98,8 @@
     }
 
     function watchProps(watchDepth, scope, watchExpressions, listener) {
-        var supportsWatchCollection = angular.isFunction(scope.$watchCollection),
-			supportsWatchGroup = angular.isFunction(scope.$watchGroup),
+        var supportsWatchCollection = _angular.isFunction(scope.$watchCollection),
+			supportsWatchGroup = _angular.isFunction(scope.$watchGroup),
 			watchGroupExpressions = [];
 
         watchExpressions.forEach(
@@ -120,8 +125,8 @@
     function renderComponent(component, props, scope, elem) {
         scope.$evalAsync(
 			function () {
-				ReactDOM.render(
-					React.createElement(component, props),
+				_reactdom.render(
+					_react.createElement(component, props),
 					elem[0]
 				);
 			}
@@ -151,29 +156,11 @@
     }
 
     function getPropWatchDepth(defaultWatch, prop) {
-        var customWatchDepth = ( _.isArray(prop) && angular.isObject(prop[1]) && prop[1].watchDepth);
+        var customWatchDepth = ( _.isArray(prop) && _angular.isObject(prop[1]) && prop[1].watchDepth);
 
         return customWatchDepth || defaultWatch;
     }
 
-    // # reactComponent
-    // Directive that allows React components to be used in Angular templates.
-    //
-    // Usage:
-    //     <react-component name="Hello" props="name"/>
-    //
-    // This requires that there exists an injectable or globally available 'Hello' React component.
-    // The 'props' attribute is optional and is passed to the component.
-    //
-    // The following would would create and register the component:
-    //
-    //     var module = angular.module('ace.react.components');
-    //     module.value('Hello', React.createClass({
-    //         render: function() {
-    //             return <div>Hello {this.props.name}</div>;
-    //         }
-    //     }));
-    //
     var reactComponent = function ($injector) {
         return {
             restrict: 'E',
@@ -197,11 +184,11 @@
 					'$destroy',
 					function () {
 						if (!attrs.onScopeDestroy) {
-							ReactDOM.unmountComponentAtNode(elem[0]);
+							_reactdom.unmountComponentAtNode(elem[0]);
 						} else {
 							scope.$eval(
 								attrs.onScopeDestroy,
-								{ unmountComponent: ReactDOM.unmountComponentAtNode.bind(this, elem[0]) }
+								{ unmountComponent: _reactdom.unmountComponentAtNode.bind(this, elem[0]) }
 							);
 						}
 					}
@@ -210,32 +197,6 @@
         };
     };
 
-    // # reactDirective
-    // Factory function to create directives for React components.
-    //
-    // With a component like this:
-    //
-    //     var module = angular.module('ace.react.components');
-    //     module.value('Hello', React.createClass({
-    //         render: function() {
-    //             return <div>Hello {this.props.name}</div>;
-    //         }
-    //     }));
-    //
-    // A directive can be created and registered with:
-    //
-    //     module.directive('hello', function(reactDirective) {
-    //         return reactDirective('Hello', ['name']);
-    //     });
-    //
-    // Where the first argument is the injectable or globally accessible name of the React component
-    // and the second argument is an array of property names to be watched and passed to the React component
-    // as props.
-    //
-    // This directive can then be used like this:
-    //
-    //     <hello name="name"/>
-    //
     var reactDirective = function ($injector) {
 
         return function (reactComponentName, props, conf, injectableProps) {
@@ -249,7 +210,7 @@
 						props = props || Object.keys(reactComponent.propTypes || {});
 
 						if (!props.length) {
-							angular.forEach(
+							_angular.forEach(
 								attrs.$attr,
 								function (value, key) { ngAttrNames.push(key); }
 							);
@@ -271,7 +232,7 @@
 								);
 
 								scopeProps = applyFunctions(scopeProps, scope, config);
-								scopeProps = angular.extend({}, scopeProps, injectableProps);
+								scopeProps = _angular.extend({}, scopeProps, injectableProps);
 								renderComponent(reactComponent, scopeProps, scope, elem);
 							},
 							propExpressions = props.map(
@@ -288,11 +249,11 @@
 							'$destroy',
 							function () {
 								if (!attrs.onScopeDestroy) {
-									ReactDOM.unmountComponentAtNode(elem[0]);
+									_reactdom.unmountComponentAtNode(elem[0]);
 								} else {
 									scope.$eval(
 										attrs.onScopeDestroy,
-										{ unmountComponent: ReactDOM.unmountComponentAtNode.bind(this, elem[0]) }
+										{ unmountComponent: _reactdom.unmountComponentAtNode.bind(this, elem[0]) }
 									);
 								}
 							}
@@ -300,18 +261,19 @@
 					}
 				};
 
-				return angular.extend(directive, conf);
+				return _angular.extend(directive, conf);
 			};
 	};
 
-    return angular.module(
-			'react',
-			['ng']
-		).directive(
-			'reactComponent',
-			['$injector', reactComponent]
-		).factory(
-			'reactDirective',
-			['$injector', reactDirective]
-		);
-}));
+    _angular.module(
+		'ng.react',
+		['ng']
+	).directive(
+		'reactComponent',
+		['$injector', reactComponent]
+	).factory(
+		'reactDirective',
+		['$injector', reactDirective]
+	);
+
+}(angular, React, ReactDOM));

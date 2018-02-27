@@ -24,7 +24,7 @@ msos.onload_functions.push(
 
 		msos.console.debug(temp_sd + ' -> start.');
 
-		demo.ng.start = angular.module('demo.ng.start', ['ngRoute', 'ng.bootstrap.ui', 'ng.bootstrap.ui.dropdown']);
+		demo.ng.start = angular.module('demo.ng.start', ['ng.route', 'ng.bootstrap.ui', 'ng.bootstrap.ui.dropdown']);
 
 		// The basic technique below was derived from the example at:
 		// http://www.bennadel.com/blog/2554-loading-angularjs-components-with-requirejs-after-application-bootstrap.htm

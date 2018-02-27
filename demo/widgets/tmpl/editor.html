@@ -1,31 +1,47 @@
 
-<section>
-    <div data-ng-controller="demo.widgets.controllers.editor.ctrl">
-        </br>
-        <div class="container">
-            <a href="http://github.com/fraywing/textAngular"> <img src="http://textangular.com/images/textAngularLogo.png" style="max-width:500%;" class="lighter"></a>
-        </div>
-        </br>
+    <style data-ng-ignore>
+        h2 small {
+            font-size: 60%;
+        }
+        textarea.ta-bind {
+            width: 100%;
+        }
+		.ta-toolbar {
+			background-color: #F0F0F0;
+			padding: 10px 10px 5px;
+			margin-left: 0px;		/* Override bootstrap */
+			border: 1px solid #EEE;
+		}
+		.ta-toolbar .btn-group {
+			margin-bottom: 5px;
+		}
+		.ta-editor, .white-box {
+			padding: 10px;
+			background-color: #FFF;
+			border: 1px solid #EEE;
+		}
+    </style>
 
-        <div class="container border-around text-center lighter">
-            <span class="text-xlg roboto">A Lightweight, Two-Way-Bound &amp; Totally <b class="text-red">Awesome</b> Angular.js Text-Editor</span>
-        </div>
-        <div class="container lighter">
-            <div text-angular ng-model="htmlContent" name="demo-editor" ta-text-editor-class="border-around container" ta-html-editor-class="border-around"></div>
-        </div>
-        </br>
+	<div data-ng-controller="demo.widgets.controllers.editor.ctrl">
+		<h2>
+			<a href="http://github.com/fraywing/textAngular">textAngular <small>{{version}}</small></a> via NgMomentum
+		</h2>
 
-        <div class="container text-center lighter border-around">
-            <div class="lighter roboto">
-                <p ng-bind="htmlContent" class="text-left text-med text-gray"></p>
-            </div>
-        </div>
-        </br>
+		<h3>Editor demo</h3>
 
-        <div class="container">
+		<div text-angular ng-model="htmlContent" name="demo-editor" ta-text-editor-class="clearfix border-around" ta-html-editor-class="border-around"></div>
+
+		<h3>HTML output</h3>
+
+		<pre ng-bind="htmlContent" class="white-box"></pre>
+
+        <p>
+			Note: although we support classes and styles, angularjs' ng-bind-html directive will strip
+			out all style attributes.
+		</p>
+
+        <div data-ng-ignore class="container">
             <div class="text-center">Create by fraywing</div>
             <div class="text-center">2015 Licensed under <a href="http://opensource.org/licenses/MIT">MIT</a></div>
         </div>
-        </br>
     </div>
-</section>

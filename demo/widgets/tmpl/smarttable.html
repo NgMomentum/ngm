@@ -1,0 +1,73 @@
+
+	<style data-ng-ignore>
+		.st-sort-ascent:before {
+			content: '\25B2';
+		}
+		.st-sort-descent:before {
+			content: '\25BC';
+		}
+		.lr-drop-target-before {
+			border-left: 2px solid orange;
+		}
+		.lr-drop-target-after {
+			border-right: 2px solid orange;
+		}
+	</style>
+
+	<div ng-controller="demo.widgets.controllers.smarttable.ctrl">
+
+		<h2 data-ng-ignore>SmartTable Data via NgMomentum</h2>
+
+		<div class="table-container">
+			<form>
+				<label for="predicate">selected predicate:</label>
+				<select class="form-control" id="predicate" ng-model="selectedPredicate" ng-options="predicate for predicate in predicates"></select>
+			</form>
+			<table st-table="rowCollection" class="table table-striped">
+				<thead>
+					<tr>
+						<th lr-drag-src="headers" lr-drop-target="headers" ng-repeat="col in columns" st-sort="{{col}}">{{col}}</th>
+					</tr>
+					<tr>
+						<th>
+							<input st-search="firstName" placeholder="search for firstname" class="input-sm form-control" type="search" />
+						</th>
+						<th colspan="3">
+							<input st-search placeholder="global search" class="input-sm form-control" type="search" />
+						</th>
+						<th>
+							<input st-search="{{selectedPredicate}}" placeholder="bound predicate" class="input-sm form-control" type="search"/>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr st-select-row="row" st-select-mode="multiple" ng-repeat="row in rowCollection">
+						<td>{{row.firstName | uppercase}}</td>
+						<td>{{row.lastName}}</td>
+						<td>{{row.birthDate | date}}</td>
+						<td>{{row.balance | currency}}</td>
+						<td>{{row.email}}</td>
+						<td>
+							<button class="btn btn-sm" type="button">
+								<a ng-href="mailto:{{row.email}}">
+									<i class="fa fa-eye"></i>
+								</a>
+							</button>
+							<button class="btn btn-sm btn-danger" type="button" ng-click="removeItem(row)">
+								<i class="fa fa-trash-o"></i>
+							</button>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="5" class="text-center">
+							<div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="5"></div>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+		<div ng-show="isLoading" class="loading-indicator"></div>
+	</div>
+

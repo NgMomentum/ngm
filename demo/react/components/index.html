@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
     <title>React-tabtab umd example</title>
+
 </head>
 
 <body>
@@ -12,9 +14,9 @@
 </body>
 
 <script src="../../../es6/babel/v6260_standalone.uc.js"></script>
-<script src="../../../react/v1620_dev.js"></script>
-<script src="../../../react/v1620_dev_dom.js"></script>
-<script src="../../../react/prop_types/v1560.js"></script>
+<script src="../../../react/v1620_msos.uc.js"></script>
+<script src="../../../react/v1620_msos_dom.uc.js"></script>
+<script src="../../../react/prop_types/v1560.uc.js"></script>
 <script src="../../../react/classnames/v225.js"></script>
 <script src="../../../react/styled_components/v224.js"></script>
 <script src="../../../react/sortable_hoc/v068.js"></script>
@@ -28,30 +30,36 @@
 	const Tab = Tabtab.Tab;
 	const PanelList = Tabtab.PanelList;
 	const Panel = Tabtab.Panel;
-	class App extends React.Component { render() { return (
-
-    <Tabs>
-        <TabList>
-            <Tab>Tab1</Tab>
-            <Tab>Tab2</Tab>
-            <Tab>Tab3</Tab>
-        </TabList>
-        <PanelList>
-            <Panel>
-                Accusamus enim nisi itaque voluptas nesciunt repudiandae velit. <br/> Ad molestiae magni quidem saepe et quia voluptatibus minima. <br/> Omnis autem distinctio tempore. Qui omnis eum illum adipisci ab.
-            </Panel>
-            <Panel>
-                Officiis commodi facilis optio eum aliquam.<br/> Tempore libero sit est architecto voluptate. Harum dolor modi deleniti animi qui similique facilis. Sit delectus voluptatem praesentium recusandae neque quo quod.
-            </Panel>
-            <Panel>
-                Ut voluptas a voluptas quo ut dolorum.<br/> Dolorem sint velit explicabo sunt distinctio dolorem adipisci tempore.<br/> Est repellat quis magnam quo nihil amet et. Iste consequatur architecto quam neque suscipit.
-            </Panel>
-        </PanelList>
-    </Tabs>
-    ) } }
+	class App extends React.Component {
+		render() {
+			return (
+				<Tabs>
+					<TabList>
+						<Tab>Tab1</Tab>
+						<Tab>Tab2</Tab>
+						<Tab>Tab3</Tab>
+					</TabList>
+					<PanelList>
+						<Panel>
+							Accusamus enim nisi itaque voluptas nesciunt repudiandae velit. <br/> Ad molestiae magni quidem saepe et quia voluptatibus minima. <br/> Omnis autem distinctio tempore. Qui omnis eum illum adipisci ab.
+						</Panel>
+						<Panel>
+							Officiis commodi facilis optio eum aliquam.<br/> Tempore libero sit est architecto voluptate. Harum dolor modi deleniti animi qui similique facilis. Sit delectus voluptatem praesentium recusandae neque quo quod.
+						</Panel>
+						<Panel>
+							Ut voluptas a voluptas quo ut dolorum.<br/> Dolorem sint velit explicabo sunt distinctio dolorem adipisci tempore.<br/> Est repellat quis magnam quo nihil amet et. Iste consequatur architecto quam neque suscipit.
+						</Panel>
+					</PanelList>
+				</Tabs>
+			)
+		}
+	}
 
 	ReactDOM.render(
-    <App />, document.getElementById('root') );
+		<App />,
+		document.getElementById('root')
+	);
+
 </script>
 
 </html>

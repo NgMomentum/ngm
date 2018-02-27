@@ -1,0 +1,117 @@
+<div class="jumbotron">
+	<div class="container">
+		<h1>UI Router CSS</h1>
+		<p>
+			AngularJS UI Router (1.*) plugin to load route-specific, promised based CSS files
+		</p>
+		<div class="btn-group btn-group-call-to-action">
+			<a class="btn btn-primary btn-lg" href="https://github.com/harm-less/angular-ui-router-css" target="_blank" role="button"><span class="glyphicon glyphicon-home"></span> Code on Github</a>
+			<a class="btn btn-primary btn-lg" href="https://github.com/harm-less/angular-ui-router-css/archive/master.zip" role="button"><span class="glyphicon glyphicon-download"></span> Download</a>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<h1>Getting started</h1>
+	<p>
+		This plugin contains a set of native AngularJS directives and services.
+	</p>
+	<p>
+		A few noteworthy things about this plugin:
+	</p>
+	<ul>
+		<li>AngularJS (requires AngularJS 1.5 or higher, tested with 1.6.4).</li>
+		<li>UI Router (requires UI Router 1.0 or higher, tested with 1.0.3).</li>
+		<li>Small size: 3kB (minified)</li>
+		<li>Supports all major browsers and IE9 and up (lower versions might not be supported)</li>
+	</ul>
+
+	<p>
+		If you want to use this plugin for UI Router 0.4.x or lower, I suggest to use the following plugin: <a href="https://github.com/betsol/ng-ui-router-styles" target="_blank">ng-ui-router-styles</a>
+	</p>
+
+	<hr>
+
+	<h2>Installation</h2>
+	<h3>NPM (Recommended)</h3>
+	<p>
+		To install with <a href="https://www.npmjs.com/" target="_blank">NPM</a> use:
+	</p>
+	<pre>npm install angular-ui-router-css</pre>
+
+	<h3>Bower</h3>
+	<p>
+		To install with <a href="http://bower.io/" target="_blank">Bower</a> use:
+	</p>
+	<pre>bower install angular-ui-router-css-plugin</pre>
+
+	<h3>Manually</h3>
+	<p>
+		Click the download button to download the latest version of the plugin. In the folder <code>dist</code> you'll find the minified and normal JavaScript file.
+		Either one is fine to use, it just depends on your needs.
+	</p>
+	<p>
+		<i>Note: The unminified file contains certain debug code. If you minify this file yourself during your build, make sure you remove this code so your code is as small as possible. An Uglify example is right here (or you can checkout how it was done in the <a href="https://github.com/harm-less/angular-ui-router-css/blob/master/Gruntfile.js#L151" target="_blank">Gruntfile of this repo</a>):</i>
+	</p>
+	<pre class="code" apply-content highlight-lang="js">
+		uglify: {
+			options: {
+				compress: {
+					global_defs: {
+						DEBUG: false
+					}
+				}
+			}
+		}
+	</pre>
+
+	<h3>Adding it to your project</h3>
+	<p>
+		As soon as you've got all the files downloaded and included in your page you just need to declare a dependency on the module:
+	</p>
+	<pre class="code" apply-content highlight-lang="html">
+		angular.module('myModule', ['hl.css.ui.router']);
+	</pre>
+
+	<h3>Basic example</h3>
+	<p>
+		This will inject a CSS file into the head of your page whenever this state (it its children) will be activated:
+	</p>
+
+	<pre class="code" apply-content highlight-lang="js">
+		angular.module('myModule').config(function($stateProvider) {
+			$stateProvider.state('home', {
+				url: '/home',
+				templateUrl: 'views/pages/home.html',
+				data: {
+					css: {
+						home: 'styles/pages/home.css'
+					}
+				}
+			});
+		});
+	</pre>
+	<p>
+		To see this in action, check out out the <a ui-sref="root.demo()">demo</a>. For a more in-depth overview the API documents are your best shot.
+	</p>
+
+	<hr>
+
+	<h2>Features</h2>
+	<p>
+		Angular UI Router CSS has been set up in such a way so it uses a lot of handy features already build in UI Router and Angular. This way the code can stay small and doesn't become too complex to maintain.
+		There's no limit on the amount of CSS files you can load at any particular moment in your application, so it's well suites for projects with a lot of files were page load speed is important. The most prominent features listed:
+	</p>
+	<ul>
+		<li>CSS files definition inheritance using state inheritance (including injection)</li>
+		<li>Overriding of parent states</li>
+		<li>Load order of stylesheet is taken into account</li>
+		<li><a ui-sref="root.api.directive({name: 'ui-css'})">Choose the position</a> of the linked CSS files in the HTML's head</li>
+		<li>Inject CSS files in ways other than states using services</li>
+		<li>Unlimited files that can be loaded as any moment</li>
+		<li>Proper garbage collection</li>
+	</ul>
+	<p>
+		To get a better understanding of the features, make sure you read through the API documentation.
+	</p>
+</div>

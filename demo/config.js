@@ -14,7 +14,7 @@
 */
 
 /*global
-	msos: false,
+	msos: dra,
     _gaq: true,
     ___gcfg: true
 */
@@ -35,8 +35,7 @@ if (msos.config.debug_css) {
 		msos.resource_url('fonts', 'css/fontawesome.uc.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.uc.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/theme.uc.css'),
-		msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
-		msos.resource_url('demo', 'site.css')
+		msos.resource_url('ng', 'bootstrap/css/ui/misc.css')
 	];
 
 } else {
@@ -45,8 +44,7 @@ if (msos.config.debug_css) {
 		msos.resource_url('fonts', 'css/fontawesome.min.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.min.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/theme.min.css'),
-		msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
-		msos.resource_url('demo', 'site.css')
+		msos.resource_url('ng', 'bootstrap/css/ui/misc.css')
 	];
 
 }
@@ -62,15 +60,20 @@ if (msos.config.debug_script) {
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v321.uc.js'),
 		msos.resource_url('ng', 'v167_msos.uc.js'),
-		msos.resource_url('ng', 'ui/router/v042_msos.uc.js'),
+		msos.resource_url('ng', 'ui/router/v1014_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.uc.js')
 	];
 
+	// Files not requires by first content page load
 	msos.prefetch_scripts = [
 		msos.resource_url('firebase', 'v480.min.js'),		// Full script is na
 		msos.resource_url('ng', 'firebase/v230_msos.uc.js'),
+		msos.resource_url('react', 'v1620_msos.uc.js'),
+		msos.resource_url('react', 'v1620_msos_dom.uc.js'),
+		msos.resource_url('react', 'prop_types/v1560.uc.js'),
+		msos.resource_url('react', 'create_react_class/v1562.uc.js'),
 		msos.resource_url('hello', 'v1151.uc.js')
 	];
 
@@ -80,15 +83,20 @@ if (msos.config.debug_script) {
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v321.min.js'),
 		msos.resource_url('ng', 'v167_msos.min.js'),
-		msos.resource_url('ng', 'ui/router/v042_msos.min.js'),
+		msos.resource_url('ng', 'ui/router/v1014_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
 	];
 
+	// Files not requires by first content page load
 	msos.prefetch_scripts = [
 		msos.resource_url('firebase', 'v480.min.js'),
 		msos.resource_url('ng', 'firebase/v230_msos.min.js'),
+		msos.resource_url('react', 'v1620_msos.min.js'),
+		msos.resource_url('react', 'v1620_msos_dom.min.js'),
+		msos.resource_url('react', 'prop_types/v1560.min.js'),
+		msos.resource_url('react', 'create_react_class/v1562.min.js'),
 		msos.resource_url('hello', 'v1151.min.js')
 	];
 }
@@ -134,11 +142,17 @@ msos.css_loader(msos.deferred_css);
 // Load our primary Scripts
 msos.script_loader(msos.deferred_scripts);
 
-// Prefetch our large secondary Scripts
-msos.onload_func_done.push(
+// Prefetch large secondary scripts (after MSOS modules have loaded)
+msos.onload_functions.push(
 	function config_run_prefetch() {
-		// Note: these will not be available at first page rendering
 		msos.script_prefetcher(msos.prefetch_scripts);
+	}
+);
+
+// Now, initialize prefetched scripts after current page functions are done
+msos.onload_func_post.push(
+	function config_init_prefetch() {
+		msos.script_loader(msos.prefetch_scripts);
 	}
 );
 

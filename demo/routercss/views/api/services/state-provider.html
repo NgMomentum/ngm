@@ -1,0 +1,196 @@
+<h1 class="page-title"><code>$stateProvider</code></h1>
+<p>
+	This page will explain about how you can attach CSS files to UI Router states. It assumes you already know how to makes states and what's required for them.
+</p>
+
+<h3>Examples</h3>
+
+<a name="simple"></a>
+<h4>Simple</h4>
+<p>
+	The following is the simplest implementation possible:
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home', {
+		url: '/home',
+		templateUrl: 'views/pages/home.html',
+		data: {
+			css: 'styles/pages/home.css'
+		}
+	})
+</pre>
+<p>
+	Note that we're using the <code>data</code> node to attach our CSS file paths. The <code>css</code> node is the place this plugin listens to. So everything in there will be used
+</p>
+
+<p>
+	You can also give your CSS files a name.
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home', {
+		url: '/home',
+		templateUrl: 'views/pages/home.html',
+		data: {
+			css: {
+				home: 'styles/pages/home.css'
+			}
+		}
+	}
+</pre>
+
+<p>
+	The advantage of doing this is that you'll be able to target the CSS definitions in a child state In the following example the <code>home</code> stylesheet gets a different path like this:
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home.child', {
+		url: '/child',
+		templateUrl: 'views/pages/home-child.html',
+		data: {
+			css: {
+				home: 'styles/pages/home-child.css'
+			}
+		}
+	}
+</pre>
+
+<p>
+	Or remove the stylesheet altogether:
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home.child', {
+		url: '/child',
+		templateUrl: 'views/pages/home-child.html',
+		data: {
+			css: {
+				home: null
+			}
+		}
+	}
+</pre>
+
+<p>
+	Giving the CSS file paths in an object also allows you to send along optional custom data.<br>
+	<i>Note: Make sure a <code>url</code> node is set.</i>
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home', {
+		url: '/home',
+		templateUrl: 'views/pages/home.html',
+		data: {
+			css: {
+				home: {
+					url: 'styles/pages/home.css',
+					colors: {
+						heading: '#333333';
+					}
+				}
+			}
+		}
+	}
+</pre>
+
+<p>
+	If you don't care about overwritten multiple CSS files, you can also use an array short-hand:
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home', {
+		url: '/child',
+		templateUrl: 'views/pages/home.html',
+		data: {
+			css: ['styles/pages/home.css', 'styles/module/home.css']
+		}
+	}
+</pre>
+<br>
+
+<h4>Advanced</h4>
+<p>
+	CSS file paths can't always be static, right? You can also use methods to dynamically build the CSS definitions at the moment it's required. All you need to do is follow the <a href="https://docs.angularjs.org/guide/di" target="_blank">dependency injection guidelines</a>.
+</p>
+<p>
+	It works from the root level:
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home', {
+		url: '/contact?employee',
+		templateUrl: 'views/pages/contact.html',
+		data: {
+			css: ['$transition$', function($transition$) {
+				return 'styles/demo/employees/' + $transition$.params().employee + '.css'
+			}]
+		}
+	})
+</pre>
+
+<p>
+	Or from a single definition level:
+</p>
+<pre class="code" apply-content highlight-lang="js">
+	.state('home', {
+		url: '/contact?employee',
+		templateUrl: 'views/pages/contact.html',
+		data: {
+			css: {
+				employeeCore: 'styles/demo/employees/core.css',
+				employee: ['$transition$', function($transition$) {
+					return 'styles/demo/employees/' + $transition$.params().employee + '.css'
+				}]
+			}
+		}
+	})
+</pre>
+
+<p>
+	<i>Note that the <code>$transition$</code> parameter is the transition that's happening at that very moment at the <code>onBefore</code> hook.</i>
+</p>
+
+<hr>
+
+<h3>Events</h3>
+<p>
+	There are a few event you can hook into when you've set up states with CSS files. All events are broadcasted on the root scope.
+</p>
+<ul class="list-methods">
+	<li>
+		<h4><code>uiRouterCss.loadingStarted</code></h4>
+		<p>
+			Fires during the <code>$transitions.onBefore</code> hook.
+		</p>
+		<pre class="code" apply-content highlight-lang="js">
+			$rootScope.$on('uiRouterCss.loadingStarted', function(event, definitions) {
+				// your code
+			});
+		</pre>
+
+		<h5><code>Parameters</code></h5>
+		<ul class="list-attributes">
+			<li>
+				<code>event</code>
+				Default Angular event.
+			</li>
+			<li>
+				<code>definitions</code>
+				An array of definition objects. Those are the definitions that will be loaded during the state transition. In here you'll find the stylesheet load promise, the url the id and more if that was specified.
+			</li>
+		</ul>
+	</li>
+	<li>
+		<h4><code>uiRouterCss.loadingFinished</code></h4>
+		<p>
+			Fires after all CSS file definition promises have been completed. This is before the state's <code>$transitions.onSuccess</code> hook is fired.
+		</p>
+		<pre class="code" apply-content highlight-lang="js">
+			$rootScope.$on('uiRouterCss.loadingFinished', function(event) {
+				// your code
+			});
+		</pre>
+
+		<h5><code>Parameters</code></h5>
+		<ul class="list-attributes">
+			<li>
+				<code>event</code>
+				Default Angular event.
+			</li>
+		</ul>
+	</li>
+</ul>

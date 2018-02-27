@@ -1,0 +1,73 @@
+<div class="demo-wrapper">
+	<div class="container">
+		<a class="btn btn-primary btn-demo-source" href="https://github.com/harm-less/angular-ui-router-css/tree/master/demo" target="_blank">Demo source code</a>
+		<h1 class="page-title">Demo</h1>
+		<p>
+			This page helps to paint a picture what the prominent features of the plugin will do. Below is a demo that illustrates how states (pages) are being used to set up a dynamic play between stylesheets.
+		</p>
+	</div>
+
+	<div class="container container-demo">
+		<div class="row">
+			<div class="col-sm-8 demo-content">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<!-- Brand and toggle get grouped for better mobile display -->
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle collapsed" data-uib-dropdown-toggle="collapse" data-uib-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+							<a class="navbar-brand">Demo</a>
+						</div>
+
+						<!-- Collect the nav links, forms, and other content for toggling -->
+						<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+							<ul class="nav navbar-nav">
+								<li ui-sref-active="active">
+									<a ui-sref="root.demo.home()">Home</a>
+								</li>
+								<li class="dropdown" uib-dropdown>
+									<a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle>About <span class="caret"></span></a>
+									<ul class="dropdown-menu">
+										<li ui-sref-active="active">
+											<a ui-sref="root.demo.about.me()">Me</a>
+										</li>
+										<li ui-sref-active="active">
+											<a ui-sref="root.demo.about.the-project()">The project</a>
+										</li>
+									</ul>
+								</li>
+								<li ui-sref-active="active">
+									<a ui-sref="root.demo.contact()">Contact</a>
+								</li>
+							</ul>
+						</div><!-- /.navbar-collapse -->
+					</div><!-- /.container-fluid -->
+				</nav>
+
+				<ui-view></ui-view>
+			</div>
+			<div class="col-sm-4">
+				<h4>Select theme</h4>
+				<div class="form-group">
+					<select name="theme" id="theme" class="form-control" ng-model="theme.model" ng-change="themeChange()">
+						<option value="light">Light</option>
+						<option value="dark">Dark</option>
+					</select>
+				</div>
+
+				<h4>Loaded stylesheets</h4>
+				<p>
+					The following stylesheet have been injected in order of appearance:
+				</p>
+				<ol>
+					<li>{{theme.path}}</li>
+					<li ng-repeat="definition in definitions">{{definition.url}}</li>
+				</ol>
+			</div>
+		</div>
+	</div>
+</div>

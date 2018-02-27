@@ -21,7 +21,7 @@ ng.resource.version = new msos.set_version(17, 12, 30);
         MEMBER_NAME_REGEX = /^(\.[a-zA-Z_$@][0-9a-zA-Z_$@]*)+$/;
 
     function isValidDottedPath(path) {
-        return (path != null && path !== '' && path !== 'hasOwnProperty' &&
+        return (path !== null && path !== undefined && path !== '' && path !== 'hasOwnProperty' &&
             MEMBER_NAME_REGEX.test('.' + path));
     }
 

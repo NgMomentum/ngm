@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../../msos/base.uc.js"></script>
+    <script src="../../../jquery/v321.uc.js"></script>
+    <script src="../../../msos/core.uc.js"></script>
+    <script src="../../../ng/v167_msos.uc.js"></script>
+	<script src="../react_v0100.uc.js"></script>
+    <script src="./script.js"></script>
+</head>
+
+<body>
+    <h1>Faster Rendering With ReactJs</h1>
+
+    <div ng-controller="mycontroller">
+        <button ng-click="refresh()">Refresh Data</button>
+        <fast-repeat data="data"></fast-repeat>
+    </div>
+
+    <script data-ng-ignore>
+        // Bootstrap our simple demo
+        msos.onload_func_done.push(
+            function() {
+                "use strict";
+
+                msos.console.info('Page index.html loaded!');
+
+                angular.bootstrap('body', ['fasterAngular']);
+            }
+        );
+    </script>
+</body>
+</html>
