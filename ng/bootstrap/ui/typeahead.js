@@ -366,9 +366,13 @@ angular.module(
         var timeoutPromise;
 
         var scheduleSearchWithTimeout = function (inputValue) {
-            timeoutPromise = $timeout(function () {
-                getMatchesAsync(inputValue);
-            }, waitTime);
+            timeoutPromise = $timeout(
+				function () {
+					getMatchesAsync(inputValue);
+				},
+				waitTime,
+				false
+			);
         };
 
         var cancelPreviousTimeout = function () {
@@ -413,9 +417,13 @@ angular.module(
             //return focus to the input element if a match was selected via a mouse click event
             // use timeout to avoid $rootScope:inprog error
             if (scope.$eval(attrs.typeaheadFocusOnSelect) !== false) {
-                $timeout(function () {
-                    element[0].focus();
-                }, 0, false);
+                $timeout(
+					function () {
+						element[0].focus();
+					},
+					0,
+					false
+				);
             }
         };
 
@@ -484,9 +492,13 @@ angular.module(
         element.bind('focus', function (evt) {
             hasFocus = true;
             if (minLength === 0 && !modelCtrl.$viewValue) {
-                $timeout(function () {
-                    getMatchesAsync(modelCtrl.$viewValue, evt);
-                }, 0);
+                $timeout(
+					function () {
+						getMatchesAsync(modelCtrl.$viewValue, evt);
+					},
+					0,
+					false
+				);
             }
         });
 

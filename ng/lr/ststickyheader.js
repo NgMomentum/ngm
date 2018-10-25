@@ -13,11 +13,15 @@
                         stickyHeader.clean();
                     });
 
-                    scope.$watch(function() {
-                        return ctrl.tableState();
-                    }, function() {
-                        $window.scrollTo(0, lrStickyHeader.treshold);
-                    }, true);
+                    scope.$watch(
+						function() {
+							return ctrl.tableState();
+						},
+						function() {
+							$window.scrollTo(0, lrStickyHeader.treshold);
+						},
+						true
+					);
                 }
             };
         }]);

@@ -124,7 +124,11 @@ angular.module(
                         previous = now;
                         func.call();
                     } else if (!timeout) {
-                        timeout = $interval(later, remaining, 1);
+                        timeout = $interval(
+							later,
+							remaining,
+							1
+						);
                     }
                 }
 
@@ -237,7 +241,12 @@ angular.module(
                 return $interval.cancel(checkInterval);
             }
 
-            checkInterval = $interval(intervalCheck);
+            checkInterval = $interval(
+				intervalCheck,
+				10,
+				0,
+				scope
+			);
             return checkInterval;
         }
     };

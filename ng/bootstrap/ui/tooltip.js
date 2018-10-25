@@ -154,7 +154,8 @@ angular.module(
 
                                             var currentHeight = angular.isDefined(tooltip.offsetHeight) ? tooltip.offsetHeight : tooltip.prop('offsetHeight');
                                             var adjustment = $position.adjustTop(placementClasses, elementPos, initialHeight, currentHeight);
-                                            if (adjustment) {
+
+				                            if (adjustment) {
                                                 tooltip.css(adjustment);
                                             }
                                         }, 10, false);
@@ -168,6 +169,7 @@ angular.module(
                                         } else if (lastPlacement !== ttPosition.placement) {
                                             $position.positionArrow(tooltip, ttPosition.placement);
                                         }
+
                                         lastPlacement = ttPosition.placement;
 
                                         positionTimeout = null;

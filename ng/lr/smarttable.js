@@ -368,7 +368,8 @@ ng.lr.smarttable.version = new msos.set_version(18, 1, 15);
 									tableCtrl.search(input, attr.stSearch || '');
 									promise = null;
 								},
-								throttle
+								throttle,
+								false
 							);
 						}
 					);
@@ -473,9 +474,13 @@ ng.lr.smarttable.version = new msos.set_version(18, 1, 15);
                         if (throttle < 0) {
                             func();
                         } else {
-                            promise = $timeout(function () {
-                                func ();
-                            }, throttle);
+                            promise = $timeout(
+								function () {
+									func ();
+								},
+								throttle,
+								false
+							);
                         }
                     }
 
@@ -590,7 +595,10 @@ ng.lr.smarttable.version = new msos.set_version(18, 1, 15);
 						}
 					);
 
-                    scope.$watch('stDisplayedPages', redraw);
+                    scope.$watch(
+						'stDisplayedPages',
+						redraw
+					);
 
                     //view -> table state
                     scope.selectPage = function(page) {
@@ -627,9 +635,13 @@ ng.lr.smarttable.version = new msos.set_version(18, 1, 15);
                                     $timeout.cancel(pipePromise);
                                 }
 
-                                pipePromise = $timeout(function() {
-                                    scope.stPipe(ctrl.tableState(), ctrl);
-                                }, config.pipe.delay);
+                                pipePromise = $timeout(
+									function () {
+										scope.stPipe(ctrl.tableState(), ctrl);
+									},
+									config.pipe.delay,
+									false
+								);
 
                                 return pipePromise;
                             };

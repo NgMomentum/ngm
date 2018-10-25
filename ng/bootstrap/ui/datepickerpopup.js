@@ -278,27 +278,32 @@ angular.module(
         $scope.$watch('isOpen', function (value) {
             if (value) {
                 if (!$scope.disabled) {
-                    $timeout(function () {
-                        positionPopup();
+                    $timeout(
+						function () {
+							positionPopup();
 
-                        if (onOpenFocus) {
-                            $scope.$broadcast('uib:datepicker.focus');
-                        }
+							if (onOpenFocus) {
+								$scope.$broadcast('uib:datepicker.focus');
+							}
 
-                        $document.on('click', documentClickBind);
+							$document.on('click', documentClickBind);
 
-                        var placement = $attrs.popupPlacement ? $attrs.popupPlacement : datepickerPopupConfig.placement;
-                        if (appendToBody || $position.parsePlacement(placement)[2]) {
-                            scrollParentEl = scrollParentEl || angular.element($position.scrollParent($element));
-                            if (scrollParentEl) {
-                                scrollParentEl.on('scroll', positionPopup);
-                            }
-                        } else {
-                            scrollParentEl = null;
-                        }
+							var placement = $attrs.popupPlacement ? $attrs.popupPlacement : datepickerPopupConfig.placement;
 
-                        angular.element($window).on('resize', positionPopup);
-                    }, 0, false);
+							if (appendToBody || $position.parsePlacement(placement)[2]) {
+								scrollParentEl = scrollParentEl || angular.element($position.scrollParent($element));
+								if (scrollParentEl) {
+									scrollParentEl.on('scroll', positionPopup);
+								}
+							} else {
+								scrollParentEl = null;
+							}
+	
+							angular.element($window).on('resize', positionPopup);
+						},
+						0,
+						false
+					);
                 } else {
                     $scope.isOpen = false;
                 }
@@ -426,7 +431,11 @@ angular.module(
         }
 
         $scope.$on('uib:datepicker.mode', function () {
-            $timeout(positionPopup, 0, false);
+            $timeout(
+				positionPopup,
+				0,
+				false
+			);
         });
     }
 ]).directive('uibDatepickerPopup', function () {

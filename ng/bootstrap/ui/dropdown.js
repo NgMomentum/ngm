@@ -503,9 +503,12 @@ angular.module(
                 element.attr('aria-expanded', !!isOpen);
             });
 
-            scope.$on('$destroy', function () {
-                element.unbind('click', toggleDropdown);
-            });
+            scope.$on(
+				'$destroy',
+				function ng_bootstrap_ui_dropdown_toggle_on() {
+					element.unbind('click', toggleDropdown);
+				}
+			);
         }
     };
 }).directive(

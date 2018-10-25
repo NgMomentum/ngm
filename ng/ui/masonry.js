@@ -2902,7 +2902,7 @@ return ImagesLoaded;
             $element.masonry.apply($element, args);
           });
           schedule = [];
-        }, 30);
+        }, 30, false);
       };
       function defaultLoaded($element) {
         $element.addClass('loaded');

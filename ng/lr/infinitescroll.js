@@ -17,7 +17,7 @@ ng.lr.infinitescroll.version = new msos.set_version(18, 1, 17);
 		['ng', 'ng.lr.smarttable']
 	).directive(
 		'stPaginationScroll',
-		['$timeout', function (timeout) {
+		['$timeout', function ($timeout) {
 			return {
 				require: 'stTable',
 				link: function (scope, element, attr, ctrl) {
@@ -43,17 +43,18 @@ ng.lr.infinitescroll.version = new msos.set_version(18, 1, 17);
 	
 								//if there is already a timer running which has no expired yet we have to cancel it and restart the timer
 								if (promise !== null) {
-									timeout.cancel(promise);
+									$timeout.cancel(promise);
 								}
 
-								promise = timeout(
+								promise = $timeout(
 									function () {
 										handler();
 										//scroll a bit up
 										container[0].scrollTop -= 500;
 										promise = null;
 									},
-									timeThreshold
+									timeThreshold,
+									false
 								);
 							}
 

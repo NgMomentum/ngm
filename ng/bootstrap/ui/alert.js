@@ -35,9 +35,13 @@ angular.module(
             $interpolate($attrs.dismissOnTimeout)($scope.$parent) : null;
     
         if (dismissOnTimeout) {
-            $timeout(function () {
-                $scope.close();
-            }, parseInt(dismissOnTimeout, 10));
+            $timeout(
+				function () {
+					$scope.close();
+				},
+				parseInt(dismissOnTimeout, 10),
+				false
+			);
         }
     }]
 ).directive(

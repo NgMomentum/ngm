@@ -514,9 +514,13 @@ angular
 
           $parse(key).assign(scope, value);
 
-          return scope.$watch(key, function(newVal) {
-            addToLocalStorage(lsKey, newVal, type);
-          }, isObject(scope[key]));
+          return scope.$watch(
+				key,
+				function(newVal) {
+					addToLocalStorage(lsKey, newVal, type);
+				},
+				isObject(scope[key])
+			);
         };
 
         // Add listener to local storage, for update callbacks.
@@ -542,9 +546,11 @@ angular
                 if (isString(e.key) && isKeyPrefixOurs(e.key)) {
                     var key = underiveQualifiedKey(e.key);
                     // Use timeout, to avoid using $rootScope.$apply.
-                    $timeout(function () {
-                        $rootScope.$broadcast('LocalStorageModule.notification.changed', { key: key, newvalue: e.newValue, storageType: self.storageType });
-                    });
+                    $timeout(
+						function () { $rootScope.$broadcast('LocalStorageModule.notification.changed', { key: key, newvalue: e.newValue, storageType: self.storageType }); },
+						0,
+						false
+					);
                 }
             }
         }

@@ -1,3 +1,4 @@
+
 angular.module('rt.debounce', []).factory('debounce', [
   '$timeout',
   function ($timeout) {
@@ -22,7 +23,11 @@ angular.module('rt.debounce', []).factory('debounce', [
         context = this;
         args = arguments;
         cancel();
-        timeout = $timeout(ping, wait);
+        timeout = $timeout(
+			ping,
+			wait,
+			false
+		);
       }
       // Forces the execution of pending calls
       function flushPending() {

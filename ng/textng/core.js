@@ -2505,10 +2505,14 @@ angular.module(
 						_setInnerHTML(content);
 						_setViewValue(content, false);
 						if (_redoUndoTimeout) { $timeout.cancel(_redoUndoTimeout); }
-						_redoUndoTimeout = $timeout(function () {
-							element[0].focus();
-							taSelection.setSelectionToElementEnd(element[0]);
-						}, 1);
+						_redoUndoTimeout = $timeout(
+							function () {
+								element[0].focus();
+								taSelection.setSelectionToElementEnd(element[0]);
+							},
+							1,
+							false
+						);
 					}
 				}
 			};
@@ -2527,7 +2531,8 @@ angular.module(
 								element[0].focus();
 								taSelection.setSelectionToElementEnd(element[0]);
 							},
-							1
+							1,
+							false
 						);
 					}
 				}
@@ -2971,7 +2976,8 @@ angular.module(
 									_processingPaste = false;
 									element.removeClass('processing-paste');
 								},
-								0
+								0,
+								false
 							);
 						} else {
 							_processingPaste = false;
@@ -3043,7 +3049,8 @@ angular.module(
 								element[0].focus();
 								_tempDiv.remove();
 							},
-							0
+							0,
+							false
 						);
 
 						return false;
@@ -3054,7 +3061,8 @@ angular.module(
 						if (!_isReadonly) {
 							$timeout(
 								function () { ngModel.$setViewValue(_compileHtml()); },
-								0
+								0,
+								false
 							);
 						} else { evt.preventDefault(); }
 					});
@@ -3259,13 +3267,15 @@ angular.module(
 									function () {
 										_setViewValue(_val, _triggerUndo, true);
 									},
-									ngModelOptions.$options.debounce || 400
+									ngModelOptions.$options.debounce || 400,
+									false
 								);
 
 								if (!_triggerUndo) {
 									_undoKeyupTimeout = $timeout(
 										function () { ngModel.$undoManager.push(_val); },
-										250
+										250,
+										false
 									);
 								}
 
@@ -3293,7 +3303,8 @@ angular.module(
 											rangy.core.restoreSelection(_savedSelection);
 										}
 									},
-									1000
+									1000,
+									false
 								);
 							}
 						}
@@ -3368,7 +3379,8 @@ angular.module(
 							ng.textng.core.dropFired = false;
 							_setViewValue(undefined, undefined, true);
 						},
-						100
+						100,
+						false
 					);
 				}
 			};
@@ -3414,7 +3426,8 @@ angular.module(
 								}
 								_renderTimeout = undefined;
 							},
-							1
+							1,
+							false
 						);
 					}
 
@@ -3602,9 +3615,13 @@ textAngular.directive(
 				scope._name = (attrs.name) ? attrs.name : 'textAngularEditor' + _serial;
 
 				oneEvent = function (_element, event, action) {
-					$timeout(function () {
-						_element.one(event, action);
-					}, 100);
+					$timeout(
+						function () {
+							_element.one(event, action);
+						},
+						100,
+						false
+					);
 				};
 
 				_taExecCommand = taExecCommand(attrs.taDefaultWrap);
@@ -3712,7 +3729,8 @@ textAngular.directive(
 								scope.reflowPopover(scope.resizeElement);
 								scope.reflowResizeOverlay(scope.resizeElement);
 							},
-							100
+							100,
+							false
 						);
 					}
 				};
@@ -3778,9 +3796,13 @@ textAngular.directive(
 					scope.getScrollTop(scope.displayElements.scrollWindow[0], true);
 					scope.displayElements.popover.css('display', 'block');
 
-					$timeout(function () {
-						scope.displayElements.resize.overlay.css('display', 'block');
-					});
+					$timeout(
+						function () {
+							scope.displayElements.resize.overlay.css('display', 'block');
+						},
+						0,
+						false
+					);
 
 					scope.resizeElement = _el;
 					scope.reflowPopover(_el);
@@ -3998,14 +4020,17 @@ textAngular.directive(
 					scope.displayElements.text.attr('ta-readonly', 'disabled');
 					scope.displayElements.html.attr('ta-readonly', 'disabled');
 					scope.disabled = scope.$parent.$eval(attrs.taDisabled);
-					scope.$parent.$watch(attrs.taDisabled, function (newVal) {
-						scope.disabled = newVal;
-						if (scope.disabled) {
-							element.addClass(scope.classes.disabled);
-						} else {
-							element.removeClass(scope.classes.disabled);
+					scope.$parent.$watch(
+						attrs.taDisabled,
+						function (newVal) {
+							scope.disabled = newVal;
+							if (scope.disabled) {
+								element.addClass(scope.classes.disabled);
+							} else {
+								element.removeClass(scope.classes.disabled);
+							}
 						}
-					});
+					);
 				}
 
 				if (attrs.taPaste) {
@@ -4105,11 +4130,15 @@ textAngular.directive(
 						element.removeClass(scope.classes.focussed);
 						_toolbars.unfocus();
 						// to prevent multiple apply error defer to next seems to work.
-						$timeout(function () {
-							scope._bUpdateSelectedStyles = false;
-							element.triggerHandler('blur');
-							scope.focussed = false;
-						}, 0);
+						$timeout(
+							function () {
+								scope._bUpdateSelectedStyles = false;
+								element.triggerHandler('blur');
+								scope.focussed = false;
+							},
+							0,
+							false
+						);
 					}
 					evt.preventDefault();
 					return false;
@@ -4141,21 +4170,29 @@ textAngular.directive(
 					//Show the HTML view
 					if (scope.showHtml) {
 						//defer until the element is visible
-						$timeout(function () {
-							$animate.enabled(true, scope.displayElements.html);
-							$animate.enabled(true, scope.displayElements.text);
-							// [0] dereferences the DOM object from the angular.element
-							return scope.displayElements.html[0].focus();
-						}, 100);
+						$timeout(
+							function () {
+								$animate.enabled(true, scope.displayElements.html);
+								$animate.enabled(true, scope.displayElements.text);
+								// [0] dereferences the DOM object from the angular.element
+								return scope.displayElements.html[0].focus();
+							},
+							100,
+							false
+						);
 					} else {
 						//Show the WYSIWYG view
 						//defer until the element is visible
-						$timeout(function () {
-							$animate.enabled(true, scope.displayElements.html);
-							$animate.enabled(true, scope.displayElements.text);
-							// [0] dereferences the DOM object from the angular.element
-							return scope.displayElements.text[0].focus();
-						}, 100);
+						$timeout(
+							function () {
+								$animate.enabled(true, scope.displayElements.html);
+								$animate.enabled(true, scope.displayElements.text);
+								// [0] dereferences the DOM object from the angular.element
+								return scope.displayElements.text[0].focus();
+							},
+							100,
+							false
+						);
 					}
 				};
 
@@ -4202,12 +4239,15 @@ textAngular.directive(
 				}
 
 				// changes from taBind back up to here
-				scope.$watch('html', function (newValue, oldValue) {
-					if (newValue !== oldValue) {
-						if (attrs.ngModel && ngModel.$viewValue !== newValue) ngModel.$setViewValue(newValue);
-						scope.displayElements.forminput.val(newValue);
+				scope.$watch(
+					'html',
+					function (newValue, oldValue) {
+						if (newValue !== oldValue) {
+							if (attrs.ngModel && ngModel.$viewValue !== newValue) ngModel.$setViewValue(newValue);
+							scope.displayElements.forminput.val(newValue);
+						}
 					}
-				});
+				);
 
 				if (attrs.taTargetToolbars) _toolbars = textAngularManager.registerEditor(scope._name, scope, attrs.taTargetToolbars.split(','));
 				else {
@@ -4278,9 +4318,11 @@ textAngular.directive(
 							dropEvent.preventDefault();
 							dropEvent.stopPropagation();
 						} else {
-							$timeout(function () {
-								scope['updateTaBindtaTextElement' + _serial]();
-							}, 0);
+							$timeout(
+								function () { scope['updateTaBindtaTextElement' + _serial](); },
+								0,
+								false
+							);
 						}
 				});
 
@@ -4309,7 +4351,11 @@ textAngular.directive(
 					}
 					// used to update the active state when a key is held down, ie the left arrow
 					if (scope._bUpdateSelectedStyles) {
-						_updateSelectedStylesTimeout = $timeout(scope.updateSelectedStyles, 200);
+						_updateSelectedStylesTimeout = $timeout(
+							scope.updateSelectedStyles,
+							200,
+							false
+						);
 					}
 				};
 
@@ -4926,10 +4972,13 @@ textAngular.directive(
 				element[0].innerHTML = '';
 				element.addClass("ta-toolbar " + scope.classes.toolbar);
 
-				scope.$watch('focussed', function () {
-					if (scope.focussed)	{ element.addClass(scope.classes.focussed); }
-					else				{ element.removeClass(scope.classes.focussed); }
-				});
+				scope.$watch(
+					'focussed',
+					function () {
+						if (scope.focussed)	{ element.addClass(scope.classes.focussed); }
+						else				{ element.removeClass(scope.classes.focussed); }
+					}
+				);
 
 				setupToolElement = function (toolDefinition, toolScope) {
 					var toolElement,

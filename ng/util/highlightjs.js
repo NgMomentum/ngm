@@ -145,11 +145,14 @@ ngModule.controller('HljsCtrl',
       }
 
       var interpolateFn = $interpolate(code);
-      _stopInterpolateWatch = _interpolateScope.$watch(interpolateFn, function (newVal, oldVal) {
-        if (newVal !== oldVal) {
-          _elm.html(newVal);
-        }
-      });
+      _stopInterpolateWatch = _interpolateScope.$watch(
+			interpolateFn,
+			function (newVal, oldVal) {
+				if (newVal !== oldVal) {
+					_elm.html(newVal);
+				}
+			}
+		);
       _elm.html(interpolateFn(_interpolateScope));
     }
     else {
@@ -346,11 +349,14 @@ interpolateDirFactory = function (dirName) {
         if (!ctrl) {
           return;
         }
-        scope.$watch(iAttrs[dirName], function (newVal, oldVal) {
-          if (newVal || newVal !== oldVal) {
-            ctrl.setInterpolateScope(newVal ? scope : null);
-          }
-        });
+        scope.$watch(
+			iAttrs[dirName],
+			function (newVal, oldVal) {
+				if (newVal || newVal !== oldVal) {
+					ctrl.setInterpolateScope(newVal ? scope : null);
+				}
+			}
+		);
       }
     };
   };
@@ -369,14 +375,13 @@ sourceDirFactory = function (dirName) {
           return;
         }
 
-        scope.$watch(iAttrs[dirName], function (newCode, oldCode) {
-          if (newCode) {
-            ctrl.highlight(newCode);
-          }
-          else {
-            ctrl.clear();
-          }
-        });
+        scope.$watch(
+			iAttrs[dirName],
+			function (newCode) {
+				if (newCode) { ctrl.highlight(newCode); }
+				else { ctrl.clear(); }
+			}
+		);
       }
     };
   };
@@ -400,13 +405,16 @@ includeDirFactory = function (dirName) {
             return;
           }
 
-          scope.$watch(srcExpr, function (src) {
-            var thisChangeId = ++changeCounter;
+          scope.$watch(
+				srcExpr,
+				function (src) {
+					var thisChangeId = ++changeCounter;
 
-            if (src && angular.isString(src)) {
-              var templateCachePromise, dfd;
+					if (src && angular.isString(src)) {
+						var templateCachePromise, dfd;
 
-              templateCachePromise = $templateCache.get(src);
+						templateCachePromise = $templateCache.get(src);
+
               if (!templateCachePromise) {
                 dfd = $q.defer();
                 $http.get(src, {

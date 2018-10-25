@@ -7,7 +7,7 @@
 
 msos.provide("ng.bootstrap.ui.timepicker");
 
-ng.bootstrap.ui.timepicker.version = new msos.set_version(17, 12, 15);
+ng.bootstrap.ui.timepicker.version = new msos.set_version(18, 8, 21);
 
 
 // Below is the standard ui.bootstrap.accordion plugin, except for templateUrl location and naming (MSOS style)
@@ -565,11 +565,14 @@ angular.module(
         ngModelCtrl.$setTouched();
     };
 
-    $scope.$on('$destroy', function () {
-        while (watchers.length) {
-            watchers.shift()();
-        }
-    });
+    $scope.$on(
+		'$destroy',
+		function ng_bs_ui_timepick_ctrl_on() {
+			while (watchers.length) {
+				watchers.shift()();
+			}
+		}
+	);
 }])
 
 .directive('uibTimepicker', ['uibTimepickerConfig', function (uibTimepickerConfig) {
@@ -591,4 +594,13 @@ angular.module(
             }
         }
     };
-}]);
+}]).directive(
+    'hourStep',
+    angular.restrictADir
+).directive(
+    'minuteStep',
+    angular.restrictADir
+).directive(
+    'showMeridian',
+    angular.restrictADir
+);

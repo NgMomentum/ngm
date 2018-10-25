@@ -112,7 +112,11 @@ ng.react.version = new msos.set_version(18, 1, 15);
 				} else if (exprWatchDepth === 'reference' && supportsWatchGroup) {
 					watchGroupExpressions.push(actualExpr);
 				} else {
-					scope.$watch(actualExpr, listener, (exprWatchDepth !== 'reference'));
+					scope.$watch(
+						actualExpr,
+						listener,
+						(exprWatchDepth !== 'reference')
+					);
 				}
 			}
 		);
