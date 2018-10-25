@@ -183,6 +183,6 @@ msos.onload_func_post.push(
 	function () {
 		"use strict";
 
-		angular.bootstrap('body', ['demo.visualizer.start']);
+		angular.bootstrap('#body', ['demo.visualizer.start']);
 	}
 );

@@ -1,29 +1,22 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.material.controllers.button");
-msos.require("ng.material.v111.core");
-msos.require("ng.material.v111.ui.button");
-msos.require("ng.material.v111.ui.layout");
-msos.require("ng.material.v111.ui.icon");
-msos.require("ng.material.v111.ui.content");
+msos.require("ng.material.ui.button");
+msos.require("ng.material.ui.layout");		// ref template
+msos.require("ng.material.ui.icon");		// ref template
+msos.require("ng.material.ui.content");		// ref template
 
-demo.material.controllers.button.version = new msos.set_version(16, 12, 28);
+demo.material.controllers.button.version = new msos.set_version(18, 4, 13);
 
 
 angular.module(
 	'demo.material.controllers.button',
-	[
-		'ng',
-		'ng.material.v111.core'
-	]
+	['ng']
 ).controller(
 	'demo.material.controllers.button.ctrl',
 	['$scope', function ($scope) {

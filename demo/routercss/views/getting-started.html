@@ -1,4 +1,4 @@
-<div class="jumbotron">
+<div class="jumbotron" data-ng-ignore>
 	<div class="container">
 		<h1>UI Router CSS</h1>
 		<p>
@@ -12,46 +12,50 @@
 </div>
 
 <div class="container">
-	<h1>Getting started</h1>
-	<p>
+	<h1 data-ng-ignore>Getting started</h1>
+	<p data-ng-ignore>
 		This plugin contains a set of native AngularJS directives and services.
 	</p>
-	<p>
+	<p data-ng-ignore>
 		A few noteworthy things about this plugin:
 	</p>
-	<ul>
+	<ul data-ng-ignore>
 		<li>AngularJS (requires AngularJS 1.5 or higher, tested with 1.6.4).</li>
 		<li>UI Router (requires UI Router 1.0 or higher, tested with 1.0.3).</li>
 		<li>Small size: 3kB (minified)</li>
 		<li>Supports all major browsers and IE9 and up (lower versions might not be supported)</li>
 	</ul>
 
-	<p>
+	<p data-ng-ignore>
 		If you want to use this plugin for UI Router 0.4.x or lower, I suggest to use the following plugin: <a href="https://github.com/betsol/ng-ui-router-styles" target="_blank">ng-ui-router-styles</a>
 	</p>
 
 	<hr>
 
-	<h2>Installation</h2>
-	<h3>NPM (Recommended)</h3>
-	<p>
+	<h2 data-ng-ignore>Installation</h2>
+	<h3 data-ng-ignore>NPM (Recommended)</h3>
+	<p data-ng-ignore>
 		To install with <a href="https://www.npmjs.com/" target="_blank">NPM</a> use:
 	</p>
-	<pre>npm install angular-ui-router-css</pre>
+	<pre data-ng-ignore>npm install angular-ui-router-css</pre>
 
-	<h3>Bower</h3>
-	<p>
+	<h3 data-ng-ignore>Bower</h3>
+	<p data-ng-ignore>
 		To install with <a href="http://bower.io/" target="_blank">Bower</a> use:
 	</p>
-	<pre>bower install angular-ui-router-css-plugin</pre>
+	<pre data-ng-ignore>bower install angular-ui-router-css-plugin</pre>
 
-	<h3>Manually</h3>
-	<p>
+	<h3 data-ng-ignore>Manually</h3>
+	<p data-ng-ignore>
 		Click the download button to download the latest version of the plugin. In the folder <code>dist</code> you'll find the minified and normal JavaScript file.
 		Either one is fine to use, it just depends on your needs.
 	</p>
-	<p>
-		<i>Note: The unminified file contains certain debug code. If you minify this file yourself during your build, make sure you remove this code so your code is as small as possible. An Uglify example is right here (or you can checkout how it was done in the <a href="https://github.com/harm-less/angular-ui-router-css/blob/master/Gruntfile.js#L151" target="_blank">Gruntfile of this repo</a>):</i>
+	<p data-ng-ignore>
+		<i>
+			Note: The unminified file contains certain debug code. If you minify this file yourself during your build, make sure you remove this code so your code is as small as possible.
+			An Uglify example is right here (or you can checkout how it was done in the
+			<a href="https://github.com/harm-less/angular-ui-router-css/blob/master/Gruntfile.js#L151" target="_blank">Gruntfile of this repo</a>):
+		</i>
 	</p>
 	<pre class="code" apply-content highlight-lang="js">
 		uglify: {
@@ -65,16 +69,16 @@
 		}
 	</pre>
 
-	<h3>Adding it to your project</h3>
-	<p>
+	<h3 data-ng-ignore>Adding it to your project</h3>
+	<p data-ng-ignore>
 		As soon as you've got all the files downloaded and included in your page you just need to declare a dependency on the module:
 	</p>
 	<pre class="code" apply-content highlight-lang="html">
 		angular.module('myModule', ['hl.css.ui.router']);
 	</pre>
 
-	<h3>Basic example</h3>
-	<p>
+	<h3 data-ng-ignore>Basic example</h3>
+	<p data-ng-ignore>
 		This will inject a CSS file into the head of your page whenever this state (it its children) will be activated:
 	</p>
 
@@ -97,8 +101,8 @@
 
 	<hr>
 
-	<h2>Features</h2>
-	<p>
+	<h2 data-ng-ignore>Features</h2>
+	<p data-ng-ignore>
 		Angular UI Router CSS has been set up in such a way so it uses a lot of handy features already build in UI Router and Angular. This way the code can stay small and doesn't become too complex to maintain.
 		There's no limit on the amount of CSS files you can load at any particular moment in your application, so it's well suites for projects with a lot of files were page load speed is important. The most prominent features listed:
 	</p>
@@ -111,7 +115,7 @@
 		<li>Unlimited files that can be loaded as any moment</li>
 		<li>Proper garbage collection</li>
 	</ul>
-	<p>
+	<p data-ng-ignore>
 		To get a better understanding of the features, make sure you read through the API documentation.
 	</p>
 </div>

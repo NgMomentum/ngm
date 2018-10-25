@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+    <title>Chain</title>
+
+    <style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			height: 100%;
+		}
+
+		canvas[resize] {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+
+	<script type="text/javascript" src="../../msos/base.min.js"></script>
+    <script type="text/javascript" src="../../paperjs/v0115_full.min.js"></script>
+
+	<script type="text/paperscript" canvas="ngm_canvas">
+		// Adapted from the following Processing example:
+		// http://processing.org/learning/topics/follow3.html
+
+		// The amount of points in the path:
+		var points = 25;
+
+		// The distance between the points:
+		var length = 35;
+		
+		var path = new Path({
+			strokeColor: '#E4141B',
+			strokeWidth: 20,
+			strokeCap: 'round'
+		});
+		
+		var start = view.center / [10, 1];
+
+		for (var i = 0; i < points; i++)
+			path.add(start + new Point(i * length, 0));
+
+		function onMouseMove(event) {
+			path.firstSegment.point = event.point;
+
+			for (var i = 0; i < points - 1; i++) {
+				var segment = path.segments[i];
+				var nextSegment = segment.next;
+				var vector = segment.point - nextSegment.point;
+				vector.length = length;
+				nextSegment.point = segment.point - vector;
+			}
+			path.smooth({ type: 'continuous' });
+		}
+
+		function onMouseDown(event) {
+			path.fullySelected = true;
+			path.strokeColor = '#e08285';
+		}
+
+		function onMouseUp(event) {
+			path.fullySelected = false;
+			path.strokeColor = '#e4141b';
+		}
+    </script>
+
+</head>
+<body>
+
+    <canvas id="ngm_canvas" resize></canvas>
+
+</body>
+</html>

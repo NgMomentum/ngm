@@ -69,7 +69,9 @@ var SessionStorage = function () {
 				function () {
 					return _this2._data;
 				},
-				this.AppConfig.restDelay).then(thenFn || true);
+				this.AppConfig.restDelay,
+				false
+			).then(thenFn || true);
     };
 
     SessionStorage.prototype.search = function search(exampleItem) {

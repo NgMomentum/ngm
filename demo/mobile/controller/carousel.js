@@ -10,7 +10,7 @@ msos.require("ng.mobile.ui.carousel");
 
 angular.module(
 	'demo.mobile.controller.carousel',
-	[]
+	["ng"]
 ).directive(
 	'carousel',
 	function () {

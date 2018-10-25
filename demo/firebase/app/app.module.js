@@ -4,7 +4,7 @@
   angular
     .module('app', [
       // Angular modules.
-      'ngRoute',
+      'ng.route',
 
       // Third party modules.
       'firebase',

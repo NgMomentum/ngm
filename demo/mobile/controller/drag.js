@@ -10,7 +10,7 @@ msos.require("ng.bootstrap.ui.alert");
 
 angular.module(
 	'demo.mobile.controller.drag',
-	[]
+	["ng"]
 ).directive(
 	'dragToDismiss',
 	['$drag', function ($drag) {
@@ -44,7 +44,7 @@ angular.module(
 									$scope.$apply(function () {
 										dismissFn($scope);
 									});
-								}, 300);
+								}, 300, false);
 							} else {
 								drag.reset();
 							}

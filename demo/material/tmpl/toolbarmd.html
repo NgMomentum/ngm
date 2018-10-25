@@ -1,13 +1,25 @@
 
-<div ng-controller="demo.material.controllers.toolbarmd.ctrl">
+<style data-ng-ignore>
+    .toolbardemoBasicUsage md-toolbar .md-button.md-icon-button .favorite-icon {
+        fill: #DE3641;
+    }
+    .toolbardemoBasicUsage md-toolbar md-toolbar-filler {
+        background-color: #e0e0e0;
+    }
+    .toolbardemoBasicUsage md-toolbar md-toolbar-filler #filler-icon {
+        fill: #4C9EF1;
+    }
+	.toolbardemoScrollShrink .face {
+		width: 48px;
+		margin: 16px;
+		border-radius: 48px;
+		border: 1px solid #ddd;
+	}
+</style>
 
-    <style data-ng-ignore>
-        md-toolbar md-icon.md-default-theme {
-            color: white;
-        }
-    </style>
-
+<div ng-controller="demo.material.controllers.toolbarmd.ctrl1" class="toolbardemoBasicUsage">
     <md-content>
+        <br>
 
         <md-toolbar class="md-hue-2">
             <div class="md-toolbar-tools">
@@ -18,7 +30,7 @@
                 <h2 flex md-truncate>Toolbar with Disabled/Enabled Icon Buttons</h2>
 
                 <md-button class="md-icon-button" aria-label="Favorite">
-                    <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg" style="color: greenyellow;"></md-icon>
+                    <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg" class="favorite-icon"></md-icon>
                 </md-button>
 
                 <md-button class="md-icon-button" aria-label="More">
@@ -26,27 +38,35 @@
                 </md-button>
             </div>
         </md-toolbar>
-
         <br>
 
         <md-toolbar>
             <div class="md-toolbar-tools">
                 <md-button aria-label="Go Back">
-                    Go Back
+                    Back
                 </md-button>
 
-                <md-truncate style="position: absolute; left: 90px; right: 170px; top: 13px; bottom: 13px;">Toolbar with Standard Buttons</md-truncate>
-
-                <span flex></span>
-                <md-button class="md-raised" aria-label="Learn More">
+                <h2 flex md-truncate>Toolbar with Standard Buttons and a Mini FAB</h2>
+                <md-button class="md-raised md-accent md-hue-3" aria-label="Learn More">
                     Learn More
                 </md-button>
-                <md-button class="md-fab md-mini" aria-label="Favorite">
+                <md-button class="md-fab md-mini md-hue-3" aria-label="Favorite">
                     <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg"></md-icon>
                 </md-button>
             </div>
         </md-toolbar>
+        <br>
 
+        <md-toolbar class="md-hue-1">
+            <div layout="row">
+                <md-toolbar-filler layout="row" layout-align="center center">
+                    <md-icon id="filler-icon" md-svg-icon="./ngm/demo/material/img/icons/octicon-repo.svg"></md-icon>
+                </md-toolbar-filler>
+                <h2 class="md-toolbar-tools">
+                    <span>Toolbar: with filler and icon (md-hue-1)</span>
+                </h2>
+            </div>
+        </md-toolbar>
         <br>
 
         <md-toolbar class="md-tall md-accent">
@@ -54,15 +74,39 @@
                 <span>Toolbar: tall (md-accent)</span>
             </h2>
         </md-toolbar>
-
         <br>
 
         <md-toolbar class="md-tall md-warn md-hue-3">
             <span flex></span>
             <h2 class="md-toolbar-tools">
-                <span class="md-flex">Toolbar: tall with actions pin to the bottom (md-warn md-hue-3)</span>
+                <span class="md-flex">Toolbar: tall with actions pinned to the bottom (md-warn md-hue-3)</span>
             </h2>
         </md-toolbar>
-
     </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.toolbarmd.ctrl2" layout="column" style="height:600px" class="toolbardemoScrollShrink">
+
+	<md-toolbar md-scroll-shrink ng-if="true">
+		<div class="md-toolbar-tools">
+			<h3><span>{{title}}</span></h3>
+		</div>
+	</md-toolbar>
+
+	<md-content flex>
+		<md-list>
+			<md-list-item class="md-3-line" ng-repeat="item in todos">
+				<img ng-src="{{item.face}}" alt="{{item.who}}" class="md-avatar">
+
+				<div class="md-list-item-text">
+					<h3>{{item.what}}</h3>
+					<h4>{{item.who}}</h4>
+
+					<p>{{item.notes}}</p>
+				</div>
+
+				<md-divider md-inset></md-divider>
+			</md-list-item>
+		</md-list>
+	</md-content>
 </div>

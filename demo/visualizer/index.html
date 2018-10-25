@@ -22,25 +22,26 @@
 </head>
 <body>
 
-	<noscript data-ng-ignore>
+	<noscript>
 		<h3 id="no_javascript">
 			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
 		</h3>
 	</noscript>
 
-	<div class="container">
+<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id="body" class="ng-cloak container">
 
-		<h2>UI-Router State and Transition Visualizer Demo</h2>
+		<h2 data-ng-ignore>UI-Router State and Transition Visualizer via NgM</h2>
 
 		<button ui-sref="home" ui-sref-active="active">home</button>
 		<button ui-sref="about" ui-sref-active="active">about</button>
 		<button ui-sref="deepnest" ui-sref-active="active">deepnest</button>
 
-		<div ui-view="">ui-view not populated (no state is activated)</div>
+		<div ui-view=""></div>
 
 	</div>
 
-	<script data-ng-ignore>
+	<script>
 		msos.onload_func_pre.push(
 			function () {
 				"use strict";

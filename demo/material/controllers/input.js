@@ -1,30 +1,39 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.material.controllers.input");
-msos.require("ng.material.v111.ui.input");
-msos.require("ng.material.v111.core.theming");
-msos.require("ng.material.v111.ui.layout");
-msos.require("ng.material.v111.ui.content");
+msos.require("ng.material.ui.input");
+msos.require("ng.material.core.theming");
+msos.require("ng.material.ui.layout");			// ref. template
+msos.require("ng.material.ui.content");			// ref. template
+msos.require("ng.material.ui.select");			// ref. template
+msos.require("ng.material.ui.checkbox");		// ref. template
+msos.require("ng.material.ui.button");			// ref. template
+msos.require("ng.material.ui.switch");			// ref. template
 
-demo.material.controllers.input.version = new msos.set_version(17, 1, 12);
+demo.material.controllers.input.version = new msos.set_version(18, 9, 7);
 
 
 angular.module(
     'demo.material.controllers.input',
     [
         'ng',
-        'ng.material.v111.core.theming'
+        'ng.material.core.theming'
     ]
+).config(
+    ['$mdThemingProvider', function ($mdThemingProvider) {
+        "use strict";
+
+        $mdThemingProvider.theme('docs-dark', 'default')
+            .primaryPalette('yellow')
+            .dark();
+    }]
 ).controller(
-    'demo.material.controllers.input.ctrl',
+    'demo.material.controllers.input.ctrl1',
     ['$scope', function ($scope) {
         "use strict";
 
@@ -49,12 +58,42 @@ angular.module(
             };
         });
     }]
-).config(
-    ['$mdThemingProvider', function ($mdThemingProvider) {
-        "use strict";
+).controller(
+	'demo.material.controllers.input.ctrl2',
+	['$scope', function ($scope) {
+		"use strict";
 
-        $mdThemingProvider.theme('docs-dark', 'default')
-            .primaryPalette('yellow')
-            .dark();
-    }]
+		$scope.project = {
+			description: 'Nuclear Missile Defense System',
+			rate: 500,
+			special: true
+		};
+	}]
+).controller(
+	'demo.material.controllers.input.ctrl3',
+	['$scope', function ($scope) {
+		"use strict";
+
+		$scope.showHints = true;
+
+		$scope.user = {
+			name: "",
+			email: "",
+			social: "123456789",
+			phone: "N/A"
+		};
+	}]
+).controller(
+	'demo.material.controllers.input.ctrl4',
+	['$scope', function ($scope) {
+		"use strict";
+
+		$scope.user = {
+			name: 'John Doe',
+			email: '',
+			phone: '',
+			address: 'Mountain View, CA',
+			donation: 19.99
+		};
+	}]
 );

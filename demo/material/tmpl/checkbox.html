@@ -1,76 +1,177 @@
 
-<div ng-controller="demo.material.controllers.checkbox.ctrl" class="md-padding">
+<style data-ng-ignore>
+    .checkboxdemoBasicUsage div.flex-xs {
+        min-height: 40px;
+    }
+    .checkboxdemoBasicUsage .checkboxDemo1 div {
+        clear: both;
+    }
+    .checkboxdemoBasicUsage p {
+        padding-left: 8px;
+    }
+    .checkboxdemoBasicUsage fieldset.standard {
+        border-style: solid;
+        border-width: 1px;
+    }
+    .checkboxdemoBasicUsage legend {
+        color: #3F51B5;
+    }
+    .checkboxdemoBasicUsage legend code {
+        color: #3F51B5;
+        font-weight: normal;
+    }
+    .checkboxdemoBasicUsage .ipsum {
+        color: saddlebrown;
+    }
+    .checkboxdemoSyncing .checkboxDemo1 div {
+        clear: both;
+    }
+    .checkboxdemoSyncing legend {
+        color: #3F51B5;
+    }
+    .checkboxdemoSyncing legend code {
+        color: #3F51B5;
+        font-weight: normal;
+    }
+    .checkboxdemoSyncing p {
+        padding-left: 8px;
+    }
+    .checkboxdemoSyncing .info {
+        padding-left: 13px;
+    }
+    .checkboxdemoSyncing div.standard {
+        padding: 8px;
+        padding-left: 15px;
+    }
+    .checkboxdemoSyncing fieldset.standard {
+        border-style: solid;
+        border-width: 1px;
+        height: 100%;
+    }
+    .checkboxdemoSelectAll .demo-legend {
+        color: #3F51B5;
+    }
+    .checkboxdemoSelectAll .demo-fieldset {
+        border-style: solid;
+        border-width: 1px;
+        height: 100%;
+    }
+    .checkboxdemoSelectAll .demo-select-all-checkboxes {
+        padding-left: 30px;
+    }
+</style>
 
-    <style data-ng-ignore>
-        div.flex-xs {
-            min-height: 40px;
-        }
-        p {
-            padding-left: 8px;
-        }
-        fieldset.standard {
-            border-style: solid;
-            border-width: 1px;
-        }
-        legend {
-            color: #3F51B5;
-        }
-        legend code {
-            color: #3F51B5;
-            font-weight: normal;
-        }
-        .ipsum {
-            color: saddlebrown;
-        }
-    </style>
-
-    <fieldset class="standard">
-        <legend>Using &lt;ng-model&gt;</legend>
-        <div layout-wrap layout-gt-sm="row">
-            <div flex-gt-sm="50">
-                <md-checkbox ng-model="data.cb1" aria-label="Checkbox 1">
-                    Checkbox 1: {{ data.cb1 }}
-                </md-checkbox>
-            </div>
-            <div flex-gt-sm="50">
-                <div>
-                    <md-checkbox ng-model="data.cb2" aria-label="Checkbox 2" ng-true-value="'yup'" ng-false-value="'nope'" class="md-warn md-align-top-left" flex>
-                        Checkbox 2 (md-warn) <br/>
-                        <span class="ipsum">
-          Duis placerat lectus et justo mollis, nec sodales orci congue. Vestibulum semper non urna ac suscipit.
-          Vestibulum tempor, ligula id laoreet hendrerit, massa augue iaculis magna,
-          sit amet dapibus tortor ligula non nibh.
-        </span>
-                        <br/> {{ data.cb2 }}
+<div ng-controller="demo.material.controllers.checkbox.ctrl1" class="checkboxdemoBasicUsage">
+    <div>
+        <fieldset class="md-padding standard">
+            <legend>Using &lt;ng-model&gt;</legend>
+            <div layout-wrap layout-gt-sm="row">
+                <div flex-gt-sm="50">
+                    <md-checkbox ng-model="data.cb1" aria-label="Checkbox 1">
+                        Checkbox 1: {{ data.cb1 }}
+                    </md-checkbox>
+                </div>
+                <div flex-gt-sm="50">
+                    <div>
+                        <md-checkbox ng-model="data.cb2" aria-label="Checkbox 2" ng-true-value="'yup'" ng-false-value="'nope'" class="md-warn md-align-top-left" flex>
+                            Checkbox 2 (md-warn) <br/>
+                            <span class="ipsum">
+              Duis placerat lectus et justo mollis, nec sodales orci congue. Vestibulum semper non urna ac suscipit.
+              Vestibulum tempor, ligula id laoreet hendrerit, massa augue iaculis magna,
+              sit amet dapibus tortor ligula non nibh.
+            </span>
+                            <br/> {{ data.cb2 }}
+                        </md-checkbox>
+                    </div>
+                </div>
+                <div flex-gt-sm="50">
+                    <md-checkbox ng-disabled="true" aria-label="Disabled checkbox" ng-model="data.cb3">
+                        Checkbox: Disabled
+                    </md-checkbox>
+                </div>
+                <div flex-gt-sm="50">
+                    <md-checkbox ng-disabled="true" aria-label="Disabled checked checkbox" ng-model="data.cb4" ng-init="data.cb4=true">
+                        Checkbox: Disabled, Checked
+                    </md-checkbox>
+                </div>
+                <div flex-gt-sm="50">
+                    <md-checkbox md-no-ink aria-label="Checkbox No Ink" ng-model="data.cb5" class="md-primary">
+                        Checkbox (md-primary): No Ink
+                    </md-checkbox>
+                </div>
+                <div flex-gt-sm="50">
+                    <md-checkbox md-indeterminate aria-label="Checkbox Indeterminate" class="md-primary">
+                        Checkbox: Indeterminate
+                    </md-checkbox>
+                </div>
+                <div flex-gt-sm="50">
+                    <md-checkbox md-indeterminate aria-label="Checkbox Disabled Indeterminate" ng-disabled="true" class="md-primary">
+                        Checkbox: Disabled, Indeterminate
                     </md-checkbox>
                 </div>
             </div>
-            <div flex-gt-sm="50">
-                <md-checkbox ng-disabled="true" aria-label="Disabled checkbox" ng-model="data.cb3">
-                    Checkbox: Disabled
-                </md-checkbox>
-            </div>
-            <div flex-gt-sm="50">
-                <md-checkbox ng-disabled="true" aria-label="Disabled checked checkbox" ng-model="data.cb4" ng-init="data.cb4=true">
-                    Checkbox: Disabled, Checked
-                </md-checkbox>
-            </div>
-            <div flex-gt-sm="50">
-                <md-checkbox md-no-ink aria-label="Checkbox No Ink" ng-model="data.cb5" class="md-primary">
-                    Checkbox (md-primary): No Ink
-                </md-checkbox>
-            </div>
-            <div flex-gt-sm="50">
-                <md-checkbox md-indeterminate aria-label="Checkbox Indeterminate" class="md-primary">
-                    Checkbox: Indeterminate
-                </md-checkbox>
-            </div>
-            <div flex-gt-sm="50">
-                <md-checkbox md-indeterminate aria-label="Checkbox Disabled Indeterminate" ng-disabled="true" class="md-primary">
-                    Checkbox: Disabled, Indeterminate
-                </md-checkbox>
+        </fieldset>
+
+    </div>
+</div>
+
+<div ng-controller="demo.material.controllers.checkbox.ctrl2" class="checkboxdemoSyncing" style="min-height:270px">
+    <div layout="row" layout-wrap>
+        <div flex="100" flex-gt-sm="50" layout="column">
+            <div>
+                <fieldset class="md-padding standard">
+                    <legend>Using &lt;md-checkbox&gt; with &lt;ng-checked&gt; </legend>
+                    <div layout="row" layout-wrap flex>
+                        <div flex="50" ng-repeat="item in items">
+                            <md-checkbox ng-checked="exists(item, selected)" ng-click="toggle(item, selected)">
+                                {{ item }} <span ng-if="exists(item, selected)">selected</span>
+                            </md-checkbox>
+                        </div>
+                    </div>
+                </fieldset>
             </div>
         </div>
-    </fieldset>
 
+        <div flex="100" flex-gt-sm="50" layout="column">
+            <div>
+                <fieldset class="md-padding standard">
+                    <legend>Using &lt;input type="checkbox"&gt;</legend>
+                    <div layout="row" layout-wrap flex>
+                        <div ng-repeat="item in items" class="standard" flex="50">
+                            <label>
+								<input type="checkbox" ng-checked="exists(item, selected)" ng-click="toggle(item, selected)"/> {{ item }}
+							</label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div flex="100">
+            <h2 class="md-title">Selected Items</h2>
+            <code style="display: block; padding: 8px;">{{selected | json}}</code>
+        </div>
+    </div>
+</div>
+
+<div ng-controller="demo.material.controllers.checkbox.ctrl3" class="checkboxdemoSelectAll">
+    <div layout="row" layout-wrap>
+        <div flex="100" layout="column">
+            <fieldset class="md-padding demo-fieldset">
+                <legend class="demo-legend">Using &lt;md-checkbox&gt; with the 'indeterminate' attribute </legend>
+                    <div layout="row" layout-wrap flex>
+                        <div flex-xs flex="50">
+                            <md-checkbox aria-label="Select All" ng-checked="isChecked()" md-indeterminate="isIndeterminate()" ng-click="toggleAll()">
+                                <span ng-if="isChecked()">Un-</span>Select All
+                            </md-checkbox>
+                        </div>
+                        <div class="demo-select-all-checkboxes" flex="100" ng-repeat="item in items">
+                            <md-checkbox ng-checked="exists(item, selected)" ng-click="toggle(item, selected)">
+                                {{ item }}
+                            </md-checkbox>
+                        </div>
+                    </div>
+            </fieldset>
+        </div>
+    </div>
 </div>

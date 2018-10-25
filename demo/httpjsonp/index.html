@@ -9,8 +9,9 @@
 	<meta name="description" content="Open source software for the mobile web!" />
 	<meta name="author" content="Dwight Vietzke" />
 
-	<title>Page Transitions2 (ngRoute)</title>
+	<title>Http Jsonp API (UI-Router)</title>
 
+	<!-- NgMomentum initial page setup -->
 	<link rel="stylesheet" type="text/css" href="../../css/site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
@@ -20,31 +21,36 @@
 
 </head>
 <body>
-
-	<noscript data-ng-ignore>
+	<noscript>
 		<h3 id="no_javascript">
 			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
 		</h3>
 	</noscript>
 
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
 	<div id='body' class="ng-cloak">
 
-		<ng-view class="page {{ pageClass }}"></ng-view>
+		<header class="menu-bar ">This is a menu bar
+			<nav class="nav-menu ">
+				<a ui-sref="page.1 ">Search</a>
+				<a ui-sref="page.2 ">Results</a>
+				<a ui-sref="page.3 ">Detail</a>
+			</nav>
+		</header>
 
-		<div data-ng-ignore id="about">
-			<p>A demo on Angular Animations: ng-view</p>
-			<p>View the <a href="http://scotch.io/tutorials/javascript/animating-angularjs-apps-ngview">Scotch.io Tutorial</a></p>
+		<div class="content scroll ">
+				<ui-view></ui-view>
 		</div>
 	</div>
 
-	<script data-ng-ignore>
+	<script>
 		msos.onload_func_pre.push(
 			function () {
 				"use strict";
 
 				msos.console.info("Page index.html loaded!");
 
-				msos.require("demo.transitions2.start");
+				msos.require("demo.httpjsonp.start");
 			}
 		);
 	</script>

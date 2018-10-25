@@ -11,9 +11,11 @@
 
     <title>NgMomentum Route</title>
 
+	<!-- NgMomentum initial page setup -->
 	<link rel="stylesheet" type="text/css" href="../../css/site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
+	<!-- NgMomentum scripts -->
 	<script src="../../msos/base.uc.js"></script>
 	<script src="../config.js"></script>
 
@@ -25,26 +27,25 @@
 		</h3>
 	</noscript>
 
-	<div id='body' class="ng-cloak">
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id="body" class="ng-cloak container">
 		<nav data-ng-ignore class="navbar navbar-default">
-			<div class="container">
-				<div class="navbar-header">
-					<a class="navbar-brand" href="/">NgMomentum Routing Example</a>
-				</div>
-
-				<ul class="nav navbar-nav navbar-right">
-					<li><a href="#home"><i class="fa fa-home"></i> Home</a></li>
-					<li><a href="#about"><i class="fa fa-user"></i> About</a></li>
-					<li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
-				</ul>
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/">NgM Routing Example</a>
 			</div>
+
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="#home"><i class="fa fa-home"></i> Home</a></li>
+				<li><a href="#about"><i class="fa fa-user"></i> About</a></li>
+				<li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
+			</ul>
 		</nav>
 
-		<h3 style="text-align: center;">A Simple Routing Example Using the NgMomentum version of AngularJS</h3>
+		<h3 style="text-align: center;" data-ng-ignore>A Simple Routing Example Using NgMomentum</h3>
 
 		<div data-ng-view></div>
 
-		<div data-ng-ignore>
+		<div class="well" data-ng-ignore>
 			<ul>
 				<li><a href="?debug=true">Debugging</a></li>
 				<li><a href="?verbose=true">Verbose Debugging</a></li>

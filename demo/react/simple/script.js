@@ -3,7 +3,7 @@ angular.module(
 	['ng']
 ).service(
 	'PicsService',
-	['$interval', function ($interval) {
+	['$scope', '$interval', function ($scope, $interval) {
 		var _this = this;
 
 		this.data = {
@@ -14,7 +14,9 @@ angular.module(
 			function () {
 				return _this.data.counter += 1;
 			},
-			Math.random() * 200 + 100
+			Math.random() * 200 + 100,
+			0,
+			$scope
 		);
 
 	}]

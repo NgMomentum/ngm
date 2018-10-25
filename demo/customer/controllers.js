@@ -13,10 +13,6 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
-    angular: false,
     demo: false
 */
 

@@ -10,7 +10,7 @@ msos.require('ng.route');
 
 msos.onload_func_done.push(
     function () {
-        'use strict';
+        "use strict";
 
         var temp_ss = 'demo.simple.start -> ';
 
@@ -55,13 +55,13 @@ msos.onload_func_done.push(
                 user.load('World');
             }]
         ).controller(
-            'XmplController',
+            'demo.simple.start.ctrl',
             ['$scope', 'greeter', 'user', function ($scope, greeter, user) {
                 $scope.greeting = greeter.greet(user.name);
             }]
         );
 
-        angular.bootstrap('body', ['demo.simple.start']);
+        angular.bootstrap('#body', ['demo.simple.start']);
 
         msos.console.debug(temp_ss + 'done!');
     }

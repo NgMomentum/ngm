@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					site.js
-//			Copyright©2012-2017 - OpenSiteMobile
+//			Copyright©2012-2018 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			https://ngmomentum.com and https://opensitemobile.com
@@ -91,6 +91,7 @@ msos.site.google_analytics = function () {
     });
 
 }());
+
 
 // --------------------------
 // Site Specific Code

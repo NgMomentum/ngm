@@ -1,32 +1,30 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.material.controllers.toast");
-msos.require("ng.material.v111.core");
-msos.require("ng.material.v111.ui.toast");
-msos.require("ng.material.v111.ui.layout");
-msos.require("ng.material.v111.ui.button");
-msos.require("ng.material.v111.ui.checkbox");
+msos.require("ng.material.ui.toast");
+msos.require("ng.material.ui.dialog");
+msos.require("ng.material.ui.layout");		// ref. template
+msos.require("ng.material.ui.button");		// ref. template
+msos.require("ng.material.ui.checkbox");	// ref. template
 
-demo.material.controllers.toast.version = new msos.set_version(16, 12, 28);
+demo.material.controllers.toast.version = new msos.set_version(18, 5, 27);
+
+demo.material.controllers.toast.isDlgOpen = false;
 
 
 angular.module(
     'demo.material.controllers.toast',
     [
         'ng',
-        'ng.material.v111.core',
-        'ng.material.v111.ui.toast'
+        'ng.material.ui.toast'
     ]
 ).controller(
-    'demo.material.controllers.toast.ctrl',
+    'demo.material.controllers.toast.ctrl1',
     ['$scope', '$mdToast', function ($scope, $mdToast) {
         "use strict";
 
@@ -90,12 +88,48 @@ angular.module(
         };
     }]
 ).controller(
-    'ToastCtrl',
-    function ($scope, $mdToast) {
-        "use strict";
+	'demo.material.controllers.toast.ctrl2',
+	['$scope', '$mdToast', function ($scope, $mdToast) {
+		"use strict";
 
-        $scope.closeToast = function () {
-            $mdToast.hide();
-        };
-    }
+		$scope.showCustomToast = function () {
+			$mdToast.show({
+				hideDelay: 3000,
+				position: 'top right',
+				controller: ['$scope', '$mdToast', '$mdDialog', function demo_md_toast_ctrl2($scope, $mdToast, $mdDialog) {
+
+					$scope.closeToast = function () {
+						if (demo.material.controllers.toast.isDlgOpen) { return; }
+			
+						$mdToast
+							.hide()
+							.then(
+								function () { demo.material.controllers.toast.isDlgOpen = false; }
+							);
+					};
+			
+					$scope.openMoreInfo = function (e) {
+			
+						if (demo.material.controllers.toast.isDlgOpen) { return; }
+			
+						demo.material.controllers.toast.isDlgOpen = true;
+			
+						$mdDialog
+							.show(
+								$mdDialog
+									.alert()
+									.title('More info goes here.')
+									.textContent('Something witty.')
+									.ariaLabel('More info')
+									.ok('Got it')
+									.targetEvent(e)
+							).then(
+								function () { demo.material.controllers.toast.isDlgOpen = false; }
+							);
+					};
+				}],
+				templateUrl: msos.resource_url('demo', 'material/tmpl/toast/custom.html')
+			});
+		};
+	}]
 );

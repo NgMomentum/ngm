@@ -1,29 +1,28 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.material.controllers.radio");
-msos.require("ng.material.v111.ui.radio");
-msos.require("ng.material.v111.ui.icon");
-msos.require("ng.material.v111.ui.button");
+msos.require("ng.material.ui.radio");
+msos.require("ng.material.ui.icon");
+msos.require("ng.material.ui.button");		// ref. template
+msos.require("ng.material.ui.layout");		// ref. template
+msos.require("ng.material.ui.divider");		// ref. template
 
-demo.material.controllers.radio.version = new msos.set_version(17, 1, 6);
+demo.material.controllers.radio.version = new msos.set_version(18, 6, 23);
 
 
 angular.module(
     'demo.material.controllers.radio',
     [
         'ng',
-        'ng.material.v111.ui.icon'
+        'ng.material.ui.icon'
     ]
 ).controller(
-    'demo.material.controllers.radio.ctrl',
+    'demo.material.controllers.radio.ctrl1',
     ['$scope', function ($scope) {
         "use strict";
 
@@ -83,10 +82,48 @@ angular.module(
         };
 
     }]
+).controller(
+	'demo.material.controllers.radio.ctrl2',
+	['$scope', '$filter', function ($scope, $filter) {
+		"use strict";
+
+		var self = this;
+
+		self.contacts = [{
+			'id': 1,
+			'fullName': 'Maria Guadalupe',
+			'lastName': 'Guadalupe',
+			'title': "CEO, Found"
+		}, {
+			'id': 2,
+			'fullName': 'Gabriel García Marquéz',
+			'lastName': 'Marquéz',
+			'title': "VP Sales & Marketing"
+		}, {
+			'id': 3,
+			'fullName': 'Miguel de Cervantes',
+			'lastName': 'Cervantes',
+			'title': "Manager, Operations"
+		}, {
+			'id': 4,
+			'fullName': 'Pacorro de Castel',
+			'lastName': 'Castel',
+			'title': "Security"
+		}];
+
+		self.selectedId = 2;
+		self.selectedUser = function () {
+			return $filter('filter')(self.contacts, { id: self.selectedId })[0].lastName;
+		};
+  }]
 ).config(
     ['$mdIconProvider', function ($mdIconProvider) {
         "use strict";
 
-        $mdIconProvider.iconSet("avatars", './ngm/demo/material/img/icons/avatar-icons.svg', 128);
+        $mdIconProvider.iconSet(
+			"avatars",
+			msos.resource_url('demo', 'material/img/icons/avatar-icons.svg'),
+			128
+		);
     }]
 );

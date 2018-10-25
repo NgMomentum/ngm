@@ -1,0 +1,228 @@
+
+<style data-ng-ignore>
+	.selectdemoBasicUsage md-input-container {
+		margin-right: 10px;
+	}
+	.selectdemoSelectHeader .demo-header-searchbox {
+		border: none;
+		outline: none;
+		height: 100%;
+		width: 100%;
+		padding: 0;
+	}
+	.selectdemoSelectHeader .demo-select-header {
+		box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.14), 0 0 0 0 rgba(0, 0, 0, 0.12);
+		padding-left: 10.667px;
+		height: 48px;
+		cursor: pointer;
+		position: relative;
+		display: flex;
+		align-items: center;
+		width: auto;
+	}
+	.selectdemoSelectHeader md-content._md {
+		max-height: 240px;
+	}
+</style>
+
+<div ng-controller="demo.material.controllers.select.ctrl1 as ctrl" class="md-padding selectdemoBasicUsage" layout="column">
+
+    <p data-ng-ignore>
+        The <code>&lt;md-select&gt;</code> component can be used within a
+        <code>&lt;md-input-container&gt;</code> or as a stand alone component by using the
+        <code>md-no-underline</code> class.
+    </p>
+
+    <md-card>
+        <md-card-title>
+            <md-card-title-text>
+                <span class="md-headline">Account Preferences</span>
+                <span class="md-subhead">Tell us a little about you.</span>
+            </md-card-title-text>
+        </md-card-title>
+
+        <md-card-content>
+            <div layout="row">
+                <md-input-container>
+                    <label>Street Name</label>
+                    <input>
+                </md-input-container>
+
+                <md-input-container>
+                    <label>City</label>
+                    <input>
+                </md-input-container>
+
+                <md-input-container>
+                    <label>State</label>
+                    <md-select ng-model="ctrl.userState">
+                        <md-option><em>None</em></md-option>
+                        <md-option ng-repeat="state in ctrl.states" ng-value="state.abbrev" ng-disabled="$index === 1">
+                            {{state.abbrev}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+        </md-card-content>
+    </md-card>
+
+    <md-card>
+        <md-card-title>
+            <md-card-title-text>
+                <span class="md-headline">Battle Preferences</span>
+                <span class="md-subhead">Choose wisely if you want to win.</span>
+            </md-card-title-text>
+        </md-card-title>
+
+        <md-card-content>
+            <div layout="row" layout-align="space-between center">
+                <span>What is your favorite weapon?</span>
+                <md-select ng-model="weapon" placeholder="Weapon" class="md-no-underline">
+                    <md-option value="axe">Axe</md-option>
+                    <md-option value="sword">Sword</md-option>
+                    <md-option value="wand">Wand</md-option>
+                    <md-option value="pen">Pen?</md-option>
+                </md-select>
+            </div>
+
+            <div layout="row" layout-align="space-between center">
+                <span>What armor do you wear?</span>
+                <md-select ng-model="armor" placeholder="Armor" class="md-no-underline" required md-no-asterisk="false">
+                    <md-option value="cloth">Cloth</md-option>
+                    <md-option value="leather">Leather</md-option>
+                    <md-option value="chain">Chainmail</md-option>
+                    <md-option value="plate">Plate</md-option>
+                </md-select>
+            </div>
+
+            <div layout="row" layout-align="space-between center">
+                <span>How do you refresh your magic?</span>
+                <md-select ng-model="drink" placeholder="Drink" class="md-no-underline">
+                    <md-option value="water">Water</md-option>
+                    <md-option value="juice">Juice</md-option>
+                    <md-option value="milk">Milk</md-option>
+                    <md-option value="wine">Wine</md-option>
+                    <md-option value="mead">Mead</md-option>
+                </md-select>
+            </div>
+        </md-card-content>
+    </md-card>
+
+</div>
+
+<div ng-controller="demo.material.controllers.select.ctrl2" class="md-padding">
+
+	<h1 class="md-title">Pick your pizza below</h1>
+
+	<div layout="row">
+		<md-input-container style="margin-right: 10px;">
+			<label>Size</label>
+			<md-select ng-model="size">
+				<md-option ng-repeat="size in sizes" value="{{size}}">{{size}}</md-option>
+			</md-select>
+		</md-input-container>
+		<md-input-container>
+			<label>Topping</label>
+			<md-select ng-model="selectedToppings" multiple>
+				<md-optgroup label="Meats">
+					<md-option ng-value="topping.name" ng-repeat="topping in toppings | filter: {category: 'meat' }">{{topping.name}}</md-option>
+				</md-optgroup>
+				<md-optgroup label="Veggies">
+					<md-option ng-value="topping.name" ng-repeat="topping in toppings | filter: {category: 'veg' }">{{topping.name}}</md-option>
+				</md-optgroup>
+			</md-select>
+		</md-input-container>
+	</div>
+
+	<p ng-if="selectedToppings">
+		You ordered a {{size.toLowerCase()}} pizza with {{printSelectedToppings()}}.
+	</p>
+
+</div>
+
+<div ng-controller="demo.material.controllers.select.ctrl3" layout="column" layout-align="center center" style="padding:40px">
+
+    <p>Select can call an arbitrary function on show. If this function returns a promise, it will display a loading indicator while it is being resolved:</p>
+
+    <div layout="column" layout-align="center center">
+        <md-select placeholder="Assign to user" ng-model="user" md-on-open="loadUsers()" style="min-width: 200px;">
+            <md-option ng-value="user" ng-repeat="user in users">{{user.name}}</md-option>
+        </md-select>
+
+        <p class="md-caption">You have assigned the task to: {{ user ? user.name : 'No one yet' }}</p>
+    </div>
+</div>
+
+<div ng-controller="demo.material.controllers.select.ctrl4" class="md-padding selectdemoSelectHeader">
+
+	<h1 class="md-title">Pick a vegetable below</h1>
+
+	<div layout="row">
+		<md-input-container>
+			<label>Vegetables</label>
+			<md-select ng-model="selectedVegetables" md-on-close="clearSearchTerm()" data-md-select-container-class="selectdemoSelectHeader" multiple>
+				<md-select-header class="demo-select-header">
+					<input ng-model="searchTerm" type="search" placeholder="Search for a vegetable.." class="demo-header-searchbox md-text">
+				</md-select-header>
+				<md-optgroup label="vegetables">
+					<md-option ng-value="vegetable" ng-repeat="vegetable in vegetables | filter:searchTerm">{{vegetable}}</md-option>
+				</md-optgroup>
+			</md-select>
+		</md-input-container>
+	</div>
+</div>
+
+<div ng-controller="demo.material.controllers.select.ctrl5" class="md-padding">
+    <h1 class="md-title">Pick an item below</h1>
+    <div layout="row">
+        <md-input-container>
+            <label>Items</label>
+            <md-select ng-model="selectedItem" md-selected-text="getSelectedText()">
+                <md-optgroup label="items">
+                    <md-option ng-repeat="item in items" ng-value="item">Item {{item}}</md-option>
+                </md-optgroup>
+            </md-select>
+        </md-input-container>
+    </div>
+</div>
+
+<div ng-controller="demo.material.controllers.select.ctrl6" layout="column" layout-align="center center" layout-padding>
+
+    <form name="myForm">
+        <p>
+            Note that, similar to regular inputs, the invalid styling only applies if the select is both invalid <em>and</em> touched, or the form has been submitted.
+        </p>
+
+        <div layout="row" layout-align="start" flex>
+            <md-input-container flex="50">
+                <label>Quest</label>
+                <input type="text" name="quest" ng-model="quest" required />
+            </md-input-container>
+
+            <md-input-container flex="50">
+                <label>Favorite Color</label>
+                <md-select name="favoriteColor" ng-model="favoriteColor" required>
+                    <md-option value="red">Red</md-option>
+                    <md-option value="blue">Blue</md-option>
+                    <md-option value="green">Green</md-option>
+                </md-select>
+                <div class="errors" ng-messages="myForm.favoriteColor.$error">
+                    <div ng-message="required">Required</div>
+                </div>
+            </md-input-container>
+        </div>
+
+        <div layout="row" layout-align="start">
+            <md-checkbox ng-model="myForm.$invalid" disabled>Form Invalid</md-checkbox>
+            <md-checkbox ng-model="myForm.$dirty" disabled>Form Dirty</md-checkbox>
+            <md-checkbox ng-model="myForm.$submitted" disabled>Form Submitted</md-checkbox>
+            <md-checkbox ng-model="myForm.favoriteColor.$touched" disabled>Select Touched</md-checkbox>
+        </div>
+
+        <div layout="row" layout-align="end" flex>
+            <md-button ng-click="clearValue()" ng-disabled="!(quest || favoriteColor)">Clear</md-button>
+            <md-button ng-click="save()" class="md-primary">Save</md-button>
+        </div>
+    </form>
+
+</div>

@@ -1,7 +1,7 @@
 
 /*global
     msos: false,
-    demo: false
+    angular: false
 */
 
 msos.provide("demo.router.app.global");
@@ -65,7 +65,7 @@ msos.onload_functions.push(
 					});
 				};
 
-				return $timeout(checkCredentials, 800).then(function(authenticatedUser) {
+				return $timeout(checkCredentials, 800, false).then(function(authenticatedUser) {
 					AppConfig.emailAddress = authenticatedUser;
 					AppConfig.save();
 				});
@@ -139,9 +139,14 @@ msos.onload_functions.push(
 		function dialog($timeout, $q) {
 			return {
 				link: function link(scope, elem) {
-					$timeout(function() {
-						return elem.addClass('active');
-					});
+					$timeout(
+						function () {
+							return elem.addClass('active');
+						},
+						0,
+						false
+					);
+
 					elem.data('promise', $q(function(resolve, reject) {
 						scope.yes = function() {
 							return resolve(true);

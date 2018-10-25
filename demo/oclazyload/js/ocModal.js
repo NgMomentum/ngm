@@ -10,7 +10,7 @@
 (function() {
 	'use strict';
 
-	var ocModal = angular.module('oc.modal', []);
+	var ocModal = angular.module('oc.modal', ["ng"]);
 
 	ocModal.factory('$ocModal', ['$rootScope', '$controller', '$location', '$timeout', '$compile', '$q', function($rootScope, $controller, $location, $timeout, $compile, $q) {
 		var $body = angular.element(document.body),
@@ -127,9 +127,9 @@
 				var modal = modals[opt.id || '_default'];
 				if(!modal) {
 					$dialogsWrapper.append($compile('<div oc-modal="'+(opt.id ? opt.id : '_default')+'"></div>')($rootScope));
-					$timeout(function() { // let the ng-include detect that it's now empty
+					$timeout(function () { // let the ng-include detect that it's now empty
 						self.open(opt);
-					});
+					}, 0, false);
 					return;
 				} else if(modal && openedModals.indexOf(opt.id || '_default') !== -1) { // if modal already opened
 					if(self.waitingForOpen) {
@@ -163,11 +163,11 @@
 
 				// timeout for animations (if any)
 				$rootScope.$digest();
-				$body[0].offsetWidth; // force paint to be sure the element is in the page
+				$body[0].offsetWidth;		// force paint to be sure the element is in the page
 
 				$timeout(function() {
 					modal.$scope.modalShow = true;
-				}, 100);
+				}, 100, false);
 
 				if(typeof modal.params.onOpen === 'function') {
 					modal.params.onOpen();
@@ -240,8 +240,8 @@
 							}
 
 							deferred.resolve();
-						}, animDuration);
-					});
+						}, animDuration, false);
+					}, 0, false);
 				} else {
 					deferred.resolve();
 				}

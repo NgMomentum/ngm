@@ -1,45 +1,45 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.material.controllers.card");
-msos.require("ng.material.v111.ui.card");
-msos.require("ng.material.v111.core.theming");
-msos.require("ng.material.v111.ui.icon");
-msos.require("ng.material.v111.ui.button");
-msos.require("ng.material.v111.ui.layout");
-msos.require("ng.material.v111.ui.content");
-msos.require("ng.material.v111.ui.checkbox");
+msos.require("ng.material.ui.card");
+msos.require("ng.material.core.theming");
+msos.require("ng.material.ui.icon");
+msos.require("ng.material.ui.button");		// ref. template
+msos.require("ng.material.ui.layout");		// ref. template
+msos.require("ng.material.ui.content");		// ref. template
+msos.require("ng.material.ui.checkbox");	// ref. template
 
-demo.material.controllers.card.version = new msos.set_version(17, 1, 7);
+demo.material.controllers.card.version = new msos.set_version(18, 4, 15);
 
 
 angular.module(
 	'demo.material.controllers.card',
-	[
-		'ng',
-		'ng.material.v111.core.theming'
-	]
+	['ng', 'ng.material.core.theming', 'ng.material.ui.icon']
 ).controller(
-	'demo.material.controllers.card.ctrl',
+	'demo.material.controllers.card.ctrl1',
 	['$scope', function ($scope) {
 		"use strict";
 
-		$scope.imagePath = './ngm/demo/material/img/washedout.png';
+		$scope.imagePath = msos.resource_url('demo', 'material/img/washedout.png');
 	}]
 ).config(
-	['$mdThemingProvider', function ($mdThemingProvider) {
+	['$mdThemingProvider', '$mdIconProvider', function ($mdThemingProvider, $mdIconProvider) {
 		"use strict";
 
 		$mdThemingProvider.theme('dark-grey').backgroundPalette('grey').dark();
 		$mdThemingProvider.theme('dark-orange').backgroundPalette('orange').dark();
 		$mdThemingProvider.theme('dark-purple').backgroundPalette('deep-purple').dark();
 		$mdThemingProvider.theme('dark-blue').backgroundPalette('blue').dark();
+
+		$mdIconProvider.icon(
+			'md-toggle-arrow',
+			msos.resource_url('demo', 'material/img/icons/toggle-arrow.svg'),
+			48
+		);
 	}]
 );

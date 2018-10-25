@@ -8,6 +8,7 @@
 
 msos.provide("demo.start");
 msos.require("ng.bootstrap.ui.dropdown");
+msos.require("ng.material.core.theming");
 
 if (msos.config.run_analytics) {
 	msos.require("ng.google.ga");
@@ -30,16 +31,17 @@ msos.onload_functions.push(
 			],
 			material_ctrls = [
 				'autocomplete', 'bottomsheet', 'button', 'card', 'checkbox', 'chips', 'colors',
-				'content', 'datepickermd', 'dialogmd', 'divider', 'fabactions', 'fabspeeddial', 'fabtoolbar',
-				'gridlist', 'icon', 'input', 'list', 'menu', 'menubar', 'navbar', 'panel', 'progresscir',
-				'progresslin', 'radio', 'select', 'showhide', 'sidenav', 'slider', 'sticky',
-				'subheader', 'swipe', 'switch', 'tabsmd', 'toast', 'toolbarmd', 'tooltipmd', 'truncate',
-				'repeater', 'whiteframe'
+				'content', 'datepickermd', 'dialogmd', 'divider', 'fabspeeddial', 'fabtoolbar',
+				'gridlist', 'icon', 'input', 'list', 'menu', 'menubar', 'navbar', 'panel',
+				'progresscir', 'progresslin', 'radio', 'select', 'sidenav', 'slider', 'subheader',
+				'swipe', 'switch', 'tabsmd', 'toast', 'toolbarmd', 'tooltipmd', 'truncate',
+				'repeater', 'whiteframe', 'material'
 			],
 			chartjs_ctrls = ['fat', 'annotation', 'gauge', 'chartjs'],
 			easyfb_ctrls = [
-				'like', 'share', 'send', 'post', 'video',
-				'comments', 'page', 'follow', 'easyfb'
+				'activity', 'comments', 'easyfb', 'facepile', 'follow', 'like', 'login', 'messages',
+				'page', 'post', 'recommendations', 'send', 'share', 'video',
+				 
 			],
 			widget_ctrls = [
 				'widgets', 'culture', 'smarttable', 'ngreacttable', 'localstorage',
@@ -64,7 +66,8 @@ msos.onload_functions.push(
 				'ng.ui.router',
 				'ng.sanitize',
 				'ng.postloader',
-				'ng.bootstrap.ui',
+				'ng.bootstrap.ui',		// important to inject base UI-Bootstrap code
+				'ng.material.core',		// important to inject base AngularJS Material code
 				'ng.bootstrap.ui.dropdown'
 			]
 		).factory(
@@ -256,10 +259,10 @@ msos.onload_functions.push(
 							templateUrl: msos.resource_url('demo', 'contacts/tmpl/about.html')
 						}
 					).state(
-						'directive_menu',
+						'bootstrap_menu',
 						{
-							url: '/directive_menu',
-							templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/directive_menu.html')
+							url: '/bootstrap_menu',
+							templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/bootstrap_menu.html')
 						}
 					).state(
 						'widgets_menu',
@@ -272,6 +275,12 @@ msos.onload_functions.push(
 						{
 							url: '/router_menu',
 							templateUrl: msos.resource_url('demo', 'contacts/tmpl/router_menu.html')
+						}
+					).state(
+						'material_menu',
+						{
+							url: '/material_menu',
+							templateUrl: msos.resource_url('demo', 'material/tmpl/material_menu.html')
 						}
 					);
 
@@ -350,8 +359,7 @@ msos.onload_functions.push(
 		);
 
 		demo.start.run(
-					['$rootScope', '$state', '$stateParams',
-			function ($rootScope,   $state,   $stateParams) {
+			['$rootScope', '$state', '$stateParams', function ($rootScope,   $state,   $stateParams) {
 				var redirect_url = '';
 
 				msos.console.debug('demo.start.run -> called.');

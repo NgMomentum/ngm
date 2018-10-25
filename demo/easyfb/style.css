@@ -1,0 +1,18 @@
+/* Put your css in here */
+
+.ng-view-container {
+  padding: 0 20px;  
+}
+
+.nav-tabs {
+  margin-bottom: 20px;
+}
+
+.panel {
+  margin-bottom: 30px;
+}
+
+.hint-text {
+  font-size: 18px;
+  line-height: 34px;
+}

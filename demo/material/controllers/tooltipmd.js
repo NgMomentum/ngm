@@ -1,24 +1,22 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
     demo: false
 */
 
 msos.provide("demo.material.controllers.tooltipmd");
-msos.require("ng.material.v111.ui.tooltip");
-msos.require("ng.material.v111.ui.icon");
-msos.require("ng.material.v111.ui.toolbar");
-msos.require("ng.material.v111.ui.layout");
-msos.require("ng.material.v111.ui.content");
-msos.require("ng.material.v111.ui.button");
-msos.require("ng.material.v111.ui.radio");
-msos.require("ng.material.v111.ui.checkbox");
+msos.require("ng.material.ui.tooltip");		// ref. template
+msos.require("ng.material.ui.icon");		// ref. template
+msos.require("ng.material.ui.input");		// ref. template
+msos.require("ng.material.ui.toolbar");		// ref. template
+msos.require("ng.material.ui.layout");		// ref. template
+msos.require("ng.material.ui.content");		// ref. template
+msos.require("ng.material.ui.button");		// ref. template
+msos.require("ng.material.ui.radio");		// ref. template
+msos.require("ng.material.ui.checkbox");	// ref. template
 
-demo.material.controllers.tooltipmd.version = new msos.set_version(17, 1, 6);
+demo.material.controllers.tooltipmd.version = new msos.set_version(18, 5, 18);
 
 
 angular.module(
@@ -27,12 +25,15 @@ angular.module(
 ).controller(
     'demo.material.controllers.tooltipmd.ctrl',
     ['$scope', function ($scope) {
+		"use strict";
+
         $scope.demo = {
             showTooltip: false,
             tipDirection: 'bottom'
         };
 
         $scope.demo.delayTooltip = undefined;
+
         $scope.$watch('demo.delayTooltip', function(val) {
             $scope.demo.delayTooltip = parseInt(val, 10) || 0;
         });

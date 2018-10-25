@@ -1,0 +1,201 @@
+
+<style data-ng-ignore>
+    .tabsdemoDynamicHeight md-content {
+        background-color: transparent !important;
+    }
+    .tabsdemoDynamicHeight md-content md-tabs {
+        background: #f6f6f6;
+        border: 1px solid #e1e1e1;
+    }
+    .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+        background: white;
+    }
+    .tabsdemoDynamicHeight md-content h1:first-child {
+        margin-top: 0;
+    }
+
+	.tabsdemoDynamicTabs md-content {
+		background-color: transparent !important;
+	}
+	.tabsdemoDynamicTabs md-content md-tabs {
+		border: 1px solid #e1e1e1;
+	}
+	.tabsdemoDynamicTabs md-content md-tabs md-tab-content {
+		background: #f6f6f6;
+	}
+	.tabsdemoDynamicTabs md-content md-tabs md-tabs-wrapper {
+		background: white;
+	}
+	.tabsdemoDynamicTabs md-content h1:first-child {
+		margin-top: 0;
+	}
+	.tabsdemoDynamicTabs md-input-container {
+		padding-bottom: 0;
+	}
+	.tabsdemoDynamicTabs .remove-tab {
+		margin-bottom: 40px;
+	}
+	.tabsdemoDynamicTabs .demo-tab > div > div {
+		padding: 25px;
+		box-sizing: border-box;
+	}
+	.tabsdemoDynamicTabs .edit-form input {
+		width: 100%;
+	}
+	.tabsdemoDynamicTabs md-tabs {
+		border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+	}
+	.tabsdemoDynamicTabs md-tab[disabled] {
+		opacity: 0.5;
+	}
+	.tabsdemoDynamicTabs label {
+		text-align: left;
+	}
+	.tabsdemoDynamicTabs .long > input {
+		width: 264px;
+	}
+	.tabsdemoDynamicTabs .md-button.add-tab {
+		transform: translateY(5px);
+	}
+
+	.tabsdemoStaticTabs md-content md-tabs {
+		border: 1px solid #e1e1e1;
+	}
+	.tabsdemoStaticTabs md-content md-tabs md-tab-content {
+		padding: 25px;
+	}
+    .tabsdemoStaticTabs md-content md-tabs md-tab-content:nth-child(1) {
+		background-color: #cfd8dc;
+	}
+    .tabsdemoStaticTabs md-content md-tabs md-tab-content:nth-child(2) {
+		background-color: #ffb74d;
+	}
+    .tabsdemoStaticTabs md-content md-tabs md-tab-content:nth-child(3) {
+		background-color: #ffd54f;
+	}
+    .tabsdemoStaticTabs md-content md-tabs md-tab-content:nth-child(4) {
+		background-color: #aed581;
+	}
+    .tabsdemoStaticTabs md-content md-tabs md-tab-content:nth-child(5) {
+		background-color: #00897b;
+	}
+	.tabsdemoStaticTabs .after-tabs-area > span {
+		margin-top: 25px;
+		padding-right: 15px;
+		vertical-align: middle;
+		line-height: 30px;
+		height: 35px;
+	}
+	.tabsdemoStaticTabs .after-tabs-area > md-checkbox {
+		margin-top: 26px;
+		margin-left: 0;
+	}
+</style>
+
+<div ng-controller="demo.material.controllers.tabsmd.ctrl1" class="tabsdemoDynamicHeight">
+    <md-content>
+        <md-tabs md-dynamic-height md-border-bottom>
+            <md-tab label="one">
+                <md-content class="md-padding" data-ng-ignore>
+                    <h1 class="md-display-2">Tab One</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue. Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus. In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec, feugiat ultricies mi.</p>
+                </md-content>
+            </md-tab>
+            <md-tab label="two">
+                <md-content class="md-padding" data-ng-ignore>
+                    <h1 class="md-display-2">Tab Two</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue. Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus. In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec, feugiat ultricies mi. Aliquam erat volutpat. Nam placerat, tortor in ultrices porttitor, orci enim rutrum enim, vel tempor sapien arcu a tellus. Vivamus convallis sodales ante varius gravida. Curabitur a purus vel augue ultrices ultricies id a nisl. Nullam malesuada consequat diam, a facilisis tortor volutpat et. Sed urna dolor, aliquet vitae posuere vulputate, euismod ac lorem. Sed felis risus, pulvinar at interdum quis, vehicula sed odio. Phasellus in enim venenatis, iaculis tortor eu, bibendum ante. Donec ac tellus dictum neque volutpat blandit. Praesent efficitur faucibus risus, ac auctor purus porttitor vitae. Phasellus ornare dui nec orci posuere, nec luctus mauris semper.</p>
+                    <p>Morbi viverra, ante vel aliquet tincidunt, leo dolor pharetra quam, at semper massa orci nec magna. Donec posuere nec sapien sed laoreet. Etiam cursus nunc in condimentum facilisis. Etiam in tempor tortor. Vivamus faucibus egestas enim, at convallis diam pulvinar vel. Cras ac orci eget nisi maximus cursus. Nunc urna libero, viverra sit amet nisl at, hendrerit tempor turpis. Maecenas facilisis convallis mi vel tempor. Nullam vitae nunc leo. Cras sed nisl consectetur, rhoncus sapien sit amet, tempus sapien.</p>
+                    <p>Integer turpis erat, porttitor vitae mi faucibus, laoreet interdum tellus. Curabitur posuere molestie dictum. Morbi eget congue risus, quis rhoncus quam. Suspendisse vitae hendrerit erat, at posuere mi. Cras eu fermentum nunc. Sed id ante eu orci commodo volutpat non ac est. Praesent ligula diam, congue eu enim scelerisque, finibus commodo lectus.</p>
+                </md-content>
+            </md-tab>
+            <md-tab label="three">
+                <md-content class="md-padding" data-ng-ignore>
+                    <h1 class="md-display-2">Tab Three</h1>
+                    <p>Integer turpis erat, porttitor vitae mi faucibus, laoreet interdum tellus. Curabitur posuere molestie dictum. Morbi eget congue risus, quis rhoncus quam. Suspendisse vitae hendrerit erat, at posuere mi. Cras eu fermentum nunc. Sed id ante eu orci commodo volutpat non ac est. Praesent ligula diam, congue eu enim scelerisque, finibus commodo lectus.</p>
+                </md-content>
+            </md-tab>
+        </md-tabs>
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.tabsmd.ctrl2" class="tabsdemoDynamicTabs" layout="column">
+    <md-content class="md-padding">
+        <md-tabs md-tab-selected="selectedIndex" md-border-bottom>
+            <md-tab ng-repeat="tab in tabs" ng-disabled="tab.disabled" label="{{tab.title}}">
+                <div class="demo-tab tab{{$index%4}}" style="padding: 25px; text-align: center;">
+                    <div ng-bind="tab.content"></div>
+                    <br/>
+                    <md-button class="md-primary md-raised" ng-click="removeTab( tab )" ng-disabled="tabs.length <= 1">Remove Tab</md-button>
+                </div>
+            </md-tab>
+        </md-tabs>
+    </md-content>
+
+    <form ng-submit="addTab(tTitle,tContent)" layout="column" class="md-padding" style="padding-top: 0;">
+        <div layout="row" layout-sm="column">
+            <div flex style="position: relative;">
+                <h2 class="md-subhead" style="position: absolute; bottom: 0; left: 0; margin: 0; font-weight: 500; text-transform: uppercase; line-height: 35px; white-space: nowrap;">Add a new Tab:</h2>
+            </div>
+            <md-input-container>
+                <label for="label">Label</label>
+                <input type="text" id="label" ng-model="tTitle">
+            </md-input-container>
+            <md-input-container>
+                <label for="content">Content</label>
+                <input type="text" id="content" ng-model="tContent">
+            </md-input-container>
+            <md-button class="add-tab md-primary md-raised" ng-disabled="!tTitle || !tContent" type="submit" style="margin-right: 0;">Add Tab</md-button>
+        </div>
+    </form>
+</div>
+
+<div ng-controller="demo.material.controllers.tabsmd.ctrl3" class="tabsdemoStaticTabs">
+    <md-content class="md-padding">
+        <md-tabs class="md-accent" md-tab-selected="data.selectedIndex" md-align-tabs="{{data.bottom ? 'bottom' : 'top'}}">
+            <md-tab id="tab1">
+                <md-tab-label>Item One</md-tab-label>
+                <md-tab-body>
+                    View for Item #1 <br/> data.selectedIndex = 0;
+                </md-tab-body>
+            </md-tab>
+            <md-tab id="tab2" ng-disabled="data.secondLocked">
+                <md-tab-label>{{data.secondLabel}}</md-tab-label>
+                <md-tab-body>
+                    View for Item #2 <br/> data.selectedIndex = 1;
+                </md-tab-body>
+            </md-tab>
+            <md-tab id="tab3">
+                <md-tab-label>Item Three</md-tab-label>
+                <md-tab-body>
+                    View for Item #3 <br/> data.selectedIndex = 2;
+                </md-tab-body>
+            </md-tab>
+            <md-tab id="tab4">
+                <md-tab-label>
+                    <md-icon md-svg-icon="communication:phone"></md-icon>
+                </md-tab-label>
+                <md-tab-body>
+                    View for Item #4 <br/> data.selectedIndex = 3;
+                </md-tab-body>
+            </md-tab>
+            <md-tab id="tab5">
+                <md-tab-label>
+                    <md-icon md-svg-icon="favorite"></md-icon>
+                </md-tab-label>
+                <md-tab-body>
+                    View for Item #5 <br/> data.selectedIndex = 4;
+                </md-tab-body>
+            </md-tab>
+        </md-tabs>
+    </md-content>
+
+	<div class="md-padding" layout="row" layout-sm="column" layout-align="left center" style="padding-top: 0;">
+		<md-checkbox ng-model="data.secondLocked" aria-label="Disable item two?" style="margin: 5px;">
+			Disable item two?
+		</md-checkbox>
+		<md-checkbox ng-model="data.bottom" aria-label="Align tabs to bottom?" style="margin: 5px;">
+			Align tabs to bottom?
+		</md-checkbox>
+	</div>
+</div>

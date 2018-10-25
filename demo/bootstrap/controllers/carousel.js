@@ -1,11 +1,7 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
-    ng: false,
     demo: false
 */
 
@@ -13,7 +9,7 @@ msos.provide("demo.bootstrap.controllers.carousel");
 msos.require("ng.bootstrap.ui.carousel");
 
 
-demo.bootstrap.controllers.carousel.version = new msos.set_version(17, 2, 9);
+demo.bootstrap.controllers.carousel.version = new msos.set_version(18, 9, 23);
 
 angular.module(
     'demo.bootstrap.controllers.carousel',
@@ -23,14 +19,13 @@ angular.module(
     ['$scope', function ($scope) {
         "use strict";
 
-        $scope.myInterval = 5000;
-        $scope.noWrapSlides = false;
+        $scope.myInterval = 3000;
         $scope.active = 0;
 
         var temp_cc = 'demo.bootstrap.controllers.carousel.ctrl',
             slides = $scope.slides = [],
             currIndex = 0,
-            i = 0;
+			j = 0;
 
         msos.console.debug(temp_cc + ' -> start.');
 
@@ -73,7 +68,12 @@ angular.module(
             return shuffle(indexes);
         }
 
-        $scope.addSlide = function () {
+        $scope.randomize = function() {
+            var indexes = generateIndexesArray();
+            assignNewIndexesToSlides(indexes);
+        };
+
+        $scope.addDemoSlide = function () {
             var newWidth = 600 + slides.length + 1;
 
             slides.push({
@@ -82,18 +82,14 @@ angular.module(
                 id: currIndex
             });
 
-            currIndex += 1;
+			currIndex += 1;
+
+			msos.console.debug('demo.bootstrap.controllers.carousel.ctrl - $scope.addDemoSlide -> called.');
         };
 
-        $scope.randomize = function() {
-            var indexes = generateIndexesArray();
-            assignNewIndexesToSlides(indexes);
-        };
+		for (j = 0; j < 4; j += 1) { $scope.addDemoSlide(); }
 
-        for (i = 0; i < 4; i += 1) {
-            $scope.addSlide();
-        }
-
-        msos.console.debug(temp_cc + ' -> done, slides added: ', slides);
+        msos.console.debug(temp_cc + ' ->  done, slides:', slides);
     }]
 );
+
