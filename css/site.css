@@ -8,11 +8,14 @@ body {
 	transition: opacity 1s;
 }
 
+
 /* Std AngularJS CSS: Load in page so cloaking starts immediately */
+[ng\:cloak],
 [ng-cloak],
 [data-ng-cloak],
 [x-ng-cloak],
 .ng-cloak,
+.x-ng-cloak,
 .ng-hide:not(.ng-hide-animate) {
 	display: none !important;
 }
