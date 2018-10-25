@@ -628,7 +628,7 @@ msos.hide_mobile_url = function () {
 
 msos.notify = {
 
-	container: jQuery("<div id='notify_container'></div>"),
+	container: jQuery("<div id='notify_container' data-ng-ignore></div>"),
 
 	add: function () {
 		"use strict";
