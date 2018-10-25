@@ -307,7 +307,8 @@ ng.ui.router.css.themes = new msos.loader();
 							}
 						);
 					},
-					0
+					0,
+					false
 				);
 			};
 		}]

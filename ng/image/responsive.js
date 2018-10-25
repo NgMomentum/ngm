@@ -91,7 +91,7 @@
                                             }
 
                                             // Listener function for this query
-                                            queryListener = function (mql) {
+                                            queryListener = function () {
                                                 // TODO: add throttling or a debounce here (or somewhere) to prevent this function from being called a ton of times
                                                 updateFromQuery(querySets);
                                             };
@@ -115,7 +115,8 @@
 
                                     waiting = false;
                                 },
-                                0
+                                0,
+								false
                             );
 
                             waiting = true;

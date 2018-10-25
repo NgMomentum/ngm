@@ -289,18 +289,22 @@
                 // for being able to use promises.
                 if (angular.isFunction(userFn) && angular.isNumber(userFnIndex)) {
                   args.splice(userFnIndex, 1, function(response) {
-                    $timeout(function() {
+                    $timeout(
+						function() {
 
-                      if (response && angular.isUndefined(response.error)) {
-                        d.resolve(response);
-                      } else {
-                        d.reject(response);
-                      }
+							if (response && angular.isUndefined(response.error)) {
+								d.resolve(response);
+							} else {
+								d.reject(response);
+							}
 
-                      if (angular.isFunction(userFn)) {
-                        userFn(response);
-                      }
-                    });
+							if (angular.isFunction(userFn)) {
+								userFn(response);
+							}
+						},
+						0,
+						false
+					);
                   });
                 }
 
@@ -308,9 +312,11 @@
                 if (this.isReady()) {
                   $window.FB.login.apply($window.FB, args);
                 } else {
-                  $timeout(function() {
-                    d.reject("Facebook.login() called before Facebook SDK has loaded.");
-                  });
+					$timeout(
+						function() { d.reject("Facebook.login() called before Facebook SDK has loaded."); },
+						0,
+						false
+					);
                 }
 
                 return d.promise;
@@ -356,16 +362,23 @@
                       if (angular.isFunction(userFn)) {
                         userFn(response);
                       }
-                    });
+                    },
+					0,
+					false
+					);
                   });
                 }
 
-                $timeout(function() {
-                  // Call when loadDeferred be resolved, meaning Service is ready to be used.
-                  loadDeferred.promise.then(function() {
-                    $window.FB[name].apply(FB, args);
-                  });
-                });
+                $timeout(
+					function() {
+						// Call when loadDeferred be resolved, meaning Service is ready to be used.
+						loadDeferred.promise.then(function() {
+							$window.FB[name].apply(FB, args);
+						});
+					},
+					0,
+					false
+				);
 
                 return d.promise;
               };
@@ -378,13 +391,19 @@
 
               var d = $q.defer('ng_util_fb_parseXFBL');
 
-              $timeout(function() {
-                // Call when loadDeferred be resolved, meaning Service is ready to be used
-                loadDeferred.promise.then(function() {
-                  $window.FB.XFBML.parse();
-                  d.resolve();
-                });
-              });
+              $timeout(
+					function() {
+						// Call when loadDeferred be resolved, meaning Service is ready to be used
+						loadDeferred.promise.then(
+							function() {
+								$window.FB.XFBML.parse();
+								d.resolve();
+							}
+						);
+					},
+					0,
+					false
+				);
 
               return d.promise;
             };
@@ -420,27 +439,34 @@
                 if (angular.isFunction(userFn) && angular.isNumber(userFnIndex)) {
                   args.splice(userFnIndex, 1, function(response) {
 
-                    $timeout(function() {
+                    $timeout(
+						function() {
+							if (response && angular.isUndefined(response.error)) {
+								d.resolve(response);
+							} else {
+								d.reject(response);
+							}
 
-                      if (response && angular.isUndefined(response.error)) {
-                        d.resolve(response);
-                      } else {
-                        d.reject(response);
-                      }
-
-                      if (angular.isFunction(userFn)) {
-                        userFn(response);
-                      }
-                    });
+							if (angular.isFunction(userFn)) {
+								userFn(response);
+							}
+						},
+						0,
+						true
+					);
                   });
                 }
 
-                $timeout(function() {
-                  // Call when loadDeferred be resolved, meaning Service is ready to be used
-                  loadDeferred.promise.then(function() {
-                    $window.FB.Event[name].apply(FB, args);
-                  });
-                });
+                $timeout(
+					function () {
+						// Call when loadDeferred be resolved, meaning Service is ready to be used
+						loadDeferred.promise.then(function() {
+							$window.FB.Event[name].apply(FB, args);
+						});
+					},
+					0,
+					false
+				);
 
                 return d.promise;
               };
@@ -466,50 +492,60 @@
         loadDeferred = $q.defer('ng_util_fb_run');
 
         var loadSDK = settings.loadSDK;
-        delete(settings['loadSDK']); // Remove loadSDK from settings since this isn't part from Facebook API.
+        delete(settings.loadSDK); // Remove loadSDK from settings since this isn't part from Facebook API.
 
         /**
          * Define fbAsyncInit required by Facebook API
          */
         $window.fbAsyncInit = function() {
           // Initialize our Facebook app
-          $timeout(function() {
-            if (!settings.appId) {
-              throw 'Missing appId setting.';
-            }
+          $timeout(
+			function () {
+				if (!settings.appId) {
+					throw 'Missing appId setting.';
+				}
 
-            FB.init(settings);
+				FB.init(settings);
 
-            flags.ready = true;
+				flags.ready = true;
 
-            /**
-             * Subscribe to Facebook API events and broadcast through app.
-             */
-            angular.forEach({
-              'auth.login': 'login',
-              'auth.logout': 'logout',
-              'auth.prompt': 'prompt',
-              'auth.sessionChange': 'sessionChange',
-              'auth.statusChange': 'statusChange',
-              'auth.authResponseChange': 'authResponseChange',
-              'xfbml.render': 'xfbmlRender',
-              'edge.create': 'like',
-              'edge.remove': 'unlike',
-              'comment.create': 'comment',
-              'comment.remove': 'uncomment'
-            }, function(mapped, name) {
-              FB.Event.subscribe(name, function(response) {
-                $timeout(function() {
-                  $rootScope.$broadcast('Facebook:' + mapped, response);
-                });
-              });
-            });
+				angular.forEach(
+					{
+						'auth.login': 'login',
+						'auth.logout': 'logout',
+						'auth.prompt': 'prompt',
+						'auth.sessionChange': 'sessionChange',
+						'auth.statusChange': 'statusChange',
+						'auth.authResponseChange': 'authResponseChange',
+						'xfbml.render': 'xfbmlRender',
+						'edge.create': 'like',
+						'edge.remove': 'unlike',
+						'comment.create': 'comment',
+						'comment.remove': 'uncomment'
+					},
+					function (mapped, name) {
+						FB.Event.subscribe(
+							name,
+							function (response) {
 
-            // Broadcast Facebook:load event
-            $rootScope.$broadcast('Facebook:load');
+								$timeout(
+									function() { $rootScope.$broadcast('Facebook:' + mapped, response); },
+									0,
+									false
+								);
+							}
+						);
+					}
+				);
 
-            loadDeferred.resolve(FB);
-          });
+				// Broadcast Facebook:load event
+				$rootScope.$broadcast('Facebook:load');
+
+				loadDeferred.resolve(FB);
+			},
+			0,
+			false
+		  );
         };
 
         /**

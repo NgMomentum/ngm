@@ -14,6 +14,9 @@
 
 msos.provide("ng.util.oclazyload");
 
+ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
+
+
 (function (angular) {
     'use strict';
 
@@ -45,7 +48,8 @@ msos.provide("ng.util.oclazyload");
 	).provider(
 		'$ocLazyLoad',
 		function () {
-			var modules = {},
+			var temp_oc = 'ng.util.oclazyload',
+				modules = {},
 				debug = msos.config.debug,
 				events = false,
 				moduleCache = [],
@@ -73,7 +77,7 @@ msos.provide("ng.util.oclazyload");
 
 			function getModule(moduleName) {
 				if (!angular.isString(moduleName)) {
-					msos.console.warn('ng.util.oclazyload - getModule -> moduleName is not a string.');
+					msos.console.warn(temp_oc + ' - getModule -> moduleName is not a string.');
 					return false;
 				}
 
@@ -84,7 +88,7 @@ msos.provide("ng.util.oclazyload");
 					if (/No module/.test(e) || e.message.indexOf('$injector:nomod') > -1) {
 						e.message = 'The module "' + angular.stringify(moduleName) + '" that you are trying to load does not exist. ' + e.message;
 					}
-					msos.console.error('ng.util.oclazyload - getModule -> failed for moduleName: ' + moduleName, e);
+					msos.console.error(temp_oc + ' - getModule -> failed for moduleName: ' + moduleName, e);
 					return false;
 				}
 			}
@@ -101,10 +105,11 @@ msos.provide("ng.util.oclazyload");
 
 				function broadcast(eventName, params) {
 					if (events) {
+						msos.console.debug(temp_oc + ' - broadcast -> fired, for: ' + eventName + ',\n     params', params);
 						$rootScope.$broadcast(eventName, params);
+					} {
+						msos.console.debug(temp_oc + ' - broadcast -> turned off.');
 					}
-
-					if (debug) { $log.info(eventName, params); }
 				}
 
 				function reject(e) {
@@ -164,7 +169,7 @@ msos.provide("ng.util.oclazyload");
 					msos_builder.add_resource_onload.push(
 						function () {
 							broadcast('ocLazyLoad.fileLoaded', path);
-							deferred.resolve(true);
+							deferred.resolve();
 						}
 					);
 
@@ -210,7 +215,7 @@ msos.provide("ng.util.oclazyload");
 
 						moduleName = getModuleName(moduleName);
 
-						msos.console.debug('ng.util.oclazyload - loadDependencies -> called for: ' + moduleName + ', localParams:', localParams);
+						msos.console.debug(temp_oc + ' - loadDependencies -> called for: ' + moduleName + ', localParams:', localParams);
 
 						if (moduleName !== null) {
 
@@ -242,7 +247,7 @@ msos.provide("ng.util.oclazyload");
 							deferred = $q.defer('oclazyload_get_defer_inject'),
 							res;
 
-						msos.console.debug('ng.util.oclazyload - inject -> called, with localParams/real:', localParams, real);
+						msos.console.debug(temp_oc + ' - inject -> called, with localParams/real:', localParams, real);
 
 						if (angular.isDefined(moduleName) && moduleName !== null) {
 
@@ -251,7 +256,7 @@ msos.provide("ng.util.oclazyload");
 								angular.forEach(
 									moduleName,
 									function (module) {
-										if (!angular.loaded_modules.get(module)) {
+										if (!angular.all_loaded_modules.get(module)) {
 											promisesList.push(self.inject(module, localParams, real));
 										}
 									}
@@ -259,7 +264,7 @@ msos.provide("ng.util.oclazyload");
 
 								return $q.all($q.defer('oclazyload_get_all_inject'), promisesList);
 
-							} else if (!angular.loaded_modules.get(moduleName)) {
+							} else if (!angular.all_loaded_modules.get(moduleName)) {
 								_addToLoadList(getModuleName(moduleName), true, real);
 							} else {
 								broadcast('ocLazyLoad.moduleLoaded', moduleName);

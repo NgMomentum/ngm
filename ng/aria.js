@@ -1,9 +1,10 @@
+
 /**
  * @license AngularJS v1.5.9-build.5033+sha.b59bc0b
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  *
- * Updated to v1.6.7
+ * Updated to v1.7.2
  */
 
 /*global
@@ -13,7 +14,8 @@
 
 msos.provide("ng.aria");
 
-ng.aria.version = new msos.set_version(17, 12, 30);
+ng.aria.version = new msos.set_version(18, 9, 2);
+ng.aria.ARIA_DISABLE_ATTR = 'ngAriaDisable';
 
 (function (window, angular) {
     'use strict';
@@ -52,13 +54,18 @@ ng.aria.version = new msos.set_version(17, 12, 30);
 
         function watchExpr(attrName, ariaAttr, nodeBlackList, negate) {
             return function (scope, elem, attr) {
+				if (attr.hasOwnProperty(ng.aria.ARIA_DISABLE_ATTR)) { return; }
+
                 var ariaCamelName = attr.$normalize(ariaAttr);
                 if (config[ariaCamelName] && !isNodeOneOf(elem, nodeBlackList) && !attr[ariaCamelName]) {
-                    scope.$watch(attr[attrName], function (boolVal) {
-                        // ensure boolean value
-                        boolVal = negate ? !boolVal : !!boolVal;
-                        elem.attr(ariaAttr, boolVal);
-                    });
+                    scope.$watch(
+						attr[attrName],
+						function (boolVal) {
+							// ensure boolean value
+							boolVal = negate ? !boolVal : !!boolVal;
+							elem.attr(ariaAttr, boolVal);
+						}
+					);
                 }
             };
         }
@@ -101,7 +108,7 @@ ng.aria.version = new msos.set_version(17, 12, 30);
         'ngModel', ['$aria', function ($aria) {
 
             function shouldAttachAttr(attr, normalizedAttr, elem, allowBlacklistEls) {
-                return $aria.config(normalizedAttr) && !elem.attr(attr) && (allowBlacklistEls || !isNodeOneOf(elem, nodeBlackList));
+				return $aria.config(normalizedAttr) && !elem.attr(attr) && (allowBlacklistEls || !isNodeOneOf(elem, nodeBlackList)) &&  (elem.attr('type') !== 'hidden' || elem[0].nodeName !== 'INPUT');
             }
 
             function shouldAttachRole(role, elem) {
@@ -125,6 +132,9 @@ ng.aria.version = new msos.set_version(17, 12, 30);
                 require: 'ngModel',
                 priority: 200, //Make sure watches are fired after any other directives that affect the ngModel value
                 compile: function (elem, attr) {
+
+					if (attr.hasOwnProperty(ng.aria.ARIA_DISABLE_ATTR)) { return; }
+
                     var shape = getShape(attr, elem);
 
                     return {
@@ -153,8 +163,8 @@ ng.aria.version = new msos.set_version(17, 12, 30);
                                         elem.attr('role', shape);
                                     }
                                     if (shouldAttachAttr('aria-checked', 'ariaChecked', elem, false)) {
-                                        scope.$watch(ngAriaWatchModelValue, shape === 'radio' ?
-                                            getRadioReaction : getCheckboxReaction);
+                                        scope.$watch(
+											ngAriaWatchModelValue, shape === 'radio' ? getRadioReaction : getCheckboxReaction);
                                     }
                                     if (needsTabIndex) {
                                         elem.attr('tabindex', 0);
@@ -211,11 +221,14 @@ ng.aria.version = new msos.set_version(17, 12, 30);
                             }
 
                             if (shouldAttachAttr('aria-invalid', 'ariaInvalid', elem, true)) {
-                                scope.$watch(function ngAriaInvalidWatch() {
-                                    return ngModel.$invalid;
-                                }, function ngAriaInvalidReaction(newVal) {
-                                    elem.attr('aria-invalid', !!newVal);
-                                });
+                                scope.$watch(
+									function ngAriaInvalidWatch() {
+										return ngModel.$invalid;
+									},
+									function ngAriaInvalidReaction(newVal) {
+										elem.attr('aria-invalid', !!newVal);
+									}
+								);
                             }
                         }
                     };
@@ -231,7 +244,9 @@ ng.aria.version = new msos.set_version(17, 12, 30);
             return {
                 restrict: 'A',
                 require: '?ngMessages',
-                link: function (scope, elem) {
+                link: function (scope, elem, attr) {
+					if (attr.hasOwnProperty(ng.aria.ARIA_DISABLE_ATTR)) { return; }
+
                     if (!elem.attr('aria-live')) {
                         elem.attr('aria-live', 'assertive');
                     }
@@ -243,7 +258,11 @@ ng.aria.version = new msos.set_version(17, 12, 30);
             return {
                 restrict: 'A',
                 compile: function (elem, attr) {
+
+					if (attr.hasOwnProperty(ng.aria.ARIA_DISABLE_ATTR)) { return; }
+
                     var fn = $parse(attr.ngClick);
+
                     return function (scope, elem, attr) {
 
                         if (!isNodeOneOf(elem, nodeBlackList)) {
@@ -278,6 +297,8 @@ ng.aria.version = new msos.set_version(17, 12, 30);
     ).directive(
         'ngDblclick', ['$aria', function ($aria) {
             return function (scope, elem) {
+				if (attr.hasOwnProperty(ng.aria.ARIA_DISABLE_ATTR)) { return; }
+
                 if ($aria.config('tabindex') && !elem.attr('tabindex') && !isNodeOneOf(elem, nodeBlackList)) {
                     elem.attr('tabindex', 0);
                 }

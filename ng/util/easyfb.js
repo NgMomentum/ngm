@@ -1,19 +1,50 @@
+
 /*! angular-easyfb
-version: 1.4.1
+version: org -> 1.4.1, current -> 1.5.2
 build date: 2015-09-22
 author: Robin Fan
 https://github.com/pc035860/angular-easyfb.git */
 
 /*global
     msos: false,
-    jQuery: false,
     angular: false
 */
 
-(function (module) {
+msos.provide("ng.util.easyfb");
+
+
+(function () {
     "use strict";
 
-    module.provider(
+    var _socialPluginDirectiveConfig = {
+            fbLike: [ "action", "colorscheme", "href", "kidDirectedSite", "layout", "ref", "share", "showFaces", "width" ],
+            fbShareButton: [ "href", "layout", "width" ],
+            fbSend: [ "colorscheme", "href", "kidDirectedSite", "ref" ],
+            fbPost: [ "href", "width" ],
+            fbFollow: [ "colorscheme", "href", "kidDirectedSite", "layout", "showFaces", "width" ],
+            fbComments: [ "colorscheme", "href", "mobile", "numPosts", "orderBy", "width" ],
+            fbCommentsCount: [ "href" ],
+            fbActivity: [ "action", "appId", "colorscheme", "filter", "header", "height", "linktarget", "maxAge", "recommendations", "ref", "site", "width" ],
+            fbRecommendations: [ "action", "appId", "colorscheme", "header", "height", "linktarget", "maxAge", "ref", "site", "width" ],
+            fbRecommendationsBar: [ "action", "href", "maxAge", "numRecommendations", "readTime", "ref", "side", "site", "trigger" ],
+            fbLikeBox: [ "colorscheme", "forceWall", "header", "height", "href", "showBorder", "showFaces", "stream", "width" ],
+            fbFacepile: [ "action", "appId", "colorscheme", "href", "maxRows", "size", "width" ],
+            fbPage: [ "href", "width", "height", "hideCover", "showFacepile", "showPosts" ],
+            fbVideo: [ "href", "width", "allowfullscreen" ],
+            fbAdPreview: [ "adAccountId", "adgroupId", "creative", "creativeId", "adFormat", "pageType", "targeting", "post" ],
+			fbSendToMessenger: [ "messengerAppId", "pageId", "ref", "color", "size" ],
+			fbMessengermessageus: [ "messengerAppId", "pageId", "color", "size" ],
+			fbLoginButton: [ "autoLogoutLink", "maxRows", "onLogin", "scope", "size", "showFaces", "defaultAudience" ],
+			fbCommentEmbed: [ "href", "width", "includeParent" ],
+			fbSave: [ "uri" ]
+        },
+		ezfb_attr_dirs = {},
+		ezfb_module;
+
+    ezfb_module = angular.module(
+		"ng.util.easyfb",
+		["ng"]
+	).provider(
         "ezfb",
         function () {
             var APP_EVENTS_EVENT_NAMES = {
@@ -75,29 +106,33 @@ https://github.com/pc035860/angular-easyfb.git */
                     status: true,
                     cookie: true,
                     xfbml: true,
-                    version: "v2.4"
+                    version: "v2.6"
                 },
                 _defaultLoadSDKFunction = [
-                    "$window", "$document", "ezfbAsyncInit", "ezfbLocale",
-                    function ($window, $document, ezfbAsyncInit, ezfbLocale) {
-                        (function (d) {
-                            var js,
-                                id = "facebook-jssdk",
-                                ref = d.getElementsByTagName("script")[0];
+					"$window", "$document", "$timeout", "ezfbAsyncInit", "ezfbLocale",
+					function($window, $document, $timeout, ezfbAsyncInit, ezfbLocale) {
+						(function (d) {
+							var insertScript = function () {
+								var js,
+									id = "facebook-jssdk",
+									ref = d.getElementsByTagName("script")[0];
 
-                            if (d.getElementById(id)) { return; }
+								if (d.getElementById(id)) { return; }
 
-                            js = d.createElement("script");
-                            js.id = id;
-                            js.async = true;
-                            js.src = "//connect.facebook.net/" + ezfbLocale + "/sdk.js";
-                            ref.parentNode.insertBefore(js, ref);
+								js = d.createElement("script");
+								js.id = id;
+								js.async = true;
+								js.src = "//connect.facebook.net/" + ezfbLocale + "/sdk.js";
 
-                        }($document[0]));
+								ref.parentNode.insertBefore(js, ref);
+							};
 
-                        $window.fbAsyncInit = ezfbAsyncInit;
-                    }
-                ],
+							$timeout(insertScript, 0, false);
+						})($document[0]);
+
+						$window.fbAsyncInit = ezfbAsyncInit;
+					}
+				],
                 _loadSDKFunction = _defaultLoadSDKFunction,
                 _defaultInitFunction = [
                     "$window", "ezfbInitParams",
@@ -173,45 +208,61 @@ https://github.com/pc035860/angular-easyfb.git */
                         _initRenderReady = $q.defer('ng_util_ezfb_render');
 
                         if (!$document[0].getElementById("fb-root")) {
-                            $document.find("body").append('<div id="fb-root"></div>');
+                            $document.find("body").append('<div id="fb-root" data-ng-ignore></div>');
                         }
 
                         ezfbAsyncInit = function () {
                             _paramsReady.promise.then(
                                 function () {
-                                    var onRender = function () {
-                                            _ezfb.$$rendered = true;
-                                            $timeout(
-                                                function () {
-                                                    _initRenderReady.resolve();
-                                                }
-                                            );
-                                            _ezfb.Event.unsubscribe("xfbml.render", onRender);
-                                        };
+									if (_initParams.xfbml) {
+										var onRender = function () {
 
-                                    _ezfb.Event.subscribe("xfbml.render", onRender);
+											_ezfb.$$xfbmlRendered = true;
 
-                                    $injector.invoke(
-                                        _initFunction,
-                                        null,
-                                        { ezfbInitParams: _initParams }
-                                    );
+											$timeout(
+												function () { _initRenderReady.resolve(true); },
+												0,
+												false
+											);
 
-                                    _ezfb.$$ready = true;
-                                    _initReady.resolve();
-                                }
+											_ezfb.Event.unsubscribe("xfbml.render", onRender);
+										};
+
+										_ezfb.Event.subscribe("xfbml.render", onRender);
+									} else {
+										$timeout(
+											function () { _initRenderReady.resolve(false); },
+											0,
+											false
+										);
+									}
+
+									$injector.invoke(
+										_initFunction,
+										null,
+										{ ezfbInitParams: _initParams },
+										'ng_util_eazyfb_ezfbAsyncInit'
+									);
+
+									_ezfb.$$ready = true;
+									_initReady.resolve();
+								}
                             );
                         };
 
                         $injector.invoke(
                             _loadSDKFunction,
                             null,
-                            { ezfbAsyncInit: ezfbAsyncInit, ezfbLocale: _locale }
+                            {
+								ezfbAsyncInit: ezfbAsyncInit,
+								ezfbLocale: _locale
+							},
+							'ng_util_eazyfb_ezfb_get'
                         );
 
                         _ezfb = {
                             $$ready: false,
-                            $$rendered: false,
+							$$xfbmlRendered: false,
                             $ready: function (fn) {
                                 if (angular.isFunction(fn)) {
                                     _initReady.promise.then(fn);
@@ -362,7 +413,8 @@ https://github.com/pc035860/angular-easyfb.git */
         }
     ).directive(
         "ezfbXfbml",
-        ["ezfb", "$parse", "$compile", "$timeout", function (ezfb, $parse, $compile, $timeout) {
+        ["ezfb", "$parse", "$compile", "$timeout",
+		 function (ezfb, $parse, $compile, $timeout) {
             return {
                 restrict: "EAC",
                 controller: function () {},
@@ -396,9 +448,9 @@ https://github.com/pc035860/angular-easyfb.git */
                                     $compile(iElm.contents())(scope);
 
                                     $timeout(
-                                        function () {
-                                            ezfb.XFBML.parse(iElm[0], onrenderHandler);
-                                        }
+                                        function () { ezfb.XFBML.parse(iElm[0], onrenderHandler); },
+										0,
+										false
                                     );
 
                                     (setter || angular.noop)(scope, false);
@@ -410,25 +462,19 @@ https://github.com/pc035860/angular-easyfb.git */
                 }
             };
         }]
-    );
-
-    var _socialPluginDirectiveConfig = {
-            fbLike: [ "action", "colorscheme", "href", "kidDirectedSite", "layout", "ref", "share", "showFaces", "width" ],
-            fbShareButton: [ "href", "layout", "width" ],
-            fbSend: [ "colorscheme", "href", "kidDirectedSite", "ref" ],
-            fbPost: [ "href", "width" ],
-            fbFollow: [ "colorscheme", "href", "kidDirectedSite", "layout", "showFaces", "width" ],
-            fbComments: [ "colorscheme", "href", "mobile", "numPosts", "orderBy", "width" ],
-            fbCommentsCount: [ "href" ],
-            fbActivity: [ "action", "appId", "colorscheme", "filter", "header", "height", "linktarget", "maxAge", "recommendations", "ref", "site", "width" ],
-            fbRecommendations: [ "action", "appId", "colorscheme", "header", "height", "linktarget", "maxAge", "ref", "site", "width" ],
-            fbRecommendationsBar: [ "action", "href", "maxAge", "numRecommendations", "readTime", "ref", "side", "site", "trigger" ],
-            fbLikeBox: [ "colorscheme", "forceWall", "header", "height", "href", "showBorder", "showFaces", "stream", "width" ],
-            fbFacepile: [ "action", "appId", "colorscheme", "href", "maxRows", "size", "width" ],
-            fbPage: [ "href", "width", "height", "hideCover", "showFacepile", "showPosts" ],
-            fbVideo: [ "href", "width", "allowfullscreen" ],
-            fbAdPreview: [ "adAccountId", "adgroupId", "creative", "creativeId", "adFormat", "pageType", "targeting", "post" ]
-        };
+    ).directive(
+		'onEzfbRender',
+		angular.restrictADir
+	).directive(
+		'type',
+		angular.restrictADir
+	).directive(
+		'useContinueAs',
+		angular.restrictADir
+	).directive(
+		'buttonType',
+		angular.restrictADir
+	);
 
     function creatSocialPluginDirective(availableAttrs, dirName) {
         var CLASS_WRAP = "ezfb-social-plugin-wrap",
@@ -437,18 +483,37 @@ https://github.com/pc035860/angular-easyfb.git */
             _wrap = function ($elm) {
                 var tmpl = '<span class="' + CLASS_WRAP + '" style="' + STYLE_WRAP_SPAN + '">';
                 return $elm.wrap(tmpl).parent();
-            }, _wrapAdaptive = function ($elm) {
+            },
+			_wrapAdaptive = function ($elm) {
                 var tmpl = '<div class="' + CLASS_WRAP + '">';
                 return $elm.wrap(tmpl).parent();
-            }, _isWrapped = function ($elm) {
+            },
+			_isWrapped = function ($elm) {
                 return $elm.parent().hasClass(CLASS_WRAP);
-            }, _unwrap = function ($elm) {
+            },
+			_unwrap = function ($elm) {
                 var $parent = $elm.parent();
                 $parent.after($elm).remove();
                 return $elm;
             };
 
-        module.directive(
+		angular.forEach(
+            availableAttrs,
+            function (attrName) {
+				// Only add the directive once...
+				if (!ezfb_attr_dirs[attrName]) {
+
+					ezfb_attr_dirs[attrName] = true;
+
+					ezfb_module.directive(
+						attrName,
+						angular.restrictADir
+					);
+				}
+            }
+        );
+
+        ezfb_module.directive(
             dirName,
             [ "ezfb", function (ezfb) {
                 var _withAdaptiveWidth = PLUGINS_WITH_ADAPTIVE_WIDTH.indexOf(dirName) >= 0,
@@ -531,6 +596,9 @@ https://github.com/pc035860/angular-easyfb.git */
         );
     }
 
-    angular.forEach(_socialPluginDirectiveConfig, creatSocialPluginDirective);
+    angular.forEach(
+		_socialPluginDirectiveConfig,
+		creatSocialPluginDirective
+	);
 
-}(angular.module("ezfb", [])));
+}());

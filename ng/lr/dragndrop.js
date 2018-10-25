@@ -79,10 +79,13 @@ ng.lr.dragndrop.version = new msos.set_version(18, 1, 15);
 							collection,
 							key = (safe === true ? attr.lrDragSrcSafe : attr.lrDragSrc ) || 'temp';
 	
-						if(attr.lrDragData) {
-							scope.$watch(attr.lrDragData, function (newValue) {
-								collection = newValue;
-							});
+						if (attr.lrDragData) {
+							scope.$watch(
+								attr.lrDragData,
+								function (newValue) {
+									collection = newValue;
+								}
+							);
 						} else {
 							collection = th.parseRepeater(scope, attr);
 						}
@@ -133,9 +136,12 @@ ng.lr.dragndrop.version = new msos.set_version(18, 1, 15);
 					}
 	
 					if (attr.lrDragData) {
-						scope.$watch(attr.lrDragData, function (newValue) {
-							collection = newValue;
-						});
+						scope.$watch(
+							attr.lrDragData,
+							function (newValue) {
+								collection = newValue;
+							}
+						);
 					} else {
 						collection = dragHelper.parseRepeater(scope, attr);
 					}

@@ -144,7 +144,7 @@ angular.module('ng.google.chart', ['ng']);
                 $timeout(setupAndDraw, 0, true);
             } else if (self.chart !== undefined) {
                 $timeout.cancel(draw.recallTimeout);
-                draw.recallTimeout = $timeout(draw, 10);
+                draw.recallTimeout = $timeout(draw, 10, false);
             }
         }
 
@@ -190,7 +190,11 @@ angular.module('ng.google.chart', ['ng']);
                 self.chart.formatters,
                 self.chart.customFormatters);
 
-            $timeout(drawChartWrapper);
+            $timeout(
+				drawChartWrapper,
+				0,
+				false
+			);
         }
 
         function watchHandler() {

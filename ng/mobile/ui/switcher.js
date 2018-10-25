@@ -10,7 +10,7 @@
 
 msos.provide("ng.mobile.ui.switcher");      // Note: 'switch' is a reserved word
 
-ng.mobile.ui.switcher.version = new msos.set_version(16, 12, 31);
+ng.mobile.ui.switcher.version = new msos.set_version(18, 9, 2);
 
 // Load Mobile Angular-UI module specific CSS
 ng.mobile.ui.switcher.css = new msos.loader();
@@ -59,13 +59,16 @@ ng.mobile.ui.switcher.css.load(msos.resource_url('ng', 'mobile/css/ui/switcher.c
 
                 elem.addClass('switch-transition-enabled');
 
-                var unwatch = scope.$watch('model', function (value) {
-                    if (value) {
-                        elem.addClass('active');
-                    } else {
-                        elem.removeClass('active');
-                    }
-                });
+                var unwatch = scope.$watch(
+						'model',
+						function (value) {
+							if (value) {
+								elem.addClass('active');
+							} else {
+								elem.removeClass('active');
+							}
+						}
+					);
 
                 var setModel = function (value) {
                     if (!disabled && (value !== scope.model)) {

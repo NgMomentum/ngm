@@ -182,7 +182,10 @@ angular.module(
 
                         animationPromise = $animateCss(
                             element,
-                            { addClass: attrs.modalInClass }
+                            {
+								addClass: attrs.modalInClass,
+								duration: 0.1
+							}
                         ).start();
 
                         scope.$on(
@@ -192,7 +195,10 @@ angular.module(
 
                                 $animateCss(
                                     element,
-                                    { removeClass: attrs.modalInClass }
+                                    {
+										removeClass: attrs.modalInClass,
+										duration: 0.1
+									}
                                 ).start().then(done);
                             }
                         );
@@ -909,10 +915,7 @@ angular.module(
                                     }
 
                                     ctrlInstance = ctrlInstantiate();
-    
-                                    if (angular.isFunction(ctrlInstance.$onInit)) {
-                                        ctrlInstance.$onInit();
-                                    }
+
                                 }
 
                                 if (!modalOptions.component) {
@@ -972,5 +975,8 @@ angular.module(
     angular.restrictADir
 ).directive(
     'modalAnimation',
+    angular.restrictADir
+).directive(
+    'modalInstance',
     angular.restrictADir
 );

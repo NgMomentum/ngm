@@ -5,7 +5,7 @@
  * License: MIT
  *
  * Originally derived from v1.3.0,
- *       with updates from v1.3.3, thru v1.6.7,
+ *       with updates from v1.3.3, thru v1.7.2,
  */
 
 /*global
@@ -16,7 +16,7 @@
 
 msos.provide("ng.route");
 
-ng.route.version = new msos.set_version(17, 8, 4);
+ng.route.version = new msos.set_version(18, 7, 4);
 
 
 (function (w_angular, w_msos) {
@@ -74,23 +74,27 @@ ng.route.version = new msos.set_version(17, 8, 4);
         this.when = function (path, route) {
             var temp_w = ' - when -> ',
                 redirectPath,
-                rCopy = w_angular.copy(route);
+                routeCopy = w_angular.shallowCopy(route);
 
             if (vb_rt) {
-                w_msos.console.debug(temp_rt + temp_w + 'start, path: ' + (path || 'na') + ', rCopy:', rCopy);
+                w_msos.console.debug(temp_rt + temp_w + 'start, path: ' + (path || 'na') + ', routeCopy:', routeCopy);
             }
 
-            if (_.isUndefined(rCopy.reloadOnSearch)) {
-                rCopy.reloadOnSearch = true;
+			if (_.isUndefined(routeCopy.reloadOnUrl)) {
+				routeCopy.reloadOnUrl = true;
+			}
+
+            if (_.isUndefined(routeCopy.reloadOnSearch)) {
+                routeCopy.reloadOnSearch = true;
             }
 
-            if (_.isUndefined(rCopy.caseInsensitiveMatch)) {
-                rCopy.caseInsensitiveMatch = this.caseInsensitiveMatch;
+            if (_.isUndefined(routeCopy.caseInsensitiveMatch)) {
+                routeCopy.caseInsensitiveMatch = this.caseInsensitiveMatch;
             }
 
             routes[path] = w_angular.extend(
-                rCopy,
-                path && pathRegExp(path, rCopy)
+                routeCopy,
+                path && pathRegExp(path, routeCopy)
             );
 
             // create redirection for trailing slashes
@@ -99,7 +103,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
 
                 routes[redirectPath] = w_angular.extend(
                     { redirectTo: path },
-                    pathRegExp(redirectPath, rCopy)
+                    pathRegExp(redirectPath, routeCopy)
                 );
             }
 
@@ -225,6 +229,11 @@ ng.route.version = new msos.set_version(17, 8, 4);
                 return match || (routes[null] && inherit(routes[null], { params: {}, pathParams: {} }));
             }
 
+			function isNavigationUpdateOnly(newRoute, oldRoute) {
+				// IF this is not a forced reload
+				return !forceReload && newRoute && oldRoute && (newRoute.$$route === oldRoute.$$route) && (!newRoute.reloadOnUrl || (!newRoute.reloadOnSearch && angular.equals(newRoute.pathParams, oldRoute.pathParams)));
+			}
+
             function prepareRoute($locationEvent) {
                 var temp_pr = ' - $get - prepareRoute -> ',
                     lastRoute = $route.current;
@@ -232,7 +241,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
                 w_msos.console.debug(temp_rt + temp_pr + 'start.');
 
                 preparedRoute = parseRoute();
-                preparedRouteIsUpdateOnly = preparedRoute && lastRoute && preparedRoute.$$route === lastRoute.$$route && w_angular.equals(preparedRoute.pathParams, lastRoute.pathParams) && !preparedRoute.reloadOnSearch && !forceReload;
+                preparedRouteIsUpdateOnly = isNavigationUpdateOnly(preparedRoute, lastRoute);
 
                 if (!preparedRouteIsUpdateOnly && (lastRoute || preparedRoute)) {
                     if ($rootScope.$broadcast('$routeChangeStart', preparedRoute, lastRoute).defaultPrevented) {
@@ -455,7 +464,7 @@ ng.route.version = new msos.set_version(17, 8, 4);
                     } else {
                         throw $routeMinErr(
                             'norout',
-                            'Tried updating route when with no current route'
+                            'Tried updating route with no current route'
                         );
                     }
                      w_msos.console.debug(temp_rt + ' - $get - $route - updateParams ->  done!');
@@ -478,9 +487,11 @@ ng.route.version = new msos.set_version(17, 8, 4);
         this.$get = ['$timeout', function ($timeout) {
 
             return function ($element) {
-                return $timeout(function () {
-                    $element[0].scrollIntoView();
-                }, 0, false);
+                return $timeout(
+					function () { $element[0].scrollIntoView(); },
+					0,
+					false
+				);
             };
         }];
     }

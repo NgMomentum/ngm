@@ -23,25 +23,6 @@
 // ui.bootstrap.multiMap		-> ng.bootstrap.ui.multiMap
 // Also Note: our adaptation of $q, $qq (ref. function qFactory where $q.defer acceptes a name)
 
-angular.module(
-    "ng.bootstrap.ui",
-	[
-        "ng",
-        "ng.bootstrap.ui.collapse", "ng.bootstrap.ui.isClass",
-        "ng.bootstrap.ui.position", "ng.bootstrap.ui.debounce",
-        "ng.bootstrap.ui.tabindex", "ng.bootstrap.ui.stackedMap",
-        "ng.bootstrap.ui.multiMap"
-    ]
-).directive(
-    'templateUrl',  // used in many, many uib modules (this should probably be uibTemplateUrl)
-    angular.restrictADir
-).directive(
-    'animate',      // used in progressbar and modal (this should probably be uibAnimate)
-    angular.restrictADir
-).directive(
-    'disable',		// // used in many, many uib modules (this should probably be uibDisable)
-    angular.restrictADir
-);
 
 angular.module(
     'ng.bootstrap.ui.collapse',
@@ -107,7 +88,8 @@ angular.module(
                                 css: {
                                     overflow: 'hidden'
                                 },
-                                to: getScrollFromElement(element[0])
+                                to: getScrollFromElement(element[0]),
+								duration: 0.1
                             }).start()['finally'](expandDone);
                         } else {
                             $animate.addClass(element, 'in', {
@@ -164,7 +146,8 @@ angular.module(
                             msos.console.debug(temp_cl + ' - collapse_then -> fired, for $animateCss');
                             $animateCss(element, {
                                 removeClass: 'in',
-                                to: cssTo
+                                to: cssTo,
+								duration: 0.1
                             }).start()['finally'](collapseDone);
                         } else {
                             msos.console.debug(temp_cl + ' - collapse_then -> fired, for $animate');
@@ -850,9 +833,11 @@ angular.module(
                     $timeout.cancel(timeoutPromise);
                 }
 
-                timeoutPromise = $timeout(function () {
-                    callback.apply(self, args);
-                }, debounceTime);
+                timeoutPromise = $timeout(
+					function () { callback.apply(self, args); },
+					debounceTime,
+					false
+				);
             };
         };
     }]
@@ -985,4 +970,25 @@ angular.module(
             }
         };
     }
+);
+
+
+angular.module(
+    "ng.bootstrap.ui",
+	[
+        "ng",
+        "ng.bootstrap.ui.collapse", "ng.bootstrap.ui.isClass",
+        "ng.bootstrap.ui.position", "ng.bootstrap.ui.debounce",
+        "ng.bootstrap.ui.tabindex", "ng.bootstrap.ui.stackedMap",
+        "ng.bootstrap.ui.multiMap"
+    ]
+).directive(
+    'templateUrl',  // used in many, many uib modules (this should probably be uibTemplateUrl)
+    angular.restrictADir
+).directive(
+    'animate',      // used in progressbar and modal (this should probably be uibAnimate)
+    angular.restrictADir
+).directive(
+    'disable',		// // used in many, many uib modules (this should probably be uibDisable)
+    angular.restrictADir
 );

@@ -35,6 +35,21 @@ msos.console.time('ng/ui/router');
 		return undefined;
 	}
 
+	function noop_tp() {
+		msos.console.trace('ng.ui.router - noop_tp -> (template) executed.');
+		return undefined;
+	}
+
+	function noop_ch() {
+		msos.console.trace('ng.ui.router - noop_ch -> (chain) executed.');
+		return undefined;
+	}
+
+	function noop_st() {
+		msos.console.trace('ng.ui.router - noop_st -> (state) executed.');
+		return undefined;
+	}
+
 	function copy(src, dest) {
 		if (dest) {
 			Object.keys(dest).forEach(function (key) { return delete dest[key]; });
@@ -42,6 +57,7 @@ msos.console.time('ng/ui/router');
 		if (!dest) {
 			dest = {};
 		}
+
 		return extend(dest, src);
 	}
 
@@ -84,7 +100,7 @@ msos.console.time('ng/ui/router');
         var args = arguments,
 			start = args.length - 1;
 
-        return function () {
+        return function compose_result() {
             var i = start,
                 result = args[start].apply(this, arguments);
 
@@ -1519,11 +1535,13 @@ msos.console.time('ng/ui/router');
         cfg = isShorthand(cfg) && {
             value: cfg
         } || cfg;
-        getStaticDefaultValue.__cacheable = true;
 
         function getStaticDefaultValue() {
             return cfg.value;
         }
+
+        getStaticDefaultValue.__cacheable = true;
+
         return extend(cfg, {
             $$fn: isInjectable(cfg.value) ? cfg.value : getStaticDefaultValue,
         });
@@ -1588,7 +1606,7 @@ msos.console.time('ng/ui/router');
 			}
 		).concat(replace);
 	}
-    /** @internalapi */
+
     Param = (function () {
         function Param(id, type, config, location, urlMatcherFactory) {
             config = unwrapShorthand(config);
@@ -1671,15 +1689,24 @@ msos.console.time('ng/ui/router');
 
         Param.prototype.value = function (value) {
             var _this = this;
-            /**
-             * [Internal] Get the default value of a parameter, which may be an injectable function.
-             */
+
             var getDefaultValue = function () {
-                if (_this._defaultValueCache)
+
+                if (_this._defaultValueCache) {
                     return _this._defaultValueCache.defaultValue;
-                if (!services.$injector)
+                }
+
+                if (!services.$injector) {
                     throw new Error('Injectable functions cannot be called at configuration time');
-                var defaultValue = services.$injector.invoke(_this.config.$$fn);
+                }
+
+                var defaultValue = services.$injector.invoke(
+					_this.config.$$fn,
+					undefined,
+					undefined,
+					'ng_ui_router_param_value'
+				);
+
                 if (defaultValue !== null && defaultValue !== undefined && !_this.type.is(defaultValue))
                     throw new Error("Default value (" + defaultValue + ") for parameter '" + _this.id + "' is not an instance of ParamType (" + _this.type.name + ")");
                 if (_this.config.$$fn.__cacheable) {
@@ -1687,8 +1714,10 @@ msos.console.time('ng/ui/router');
                         defaultValue: defaultValue
                     };
                 }
+
                 return defaultValue;
             };
+
             var replaceSpecialValues = function (val) {
                 for (var _i = 0, _a = _this.replace; _i < _a.length; _i++) {
                     var tuple = _a[_i];
@@ -1697,6 +1726,7 @@ msos.console.time('ng/ui/router');
                 }
                 return val;
             };
+
             value = replaceSpecialValues(value);
             return _.isUndefined(value) ? getDefaultValue() : this.type.$normalize(value);
         };
@@ -2774,7 +2804,15 @@ msos.console.time('ng/ui/router');
                 var type = this.typeQueue.shift();
                 if (type.pattern)
                     throw new Error("You cannot override a type's .pattern at runtime.");
-                extend(this.types[type.name], services.$injector.invoke(type.def));
+                extend(
+					this.types[type.name],
+					services.$injector.invoke(
+						type.def,
+						undefined,
+						undefined,
+						'ng_ui_router_paramTypes_flushTypeQueue'
+					)
+				);
             }
         };
         return ParamTypes;
@@ -3151,10 +3189,10 @@ msos.console.time('ng/ui/router');
                 }
                 chain = builders[key].reduce(
 					step_parent,
-					noop_rt
+					noop_ch
 				);
 
-				if (chain !== noop_rt) {
+				if (chain !== noop_ch) {
 					state[key] = chain(state);
 				} else {
 					state[key] = undefined;
@@ -4977,7 +5015,7 @@ msos.console.time('ng/ui/router');
 						return $q.when($q.defer('ui_router_loadenteringviews_when'), view.load());
 					}
 				)
-			).then(noop_rt);
+			);
     };
     var registerLoadEnteringViews = function (transitionService) {
         return transitionService.onFinish({}, loadEnteringViews);
@@ -5038,7 +5076,7 @@ msos.console.time('ng/ui/router');
 				$urlRouter = transition.router.urlRouter,
 				dbug = 'skipped.';
 
-			msos_debug(temp_ru + ' - updateUrl -> start, options:', options);
+			msos_debug(temp_ru + ' - updateUrl -> start,\n     options:', options);
 
 			if (options.source !== 'url' && options.location && $state.$current.navigable) {
 				var urlOptions = {
@@ -5434,7 +5472,7 @@ msos.console.time('ng/ui/router');
         });
         /** @internalapi */
         StateService.prototype.dispose = function () {
-            this.defaultErrorHandler(noop_rt);
+            this.defaultErrorHandler(noop_st);
             this.invalidCallbacks = [];
         };
 
@@ -5499,7 +5537,7 @@ msos.console.time('ng/ui/router');
 				transOpts = defaults(options, defautGoOpts, defaultTransOpts);
 
 			if (msos_verbose) {
-				msos_debug(temp_ss + ' - go -> called, transOpts:', transOpts);
+				msos_debug(temp_ss + ' - go -> called,\n     transOpts:', transOpts);
 			}
 
             return this.transitionTo(to, params, transOpts);
@@ -6229,7 +6267,12 @@ msos.console.time('ng/ui/router');
 						{ $state$: state, $transition$: trans }
 					);
 
-				return services.$injector.invoke(hook, this, locals);
+				return services.$injector.invoke(
+						hook,
+						this,
+						locals,
+						'ng_ui_router_getStateHookBuilder'
+					);
             };
 
             return hook ? decoratedNg1Hook : undefined;
@@ -6281,9 +6324,9 @@ msos.console.time('ng/ui/router');
             // Bind $locationChangeSuccess to the listeners registered in LocationService.onChange
             $rootScope.$on(
 				'$locationChangeSuccess',
-				function (evt) {
+				function ng_ui_router_loc_change_success_on(evt) {
 					if (msos_verbose) {
-						msos_debug(temp_ns + ' - _runtimeServices ($locationChangeSuccess) -> called, _this._urlListeners:', _this._urlListeners);
+						msos_debug(temp_ns + ' - ng_ui_router_loc_change_success_on -> called, _this._urlListeners:', _this._urlListeners);
 					}
 					return _this._urlListeners.forEach(
 							function (fn) { return fn(evt); }
@@ -6379,11 +6422,12 @@ msos.console.time('ng/ui/router');
             return function (match) {
                 return services.$injector.invoke(
 						handler,
-						null,
+						undefined,
 						{
 							$match: match,
 							$stateParams: router.globals.params
-						}
+						},
+						'ng_ui_router_UrlRouterProvider_injectableHandler'
 					);
             };
         };
@@ -6395,7 +6439,7 @@ msos.console.time('ng/ui/router');
         return UrlRouterProvider;
     }());
 
-    var mod_init = ng_from_import.module('ng.ui.router.init', []);
+    var mod_init = ng_from_import.module('ng.ui.router.init', ["ng"]);
     var mod_util = ng_from_import.module('ng.ui.router.util', ['ng', 'ng.ui.router.init']);
     var mod_rtr = ng_from_import.module('ng.ui.router.router', ['ng.ui.router.util']);
     var mod_state = ng_from_import.module('ng.ui.router.state', ['ng.ui.router.router', 'ng.ui.router.util']);
@@ -6600,9 +6644,11 @@ msos.console.time('ng/ui/router');
             if (!(button > 1 || e.ctrlKey || e.metaKey || e.shiftKey || el.attr('target'))) {
                 // HACK: This is to allow ng-clicks to be processed before the transition is initiated:
                 transition = $timeout(
-					function clickhook_timeout() {
+					function ui_router_clickhook_to() {
 						$state.go(target.uiState, target.uiStateParams, target.uiStateOpts);
-					}
+					},
+					10,
+					false
 				);
                 e.preventDefault();
                 // if the state has no URL, ignore one preventDefault from the <a> directive.
@@ -6646,17 +6692,20 @@ msos.console.time('ng/ui/router');
             element[on](event_1, hookFn);
         }
 
-        scope.$on('$destroy', function () {
-            var off = element.off ? 'off' : 'unbind',
-				_j = 0,
-				event_2,
-				events_2 = events;
+        scope.$on(
+			'$destroy',
+			function ng_ui_router_bind_ev_on() {
+				var off = element.off ? 'off' : 'unbind',
+					_j = 0,
+					event_2,
+					events_2 = events;
 
-            for (_j = 0; _j < events_2.length; _j += 1) {
-                event_2 = events_2[_j];
-                element[off](event_2, hookFn);
-            }
-        });
+				for (_j = 0; _j < events_2.length; _j += 1) {
+					event_2 = events_2[_j];
+					element[off](event_2, hookFn);
+				}
+			}
+		);
     }
 
     var uiSrefDirective;
@@ -6731,7 +6780,7 @@ msos.console.time('ng/ui/router');
 						inputAttrs = ['uiState', 'uiStateParams', 'uiStateOpts'],
 						watchDeregFns = inputAttrs.reduce(
 							function (acc, attr) {
-								return (acc[attr] = noop_rt, acc);
+								return (acc[attr] = noop_st, acc);
 							},
 							{}
 						);
@@ -6755,7 +6804,7 @@ msos.console.time('ng/ui/router');
 							attrs.$observe(
 								field,
 								function (expr) {
-									if (watchDeregFns[field] !== noop_rt) {
+									if (watchDeregFns[field] !== noop_st) {
 										watchDeregFns[field]();
 									}
 									watchDeregFns[field] = scope.$watch(
@@ -7003,45 +7052,61 @@ msos.console.time('ng/ui/router');
 							currentScope,
 							unregister,
                             viewConfig,
-							activeUIView = {
-								$type: 'ng1',
-								id: directive.count++,
-								name: name,
-								fqn: inherited.$uiView.fqn ? inherited.$uiView.fqn + '.' + name : name,
-								config: null,
-								configUpdated: configUpdatedCallback,
-								get creationContext() {
-									var fromParentTagConfig = parse('$cfg.viewDecl.$context')(inherited);
-									var fromParentTag = parse('$uiView.creationContext')(inherited);
-									return fromParentTagConfig || fromParentTag;
-								}
-							};
+							activeUIView;
+
+						activeUIView = {
+							$type: 'ng1',
+							id: directive.count++,
+							name: name,
+							fqn: inherited.$uiView.fqn ? inherited.$uiView.fqn + '.' + name : name,
+							config: null,
+							configUpdated: configUpdatedCallback,
+							get creationContext() {
+								var fromParentTagConfig = parse('$cfg.viewDecl.$context')(inherited);
+								var fromParentTag = parse('$uiView.creationContext')(inherited);
+								return fromParentTagConfig || fromParentTag;
+							}
+						};
 
                         trace.traceUIViewEvent('Linking', activeUIView);
 
                         function configUpdatedCallback(config) {
 							if (msos_verbose === 'router') {
-								msos_debug(temp_uv + 'configUpdatedCallback -> called, config:', config);
+								msos_debug(temp_uv + 'configUpdatedCallback -> called,\n     config:', config);
 							}
+
                             if (config && !(config instanceof Ng1ViewConfig)) {
                                 return;
                             }
                             if (configsEqual(viewConfig, config)) {
                                 return;
                             }
-                            trace.traceUIViewConfigUpdated(activeUIView, config && config.viewDecl && config.viewDecl.$context);
+
+                            trace.traceUIViewConfigUpdated(
+								activeUIView,
+								config && config.viewDecl && config.viewDecl.$context
+							);
+
                             viewConfig = config;
-                            updateView(config);
+
+                            updateView();
                         }
+
                         $element.data('$uiView', {
                             $uiView: activeUIView
                         });
-                        updateView();
+
+						// experimental, updateView(); was here and not above
+
                         unregister = $view.registerUIView(activeUIView);
-                        scope.$on('$destroy', function () {
-                            trace.traceUIViewEvent('Destroying/Unregistering', activeUIView);
-                            unregister();
-                        });
+
+                        scope.$on(
+							'$destroy',
+							function ng_ui_router_updateview_compile_on() {
+								trace.traceUIViewEvent('Destroying/Unregistering', activeUIView);
+								unregister();
+							}
+						);
 
                         function cleanupLastView() {
                             if (previousEl) {
@@ -7066,42 +7131,54 @@ msos.console.time('ng/ui/router');
                             }
                         }
 
-                        function updateView(config) {
+                        function updateView() {
+
 							if (msos_verbose) {
-								msos_debug(temp_uv + 'updateView -> start, config:', config);
+								msos_debug(temp_uv + 'updateView -> start,\n     viewConfig:', viewConfig);
 							}
-                            var newScope = scope.$new();
-                            var animEnter = $q.defer('ui_router_updateview_enter_defer'),
-                                animLeave = $q.defer('ui_router_updateview_enter_leave');
-                            var $uiViewData = {
-                                $cfg: config,
-                                $uiView: activeUIView,
-                            };
-                            var $uiViewAnim = {
-                                $animEnter: animEnter.promise,
-                                $animLeave: animLeave.promise,
-                                $$animLeave: animLeave
-                            };
+
+                            var newScope = scope.$new(),
+								animEnter = $q.defer('ui_router_updateview_enter_defer'),
+                                animLeave = $q.defer('ui_router_updateview_enter_leave'),
+								$uiViewData = {
+									$cfg: viewConfig,
+									$uiView: activeUIView,
+								},
+								$uiViewAnim = {
+									$animEnter: animEnter.promise,
+									$animLeave: animLeave.promise,
+									$$animLeave: animLeave
+								},
+								cloned = null;
 
                             newScope.$emit('$viewContentLoading', name);
 
-                            var cloned = $transclude(newScope, function (clone) {
-                                clone.data('$uiViewAnim', $uiViewAnim);
-                                clone.data('$uiView', $uiViewData);
-                                renderer.enter(clone, $element, function onUIViewEnter() {
-                                    animEnter.resolve();
-                                    if (currentScope)
-                                        currentScope.$emit('$viewContentAnimationEnded');
-                                    if (isDefined(autoScrollExp) && !autoScrollExp || scope.$eval(autoScrollExp)) {
-                                        $uiViewScroll(clone);
-                                    }
-                                });
-                                cleanupLastView();
-                            });
+                            cloned = $transclude(
+								newScope,
+								function (clone) {
+									clone.data('$uiViewAnim', $uiViewAnim);
+									clone.data('$uiView', $uiViewData);
+
+									renderer.enter(
+										clone,
+										$element,
+										function onUIViewEnter() {
+											animEnter.resolve();
+
+											if (currentScope)
+												currentScope.$emit('$viewContentAnimationEnded');
+											if (isDefined(autoScrollExp) && !autoScrollExp || scope.$eval(autoScrollExp)) {
+												$uiViewScroll(clone);
+											}
+										}
+									);
+									cleanupLastView();
+								}
+							);
 
                             currentEl = cloned;
                             currentScope = newScope;
-                            currentScope.$emit('$viewContentLoaded', config || viewConfig);
+                            currentScope.$emit('$viewContentLoaded', viewConfig);
                             currentScope.$eval(onloadExp);
 
 							if (msos_verbose) {
@@ -7111,6 +7188,7 @@ msos.console.time('ng/ui/router');
                     };
                 }
             };
+
             return directive;
         }
     ];
@@ -7118,9 +7196,11 @@ msos.console.time('ng/ui/router');
     function $ViewDirectiveFill($compile, $controller, $transitions, $view, $q) {
         var temp_vf = 'ng.ui.router - $ViewDirectiveFill',
 			getControllerAs = parse('viewDecl.controllerAs'),
-			getResolveAs = parse('viewDecl.resolveAs');
+			getResolveAs = parse('viewDecl.resolveAs'),
+			ctrlas_name = getControllerAs && getControllerAs.name || 'annonymous',
+			rslvas_name = getResolveAs && getResolveAs.name || 'annonymous';
 
-		msos_debug(temp_vf + ' -> called, getControllerAs/getResolveAs:', getControllerAs, getResolveAs);
+		msos_debug(temp_vf + ' -> called, getControllerAs: ' + ctrlas_name + ', getResolveAs: ' +  rslvas_name);
 
         return {
             restrict: 'ECA',
@@ -7140,16 +7220,16 @@ msos.console.time('ng/ui/router');
 
                     var cfg = data.$cfg || {
                         viewDecl: {},
-                        getTemplate: noop_rt
+                        getTemplate: noop_tp
                     };
 
 					if (msos_verbose === 'router') {
-						msos_debug(temp_vf + ' - compile -> cfg', cfg);
+						msos_debug(temp_vf + ' - compile -> start,\n     cfg:', cfg);
 					}
 
                     var resolveCtx = cfg.path && new ResolveContext(cfg.path);
 
-					if (cfg.getTemplate !== noop_rt) {
+					if (cfg.getTemplate !== noop_tp) {
 						$element.html(cfg.getTemplate($element, resolveCtx) || initial);
 					} else {
 						$element.html(initial);
@@ -7194,8 +7274,8 @@ msos.console.time('ng/ui/router');
 
                         registerControllerCallbacks($q, $transitions, controllerInstance, scope, cfg);
                     } else {
-						// Unlike std AngularJS, we need a 'noop' function as default, so we can
-						// screen away useless one's in NgMomentum, fire the $digest for decorators
+						// Unlike std AngularJS, we use a special 'noop' function as a default,
+						// to fire the $digest for decorators. In NgMomentum, we typically screen away useless std 'noop's'.
 						$controller(
 								ui_router_comp_noop,
 								{},
@@ -7224,6 +7304,10 @@ msos.console.time('ng/ui/router');
                     }
 
                     link(scope);
+
+					if (msos_verbose === 'router') {
+						msos_debug(temp_vf + ' - compile ->  done!');
+					}
                 };
             }
         };
@@ -7231,20 +7315,15 @@ msos.console.time('ng/ui/router');
 
 	$ViewDirectiveFill.$inject = ['$compile', '$controller', '$transitions', '$view', '$q', '$timeout'];
 
-    var hasComponentImpl = typeof ng_from_import.module('ng.ui.router').component === 'function';
-    var _uiCanExitId = 0;
+	var _uiCanExitId = 0;
 
-    /** @hidden TODO: move these callbacks to $view and/or `/hooks/components.ts` or something */
     function registerControllerCallbacks($q, $transitions, controllerInstance, $scope, cfg) {
-        // Call $onInit() ASAP
-        if (_.isFunction(controllerInstance.$onInit) && !(cfg.viewDecl.component && hasComponentImpl)) {
-            controllerInstance.$onInit();
-        }
 
-        var viewState = tail(cfg.path).state.self || undefined;
-        var hookOptions = {
-            bind: controllerInstance
-        };
+        var viewState = tail(cfg.path).state.self || undefined,
+			hookOptions = {
+				bind: controllerInstance
+			};
+
         // Add component-level hook for onParamsChange
         if (_.isFunction(controllerInstance.uiOnParamsChanged)) {
             var resolveContext = new ResolveContext(cfg.path);
@@ -7281,8 +7360,12 @@ msos.console.time('ng/ui/router');
                     controllerInstance.uiOnParamsChanged(newValues, $transition$);
                 }
             };
-            $scope.$on('$destroy', $transitions.onSuccess({}, paramsUpdated, hookOptions));
+            $scope.$on(
+				'$destroy',
+				$transitions.onSuccess({}, paramsUpdated, hookOptions)
+			);
         }
+
         // Add component-level hook for uiCanExit
         if (_.isFunction(controllerInstance.uiCanExit)) {
             var id_1 = _uiCanExitId++;
@@ -7310,23 +7393,32 @@ msos.console.time('ng/ui/router');
             var criteria = {
                 exiting: viewState.name
             };
-            $scope.$on('$destroy', $transitions.onBefore(criteria, wrappedHook, hookOptions));
+            $scope.$on(
+				'$destroy',
+				$transitions.onBefore(criteria, wrappedHook, hookOptions)
+			);
         }
     }
 
     function $ViewScrollProvider() {
         var useAnchorScroll = false;
+
         this.useAnchorScroll = function () {
             useAnchorScroll = true;
         };
+
         this.$get = ['$anchorScroll', '$timeout', function ($anchorScroll, $timeout) {
             if (useAnchorScroll) {
                 return $anchorScroll;
             }
             return function ($element) {
-                return $timeout(function () {
-                    $element[0].scrollIntoView();
-                }, 0, false);
+                return $timeout(
+					function () {
+						$element[0].scrollIntoView();
+					},
+					0,
+					false
+				);
             };
         }];
     }

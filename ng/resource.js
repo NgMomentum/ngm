@@ -1,5 +1,6 @@
+
 /**
- * @license AngularJS v1.6.7
+ * @license AngularJS v1.7.2
  * (c) 2010-2017 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -11,10 +12,10 @@
 
 msos.provide("ng.resource");
 
-ng.resource.version = new msos.set_version(17, 12, 30);
+ng.resource.version = new msos.set_version(18, 7, 3);
 
 
-(function(window, angular) {
+(function (window, angular) {
     'use strict';
 
     var $resourceMinErr = angular.$$minErr('$resource'),
@@ -29,22 +30,30 @@ ng.resource.version = new msos.set_version(17, 12, 30);
         if (!isValidDottedPath(path)) {
             throw $resourceMinErr('badmember', 'Dotted member path "@{0}" is invalid.', path);
         }
-        var keys = path.split('.');
-        for (var i = 0, ii = keys.length; i < ii && angular.isDefined(obj); i++) {
-            var key = keys[i];
+
+        var keys = path.split('.'),
+			i = 0,
+			ii = 0,
+			key;
+
+        for (i = 0, ii = keys.length; i < ii && angular.isDefined(obj); i += 1) {
+            key = keys[i];
             obj = (obj !== null) ? obj[key] : undefined;
         }
+
         return obj;
     }
 
     function shallowClearAndCopy(src, dst) {
+		var key;
+
         dst = dst || {};
 
-        angular.forEach(dst, function(value, key) {
+        angular.forEach(dst, function (value, key) {
             delete dst[key];
         });
 
-        for (var key in src) {
+        for (key in src) {
             if (src.hasOwnProperty(key) && !(key.charAt(0) === '$' && key.charAt(1) === '$')) {
                 dst[key] = src[key];
             }
@@ -57,7 +66,7 @@ ng.resource.version = new msos.set_version(17, 12, 30);
 		'ng.resource',
 		['ng']
 	).info({
-        angularVersion: '1.6.7'
+        angularVersion: '1.7.2'
     }).provider(
 		'$resource',
 		function ResourceProvider() {
@@ -112,7 +121,7 @@ ng.resource.version = new msos.set_version(17, 12, 30);
             }
 
             Route.prototype = {
-                setUrlParams: function(config, params, actionUrl) {
+                setUrlParams: function (config, params, actionUrl) {
                     var self = this,
                         url = actionUrl || self.template,
                         val,
@@ -120,7 +129,7 @@ ng.resource.version = new msos.set_version(17, 12, 30);
                         protocolAndIpv6 = '';
 
                     var urlParams = self.urlParams = Object.create(null);
-                    forEach(url.split(/\W/), function(param) {
+                    forEach(url.split(/\W/), function (param) {
                         if (param === 'hasOwnProperty') {
                             throw $resourceMinErr('badname', 'hasOwnProperty is not a valid parameter name.');
                         }
@@ -132,13 +141,13 @@ ng.resource.version = new msos.set_version(17, 12, 30);
                         }
                     });
                     url = url.replace(/\\:/g, ':');
-                    url = url.replace(PROTOCOL_AND_IPV6_REGEX, function(match) {
+                    url = url.replace(PROTOCOL_AND_IPV6_REGEX, function (match) {
                         protocolAndIpv6 = match;
                         return '';
                     });
 
                     params = params || {};
-                    forEach(self.urlParams, function(paramInfo, urlParam) {
+                    forEach(self.urlParams, function (paramInfo, urlParam) {
                         val = params.hasOwnProperty(urlParam) ? params[urlParam] : self.defaults[urlParam];
                         if (isDefined(val) && val !== null) {
                             if (paramInfo.isQueryParamValue) {
@@ -146,11 +155,11 @@ ng.resource.version = new msos.set_version(17, 12, 30);
                             } else {
                                 encodedVal = encodeUriSegment(val);
                             }
-                            url = url.replace(new RegExp(':' + urlParam + '(\\W|$)', 'g'), function(match, p1) {
+                            url = url.replace(new RegExp(':' + urlParam + '(\\W|$)', 'g'), function (match, p1) {
                                 return encodedVal + p1;
                             });
                         } else {
-                            url = url.replace(new RegExp('(/?):' + urlParam + '(\\W|$)', 'g'), function(match,
+                            url = url.replace(new RegExp('(/?):' + urlParam + '(\\W|$)', 'g'), function (match,
                                 leadingSlashes, tail) {
                                 if (tail.charAt(0) === '/') {
                                     return tail;
@@ -175,7 +184,7 @@ ng.resource.version = new msos.set_version(17, 12, 30);
 
 
                     // set params - delegate param encoding to $http
-                    forEach(params, function(value, key) {
+                    forEach(params, function (value, key) {
                         if (!self.urlParams[key]) {
                             config.params = config.params || {};
                             config.params[key] = value;
@@ -190,16 +199,22 @@ ng.resource.version = new msos.set_version(17, 12, 30);
 
                 actions = extend({}, provider.defaults.actions, actions);
 
-                function extractParams(data, actionParams) {
+                function extractParams(ex_data, actionParams) {
                     var ids = {};
+
                     actionParams = extend({}, paramDefaults, actionParams);
-                    forEach(actionParams, function(value, key) {
-                        if (isFunction(value)) {
-                            value = value(data);
-                        }
-                        ids[key] = value && value.charAt && value.charAt(0) === '@' ?
-                            lookupDottedPath(data, value.substr(1)) : value;
-                    });
+
+                    forEach(
+						actionParams,
+						function (value, key) {
+							if (isFunction(value)) {
+								value = value(ex_data);
+							}
+
+							ids[key] = value && value.charAt && value.charAt(0) === '@' ? lookupDottedPath(ex_data, value.substr(1)) : value;
+						}
+					);
+
                     return ids;
                 }
 
@@ -211,209 +226,234 @@ ng.resource.version = new msos.set_version(17, 12, 30);
                     shallowClearAndCopy(value || {}, this);
                 }
 
-                Resource.prototype.toJSON = function() {
-                    var data = extend({}, this);
-                    delete data.$promise;
-                    delete data.$resolved;
-                    delete data.$cancelRequest;
-                    return data;
+                Resource.prototype.toJSON = function () {
+                    var json_data = extend({}, this);
+
+                    delete json_data.$promise;
+                    delete json_data.$resolved;
+                    delete json_data.$cancelRequest;
+                    return json_data;
                 };
 
-                forEach(actions, function(action, name) {
-                    var hasBody = action.hasBody === true || (action.hasBody !== false && /^(POST|PUT|PATCH)$/i.test(action.method));
-                    var numericTimeout = action.timeout;
-                    var cancellable = isDefined(action.cancellable) ?
-                        action.cancellable : route.defaults.cancellable;
+                forEach(
+					actions,
+					function (action, name) {
+						var hasBody = action.hasBody === true || (action.hasBody !== false && /^(POST|PUT|PATCH)$/i.test(action.method)),
+							numericTimeout = action.timeout,
+							cancellable = isDefined(action.cancellable) ? action.cancellable : route.defaults.cancellable;
 
-                    if (numericTimeout && !isNumber(numericTimeout)) {
-                        $log.debug('ng.resource:\n' +
-                            '  Only numeric values are allowed as `timeout`.\n' +
-                            '  Promises are not supported in $resource, because the same value would ' +
-                            'be used for multiple requests. If you are looking for a way to cancel ' +
-                            'requests, you should use the `cancellable` option.');
-                        delete action.timeout;
-                        numericTimeout = null;
-                    }
+						if (numericTimeout && !isNumber(numericTimeout)) {
+							$log.debug('ng.resource:\n' +
+								'  Only numeric values are allowed as `timeout`.\n' +
+								'  Promises are not supported in $resource, because the same value would ' +
+								'be used for multiple requests. If you are looking for a way to cancel ' +
+								'requests, you should use the `cancellable` option.');
+							delete action.timeout;
+							numericTimeout = null;
+						}
 
-                    Resource[name] = function(a1, a2, a3, a4) {
-                        var params = {},
-                            data, success, error;
+						Resource[name] = function (a1, a2, a3, a4) {
+							var params = {},
+								rs_data,
+								onSuccess,
+								onError;
 
-                        switch (arguments.length) {
-                            case 4:
-                                error = a4;
-                                success = a3;
-                                // falls through
-                            case 3:
-                            case 2:
-                                if (isFunction(a2)) {
-                                    if (isFunction(a1)) {
-                                        success = a1;
-                                        error = a2;
-                                        break;
-                                    }
+							switch (arguments.length) {
+								case 4:
+									onError = a4;
+									onSuccess = a3;
+									// falls through
+								case 3:
+								case 2:
+									if (isFunction(a2)) {
+										if (isFunction(a1)) {
+											onSuccess = a1;
+											onError = a2;
+											break;
+										}
+	
+										onSuccess = a2;
+										onError = a3;
+										// falls through
+									} else {
+										params = a1;
+										rs_data = a2;
+										onSuccess = a3;
+										break;
+									}
+									// falls through
+								case 1:
+									if (isFunction(a1)) onSuccess = a1;
+									else if (hasBody) rs_data = a1;
+									else params = a1;
+									break;
+								case 0:
+									break;
+								default:
+									throw $resourceMinErr('badargs',
+										'Expected up to 4 arguments [params, data, success, error], got {0} arguments',
+										arguments.length);
+							}
 
-                                    success = a2;
-                                    error = a3;
-                                    // falls through
-                                } else {
-                                    params = a1;
-                                    data = a2;
-                                    success = a3;
-                                    break;
-                                }
-                                // falls through
-                            case 1:
-                                if (isFunction(a1)) success = a1;
-                                else if (hasBody) data = a1;
-                                else params = a1;
-                                break;
-                            case 0:
-                                break;
-                            default:
-                                throw $resourceMinErr('badargs',
-                                    'Expected up to 4 arguments [params, data, success, error], got {0} arguments',
-                                    arguments.length);
-                        }
+							var isInstanceCall = this instanceof Resource,
+								value = isInstanceCall ? rs_data : (action.isArray ? [] : new Resource(rs_data)),
+								httpConfig = {},
+								requestInterceptor = action.interceptor && action.interceptor.request || undefined,
+								requestErrorInterceptor = action.interceptor && action.interceptor.requestError || undefined,
+								responseInterceptor = action.interceptor && action.interceptor.response || defaultResponseInterceptor,
+								responseErrorInterceptor = action.interceptor && action.interceptor.responseError || $q.reject($q.defer('ng_resourceFactory_reject')),
+								successCallback = onSuccess ? function (val) {
+									onSuccess(val, response.headers, response.status, response.statusText);
+								} : undefined,
+								errorCallback = onError || undefined,
+								timeoutDeferred,
+								numericTimeoutPromise,
+								response,
+								promise;
 
-                        var isInstanceCall = this instanceof Resource;
-                        var value = isInstanceCall ? data : (action.isArray ? [] : new Resource(data));
-                        var httpConfig = {};
-                        var responseInterceptor = action.interceptor && action.interceptor.response ||
-                            defaultResponseInterceptor;
-                        var responseErrorInterceptor = action.interceptor && action.interceptor.responseError ||
-                            undefined;
-                        var hasError = !!error;
-                        var hasResponseErrorInterceptor = !!responseErrorInterceptor;
-                        var timeoutDeferred;
-                        var numericTimeoutPromise;
+							forEach(action, function (value, key) {
+								switch (key) {
+									default: httpConfig[key] = copy(value);
+										break;
+									case 'params':
+									case 'isArray':
+									case 'interceptor':
+									case 'cancellable':
+										break;
+								}
+							});
 
-                        forEach(action, function(value, key) {
-                            switch (key) {
-                                default: httpConfig[key] = copy(value);
-                                break;
-                                case 'params':
-                                        case 'isArray':
-                                        case 'interceptor':
-                                        case 'cancellable':
-                                        break;
-                            }
-                        });
+							if (!isInstanceCall && cancellable) {
+								timeoutDeferred = $q.defer('resourceFactory_defer');
+								httpConfig.timeout = timeoutDeferred.promise;
 
-                        if (!isInstanceCall && cancellable) {
-                            timeoutDeferred = $q.defer('resourceFactory_defer');
-                            httpConfig.timeout = timeoutDeferred.promise;
+								if (numericTimeout) {
+									numericTimeoutPromise = $timeout(
+										timeoutDeferred.resolve,
+										numericTimeout,
+										false
+									);
+								}
+							}
+	
+							if (hasBody) { httpConfig.data = rs_data; }
+	
+							route.setUrlParams(
+								httpConfig,
+								extend({}, extractParams(rs_data, action.params || {}), params),
+								action.url
+							);
 
-                            if (numericTimeout) {
-                                numericTimeoutPromise = $timeout(timeoutDeferred.resolve, numericTimeout);
-                            }
-                        }
+							// Start the promise chain
+							promise = $q
+								.resolve($q.defer('ng_resourceFactory_resolve'), httpConfig)
+								.then(requestInterceptor)
+								.catch(requestErrorInterceptor)
+								.then($http);
 
-                        if (hasBody) httpConfig.data = data;
-                        route.setUrlParams(httpConfig,
-                            extend({}, extractParams(data, action.params || {}), params),
-                            action.url);
+							promise = promise.then(
+								function (resp) {
+									var pr_data = resp.data,
+										th_promise;
 
-                        var promise = $http(httpConfig).then(function(response) {
-                            var data = response.data;
+									if (pr_data) {
+										// Need to convert action.isArray to boolean in case it is undefined
+										if (isArray(pr_data) !== Boolean(action.isArray)) {
+											throw $resourceMinErr(
+												'badcfg',
+												'Error in resource configuration for action `{0}`. Expected response to ' +
+												'contain an {1} but got an {2} (Request: {3} {4})', name, action.isArray ? 'array' : 'object',
+												isArray(pr_data) ? 'array' : 'object', httpConfig.method, httpConfig.url);
+										}
 
-                            if (data) {
-                                // Need to convert action.isArray to boolean in case it is undefined
-                                if (isArray(data) !== (!!action.isArray)) {
-                                    throw $resourceMinErr('badcfg',
-                                        'Error in resource configuration for action `{0}`. Expected response to ' +
-                                        'contain an {1} but got an {2} (Request: {3} {4})', name, action.isArray ? 'array' : 'object',
-                                        isArray(data) ? 'array' : 'object', httpConfig.method, httpConfig.url);
-                                }
-                                if (action.isArray) {
-                                    value.length = 0;
-                                    forEach(data, function(item) {
-                                        if (typeof item === 'object') {
-                                            value.push(new Resource(item));
-                                        } else {
-                                            // Valid JSON values may be string literals, and these should not be converted
-                                            // into objects. These items will not have access to the Resource prototype
-                                            // methods, but unfortunately there
-                                            value.push(item);
-                                        }
-                                    });
-                                } else {
-                                    var promise = value.$promise; // Save the promise
-                                    shallowClearAndCopy(data, value);
-                                    value.$promise = promise; // Restore the promise
-                                }
-                            }
+										if (action.isArray) {
+											value.length = 0;
+											forEach(
+												pr_data,
+												function (item) {
+													if (typeof item === 'object') {
+														value.push(new Resource(item));
+													} else {
+														// Valid JSON values may be string literals, and these should not be converted
+														// into objects. These items will not have access to the Resource prototype
+														// methods, but unfortunately there
+														value.push(item);
+													}
+												}
+											);
+										} else {
+											th_promise = value.$promise; // Save the promise
+											shallowClearAndCopy(pr_data, value);
+											value.$promise = th_promise; // Restore the promise
+										}
+									}
 
-                            response.resource = value;
+									resp.resource = value;
+									response = resp;
 
-                            return response;
-                        }, function(response) {
-                            response.resource = value;
-                            return $q.reject($q.defer('resourceFactory_reject_1'), response);
-                        });
+									return responseInterceptor(resp);
+								},
+								function (rejectionOrResponse) {
 
-                        promise = promise['finally'](function() {
-                            value.$resolved = true;
-                            if (!isInstanceCall && cancellable) {
-                                value.$cancelRequest = noop;
-                                $timeout.cancel(numericTimeoutPromise);
-                                timeoutDeferred = numericTimeoutPromise = httpConfig.timeout = null;
-                            }
-                        });
+									rejectionOrResponse.resource = value;
+									response = rejectionOrResponse;
 
-                        promise = promise.then(
-                            function(response) {
-                                var value = responseInterceptor(response);
-                                (success || noop)(value, response.headers, response.status, response.statusText);
-                                return value;
-                            },
-                            (hasError || hasResponseErrorInterceptor) ?
-                            function(response) {
-                                if (hasError && !hasResponseErrorInterceptor) {
-                                    // Avoid `Possibly Unhandled Rejection` error,
-                                    // but still fulfill the returned promise with a rejection
-                                    promise.catch(noop);
-                                }
-                                if (hasError) error(response);
-                                return hasResponseErrorInterceptor ?
-                                    responseErrorInterceptor(response) :
-                                    $q.reject($q.defer('resourceFactory_reject_2'), response);
-                            } :
-                            undefined);
+									return responseErrorInterceptor(rejectionOrResponse);
+								}
+							);
 
-                        if (!isInstanceCall) {
-                            // we are creating instance / collection
-                            // - set the initial promise
-                            // - return the instance / collection
-                            value.$promise = promise;
-                            value.$resolved = false;
-                            if (cancellable) value.$cancelRequest = cancelRequest;
+							promise = promise['finally'](
+								function () {
 
-                            return value;
-                        }
+									value.$resolved = true;
 
-                        // instance call
-                        return promise;
+									if (!isInstanceCall && cancellable) {
+										value.$cancelRequest = noop;
+										$timeout.cancel(numericTimeoutPromise);
+										timeoutDeferred = numericTimeoutPromise = httpConfig.timeout = null;
+									}
+								}
+							);
 
-                        function cancelRequest(value) {
-                            promise.catch(noop);
-                            if (timeoutDeferred !== null) {
-                                timeoutDeferred.resolve(value);
-                            }
-                        }
-                    };
+							// Run the `success`/`error` callbacks, but do not let them affect the returned promise.
+							promise.then(successCallback, errorCallback);
 
+							function cancelRequest(value) {
+								promise.catch(noop);
+								if (timeoutDeferred !== null) {
+									timeoutDeferred.resolve(value);
+								}
+							}
 
-                    Resource.prototype['$' + name] = function(params, success, error) {
-                        if (isFunction(params)) {
-                            error = success;
-                            success = params;
-                            params = {};
-                        }
-                        var result = Resource[name].call(this, params, this, success, error);
-                        return result.$promise || result;
-                    };
-                });
+							if (!isInstanceCall) {
+								// we are creating instance / collection
+								// - set the initial promise
+								// - return the instance / collection
+								value.$promise = promise;
+								value.$resolved = false;
+								if (cancellable) value.$cancelRequest = cancelRequest;
+
+								return value;
+							}
+
+							// instance call
+							return promise;
+						};
+
+						Resource.prototype['$' + name] = function (params, success, error) {
+
+							if (isFunction(params)) {
+								error = success;
+								success = params;
+								params = {};
+							}
+
+							var result = Resource[name].call(this, params, this, success, error);
+
+							return result.$promise || result;
+						};
+					}
+				);
 
                 return Resource;
             }

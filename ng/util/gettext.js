@@ -385,7 +385,7 @@ angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$
         }
     }
 
-    var msie = parseInt((/msie (\d+)/.exec(angular.lowercase($window.navigator.userAgent)) || [])[1], 10);
+    var msie = parseInt((/msie (\d+)/.exec(angular.$$lowercase($window.navigator.userAgent)) || [])[1], 10);
 
     return {
         restrict: 'AE',
@@ -449,7 +449,10 @@ angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$
                     }
 
                     if (attrs.translateN) {
-                        scope.$watch(attrs.translateN, update);
+                        scope.$watch(
+							attrs.translateN,
+							update
+						);
                     }
 
                     /**
@@ -642,5 +645,5 @@ angular.module("gettext").factory("gettextPlurals", function () {
             default: // Everything else
                 return n != 1 ? 1 : 0;
         }
-    }
+    };
 });

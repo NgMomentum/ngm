@@ -1,6 +1,6 @@
 
 /**
- * @license AngularJS Animate v1.5.9 (original), updated to v1.6.1
+ * @license AngularJS Animate v1.5.9 (original), updated to v1.7.2
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  *
@@ -9,16 +9,12 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
-    angular: false,
     ng: false
 */
 
 msos.provide("ng.animate.swap");
 
-ng.animate.swap.version = new msos.set_version(17, 2, 10);
+ng.animate.swap.version = new msos.set_version(18, 7, 3);
 
 
 (function (angular) {
@@ -46,11 +42,13 @@ ng.animate.swap.version = new msos.set_version(17, 2, 10);
                         previousScope = null;
                     }
                     if (value || value === 0) {
-                        previousScope = scope.$new();
-                        $transclude(previousScope, function (element) {
-                            previousElement = element;
-                            $animate.enter(element, null, $element);
-                        });
+						$transclude(
+							function (clone, childScope) {
+								previousElement = clone;
+								previousScope = childScope;
+								$animate.enter(clone, null, $element);
+							}
+						);
                     }
                 });
             }

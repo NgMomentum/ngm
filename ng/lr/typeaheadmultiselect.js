@@ -53,7 +53,7 @@
                 })
                 .finally(function () {
                   isLoading = false;
-                })
+                });
             }() : [];
         },
         /**
@@ -115,7 +115,7 @@
         },
         controller: 'lrTypeaheadCtrl',
         controllerAs: 'lrTypeaheadCtrl'
-      }
+      };
     })
     .directive('lrSuggestionInput', ['$timeout', function ($timeout) {
       return {
@@ -127,10 +127,14 @@
             if (editing !== null) {
               $timeout.cancel(editing);
             }
-            editing = $timeout(function () {
-              ctrl.suggest(element[0].value);
-              editing = null;
-            }, 200);
+            editing = $timeout(
+				function () {
+					ctrl.suggest(element[0].value);
+					editing = null;
+				},
+				200,
+				false
+			);
           });
           element.bind('keydown', function (event) {
             scope.$apply(function () {
@@ -148,9 +152,9 @@
               } else if (key === 38) {
                 ctrl.highlightPrevious();
               }
-            })
+            });
           });
         }
-      }
+      };
     }]);
 })(angular);

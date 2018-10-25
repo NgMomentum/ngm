@@ -12,8 +12,8 @@
 (function(exports) {
   "use strict";
 
-  angular.module("firebase.utils", []);
-  angular.module("firebase.config", []);
+  angular.module("firebase.utils", ["ng"]);
+  angular.module("firebase.config", ["ng"]);
   angular.module("firebase.auth", ["firebase.utils"]);
   angular.module("firebase.database", ["firebase.utils"]);
   angular.module("firebase.storage", ["firebase.utils"]);
@@ -21,6 +21,7 @@
   // Define the `firebase` module under which all AngularFire
   // services will live.
   angular.module("firebase", [
+	"ng",
     "firebase.utils",
     "firebase.config",
     "firebase.auth",
@@ -2243,7 +2244,7 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
           },
 
           wait: function(fn, wait) {
-            var to = $timeout(fn, wait||0);
+            var to = $timeout(fn, wait||0, true);
             return function() {
               if( to ) {
                 $timeout.cancel(to);

@@ -275,20 +275,27 @@ if (msos.config.browser.fastclick === false) {
                 var t = null;
 
                 if (outerClickIf) {
-                    stopWatching = scope.$watch(outerClickIf, function (value) {
-                        $timeout.cancel(t);
-
-                        if (value) {
-                            // prevents race conditions
-                            // activating with other click events
-                            t = $timeout(function () {
-                                $document.on('click tap', handleOuterClick);
-                            }, 0);
-
-                        } else {
-                            $document.unbind('click tap', handleOuterClick);
-                        }
-                    });
+                    stopWatching = scope.$watch(
+						outerClickIf,
+						function (value) {
+							$timeout.cancel(t);
+	
+							if (value) {
+								// prevents race conditions
+								// activating with other click events
+								t = $timeout(
+									function () {
+										$document.on('click tap', handleOuterClick);
+									},
+									0,
+									false
+								);
+	
+							} else {
+								$document.unbind('click tap', handleOuterClick);
+							}
+						}
+					);
                 } else {
                     $timeout.cancel(t);
                     $document.on('click tap', handleOuterClick);
@@ -677,43 +684,46 @@ if (msos.config.browser.fastclick === false) {
                     var previousElements;
                     var uiIfFn = parseUiCondition('uiIf', $attr, $scope, SharedState, $parse, $interpolate);
 
-                    $scope.$watch(uiIfFn, function uiIfWatchAction(value) {
-                        if (value) {
-                            if (!childScope) {
-                                $transclude(function (clone, newScope) {
-                                    childScope = newScope;
-                                    clone[clone.length++] = document.createComment(' end uiIf: ' + $attr.uiIf + ' ');
-                                    // Note: We only need the first/last node of the cloned nodes.
-                                    // However, we need to keep the reference to the jqlite wrapper as it might be changed later
-                                    // by a directive with templateUrl when its template arrives.
-                                    block = {
-                                        clone: clone
-                                    };
-                                    $animate.enter(clone, $element.parent(), $element);
-                                });
-                            }
-                        } else {
-                            if (previousElements) {
-                                previousElements.remove();
-                                previousElements = null;
-                            }
-                            if (childScope) {
-                                childScope.$destroy();
-                                childScope = null;
-                            }
-                            if (block) {
-                                previousElements = getBlockNodes(block.clone);
-                                var done = function () {
-                                    previousElements = null;
-                                };
-                                var nga = $animate.leave(previousElements, done);
-                                if (nga) {
-                                    nga.then(done);
-                                }
-                                block = null;
-                            }
-                        }
-                    });
+                    $scope.$watch(
+						uiIfFn,
+						function uiIfWatchAction(value) {
+							if (value) {
+								if (!childScope) {
+									$transclude(function (clone, newScope) {
+										childScope = newScope;
+										clone[clone.length++] = document.createComment(' end uiIf: ' + $attr.uiIf + ' ');
+										// Note: We only need the first/last node of the cloned nodes.
+										// However, we need to keep the reference to the jqlite wrapper as it might be changed later
+										// by a directive with templateUrl when its template arrives.
+										block = {
+											clone: clone
+										};
+										$animate.enter(clone, $element.parent(), $element);
+									});
+								}
+							} else {
+								if (previousElements) {
+									previousElements.remove();
+									previousElements = null;
+								}
+								if (childScope) {
+									childScope.$destroy();
+									childScope = null;
+								}
+								if (block) {
+									previousElements = getBlockNodes(block.clone);
+									var done = function () {
+										previousElements = null;
+									};
+									var nga = $animate.leave(previousElements, done);
+									if (nga) {
+										nga.then(done);
+									}
+									block = null;
+								}
+							}
+						}
+					);
                 }
             };
         }]
@@ -730,11 +740,12 @@ if (msos.config.browser.fastclick === false) {
                 multiElement: true,
                 link: function (scope, element, attr) {
                     var uiHideFn = parseUiCondition('uiHide', attr, scope, SharedState, $parse, $interpolate);
-                    scope.$watch(uiHideFn, function uiHideWatchAction(value) {
-                        $animate[value ? 'addClass' : 'removeClass'](element, NG_HIDE_CLASS, {
-                            tempClasses: NG_HIDE_IN_PROGRESS_CLASS
-                        });
-                    });
+                    scope.$watch(
+						uiHideFn,
+						function uiHideWatchAction(value) {
+							$animate[value ? 'addClass' : 'removeClass'](element, NG_HIDE_CLASS, { tempClasses: NG_HIDE_IN_PROGRESS_CLASS });
+						}
+					);
                 }
             };
         }]
@@ -751,11 +762,12 @@ if (msos.config.browser.fastclick === false) {
                 multiElement: true,
                 link: function (scope, element, attr) {
                     var uiShowFn = parseUiCondition('uiShow', attr, scope, SharedState, $parse);
-                    scope.$watch(uiShowFn, function uiShowWatchAction(value) {
-                        $animate[value ? 'removeClass' : 'addClass'](element, NG_HIDE_CLASS, {
-                            tempClasses: NG_HIDE_IN_PROGRESS_CLASS
-                        });
-                    });
+                    scope.$watch(
+						uiShowFn,
+						function uiShowWatchAction(value) {
+							$animate[value ? 'removeClass' : 'addClass'](element, NG_HIDE_CLASS, { tempClasses: NG_HIDE_IN_PROGRESS_CLASS });
+						}
+					);
                 }
             };
         }]
@@ -768,25 +780,30 @@ if (msos.config.browser.fastclick === false) {
                 restrict: 'A',
                 link: function (scope, element, attr) {
                     var uiClassFn = parseUiCondition('uiClass', attr, scope, SharedState, $parse);
-                    scope.$watch(uiClassFn, function uiClassWatchAction(value) {
-                        var classesToAdd = '';
-                        var classesToRemove = '';
-                        angular.forEach(value, function (expr, className) {
-                            if (expr) {
-                                classesToAdd += ' ' + className;
-                            } else {
-                                classesToRemove += ' ' + className;
-                            }
-                            classesToAdd = classesToAdd.trim();
-                            classesToRemove = classesToRemove.trim();
-                            if (classesToAdd.length) {
-                                element.addClass(classesToAdd);
-                            }
-                            if (classesToRemove.length) {
-                                element.removeClass(classesToRemove);
-                            }
-                        });
-                    }, true);
+                    scope.$watch(
+						uiClassFn,
+						function uiClassWatchAction(value) {
+							var classesToAdd = '';
+							var classesToRemove = '';
+
+							angular.forEach(value, function (expr, className) {
+								if (expr) {
+									classesToAdd += ' ' + className;
+								} else {
+									classesToRemove += ' ' + className;
+								}
+								classesToAdd = classesToAdd.trim();
+								classesToRemove = classesToRemove.trim();
+								if (classesToAdd.length) {
+									element.addClass(classesToAdd);
+								}
+								if (classesToRemove.length) {
+									element.removeClass(classesToRemove);
+								}
+							});
+						},
+						true
+					);
                 }
             };
         }]

@@ -29,7 +29,7 @@ function $AnchorScrollProvider() {
             Array.prototype.some.call(
                 list,
                 function (element) {
-                    var node_name = angular.lowercase(element.nodeName || (element[0] && element[0].nodeName));
+                    var node_name = angular.$$lowercase(element.nodeName || (element[0] && element[0].nodeName));
 
                     if (node_name === 'a') {
                         result = element;

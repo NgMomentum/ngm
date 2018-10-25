@@ -135,7 +135,10 @@ ng.mobile.ui.scrollable.css.load(msos.resource_url('ng', 'mobile/css/ui/scrollab
                                     }
                                     scrollable.scrollTo(elem, marginTop);
                                 }
-                            }, 500);
+                            },
+							500,
+							false
+							);
                         }
                     });
                 }

@@ -10,14 +10,16 @@
             timer = ng.isNumber(value) === true ? value : timer;
         };
 
-        this.$get = ['$timeout', function (timeout) {
+        this.$get = ['$timeout', function ($timeout) {
 
             function pushNotification(channelName, notification) {
                 if (channel[channelName] !== undefined) {
                     channel[channelName].push(notification);
-                    timeout(function () {
-                        removeNotification(channelName, notification);
-                    }, timer);
+                    $timeout(
+						function () { removeNotification(channelName, notification); },
+						timer,
+						false
+					);
                 }
             }
 
@@ -55,7 +57,7 @@
 
     });
 
-    module.directive('lrNotificationStackContainer', ['lrNotifier', function (notifier) {
+    module.directive('lrNotificationStackContainer', ['lrNotifier', function () {
         return {
             controller: ['lrNotifier', '$attrs', function stackController(notifier, $attrs) {
                 var channelName = $attrs.lrNotificationStackContainer || 'global';
@@ -65,7 +67,7 @@
             }],
             controllerAs: 'lrNotifierCtrl'
         };
-    }])
+    }]);
 
 
 })(angular);

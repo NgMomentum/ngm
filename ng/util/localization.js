@@ -10,7 +10,7 @@
 
 angular.module('ngLocalize.Version', [])
     .constant('localeVer', '1.4.1');
-angular.module('ngLocalize', ['ngSanitize', 'ngLocalize.Config', 'ngLocalize.Events', 'ngLocalize.InstalledLanguages']);
+angular.module('ngLocalize', ['ng.sanitize', 'ngLocalize.Config', 'ngLocalize.Events', 'ngLocalize.InstalledLanguages']);
 
 angular.module('ngLocalize.InstalledLanguages', [])
     .value('localeSupported', [
