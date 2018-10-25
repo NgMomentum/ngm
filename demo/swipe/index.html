@@ -31,6 +31,7 @@
 		}
     </style>
 
+	<!-- NgMomentum initial page setup -->
 	<link rel="stylesheet" type="text/css" href="../../css/site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
@@ -47,10 +48,12 @@
 		</h3>
 	</noscript>
 
-	<div class="container">
-		<h2>AngularJS Carousel Example:</h2>
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id='body' class="ng-cloak container">
 
-		<section id="carousel" ng-carousel ng-swipe-right="curSlide=curSlide-1" ng-swipe-left="curSlide=curSlide+1">
+		<h2 data-ng-ignore>AngularJS Carousel Example:</h2>
+
+		<section id="carousel" ng-swipe-carousel ng-swipe-right="curSlide=curSlide-1" ng-swipe-left="curSlide=curSlide+1">
 
 			<ul>
 				<li><img src="http://lorempixel.com/800/600" /></li>
@@ -66,7 +69,7 @@
 		</section>
 	</div>
 
-	<script data-ng-ignore>
+	<script>
 		msos.onload_func_pre.push(
 			function () {
 				"use strict";

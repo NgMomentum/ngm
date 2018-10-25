@@ -1,0 +1,118 @@
+
+<style data-ng-ignore>
+	.progressLineardemoBasicUsage body {
+		padding: 20px;
+	}
+	.progressLineardemoBasicUsage h4 {
+		margin: 10px 0;
+	}
+	.progressLineardemoBasicUsage md-progress-linear {
+		padding-top: 10px;
+		margin-bottom: 20px;
+	}
+	.progressLineardemoBasicUsage #loaders > md-switch {
+		margin: 0;
+		margin-left: 10px;
+		margin-top: -10px;
+	}
+	.progressLineardemoBasicUsage #loaders > h5 {
+		margin-top: 0;
+	}
+	.progressLineardemoBasicUsage #loaders > p {
+		margin-right: 20px;
+		margin-bottom: 24px;
+	}
+	.progressLineardemoBasicUsage p.small {
+		font-size: 0.8em;
+		margin-top: -18px;
+	}
+	.progressLineardemoBasicUsage hr {
+		width: 100%;
+		margin-top: 20px;
+		border-color: rgba(221, 221, 177, 0.1);
+	}
+	.progressLineardemoBasicUsage p.small > code {
+		font-size: 0.8em;
+	}
+	.progressLineardemoBasicUsage .visible {
+		opacity: 0;
+		border: 2px solid white !important;
+	}
+	.progressLineardemoBasicUsage .container {
+		display: block;
+		position: relative;
+		width: 100%;
+		border: 2px solid #aad1f9;
+		transition: opacity  0.1s linear;
+		border-top: 0px;
+	}
+	.progressLineardemoBasicUsage .bottom-block {
+		display: block;
+		position: relative;
+		background-color: rgba(255, 235, 169, 0.25);
+		height: 85px;
+		width: 100%;
+	}
+	.progressLineardemoBasicUsage .bottom-block > span {
+		display: inline-block;
+		margin-top: 10px;
+		padding: 25px;
+		font-size: 0.9em;
+	}
+</style>
+
+<div ng-controller="demo.material.controllers.progresslin.ctrl as vm" class="progressLineardemoBasicUsage" layout="column" layout-margin style="padding:25px;">
+
+    <h2 class="md-title">Determinate</h2>
+
+    <p>
+        For operations where the percentage of the operation completed can be determined, use a <b>determinate</b> indicator. They give users a quick sense of how long an operation will take.
+    </p>
+
+    <md-progress-linear md-mode="determinate" value="{{vm.determinateValue}}"></md-progress-linear>
+
+    <h4 class="md-title">Indeterminate</h4>
+
+    <p data-ng-ignore>
+        For operations where the user is asked to wait a moment while something finishes up, and it's not necessary to expose what's happening behind the scenes and how long it will take, use an
+        <b>indeterminate</b> indicator:
+    </p>
+
+    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+
+    <h4 class="md-title">Buffer</h4>
+
+    <p>
+        For operations where the user wants to indicate some activity or loading from the server, use the <b>buffer</b> indicator:
+    </p>
+
+    <md-progress-linear class="md-warn" md-mode="buffer" value="{{vm.determinateValue}}" md-buffer-value="{{vm.determinateValue2}}" ng-disabled="!vm.showList[0]"></md-progress-linear>
+
+    <h4 class="md-title">Query</h4>
+
+    <p>
+        For situations where the user wants to indicate pre-loading (until the loading can actually be made), use the <b>query</b> indicator:
+    </p>
+
+    <div class="container" ng-class="{'visible' : !vm.activated}">
+
+        <md-progress-linear md-mode="query" ng-disabled="!vm.showList[1]"></md-progress-linear>
+
+        <div class="bottom-block" data-ng-ignore>
+            <span>Loading application libraries...</span>
+        </div>
+    </div>
+
+    <hr ng-class="{'visible' : vm.activated}">
+
+    <div id="loaders" layout="row" layout-align="start center">
+
+        <p>Query and Buffer progress linear indicators: </p>
+
+        <h5>Off</h5>
+
+        <md-switch ng-model="vm.activated" ng-change="vm.toggleActivation()" aria-label="Enable Indicators">
+            <h5>On</h5>
+        </md-switch>
+    </div>
+</div>

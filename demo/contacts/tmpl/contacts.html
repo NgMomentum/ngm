@@ -1,27 +1,32 @@
 
-<div class="ngm_page">
 	<div class="row">
-		<div class="col-md-3 well well-small">
-			<ul class="nav nav-list">
-				<li ng-class="{ active: $state.includes('contacts.list') }">
-					<a ui-sref="contacts.list">All Contacts</a>
-				</li>
-				<li class="nav-header">Top Contacts</li>
-				<li ng-repeat="contact in contacts | limitTo:2" ui-sref-active="active">
-					<a ui-sref="contacts.detail({contactId:contact.id})">{{contact.name}}</a>
-				</li>
-			</ul>
-	
-			<hr>
-			<button class="btn" ng-click="goToRandom()">Show random contact</button>
-	
-			<div ui-view="menuTip" class="slide"></div>
-	
+		<div class="col-md-6">
 			<p class="state">$state name = {{ diagnostic_state.current.name }}</p>
 			<p class="state">$stateParams = {{ diagnostic_stateParams }}</p>
 			<p class="state">$state url = {{ diagnostic_state.$current.url.source }}</p>
 		</div>
-		<!-- Our unnamed main ui-view for this template -->
-		<div ui-view class="col-md-9 slide"></div>
+		<div class="col-md-6">
+			<div class="ngm_hint" data-ui-view="hint"></div>
+		</div>
 	</div>
-</div>
+
+	<div class="row">
+		<div class="col-md-4 well well-small">
+
+			<h4>Top Contacts</h4>
+
+			<ul>
+				<li data-ng-repeat="contact in contacts | limitTo:2" data-ui-sref-active="active">
+					<a data-ui-sref="contacts.detail({contactId:contact.id})">{{contact.name}}</a>
+				</li>
+			</ul>
+
+			<button class="btn" ng-click="goToRandom()">Random contact</button>
+
+			<div data-ui-view="menuTip" class="slide"></div>
+
+		</div>
+		<div data-ui-view class="col-md-8 slide">
+			<!-- Our unnamed main ui-view for this template -->
+		</div>
+	</div>

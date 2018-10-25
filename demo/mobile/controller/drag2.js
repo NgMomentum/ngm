@@ -10,7 +10,7 @@ msos.require("ng.bootstrap.ui.alert");
 
 angular.module(
 	'demo.mobile.controller.drag2',
-	['ng.mobile.gestures.drag']
+	["ng", 'ng.mobile.gestures.drag']
 ).directive(
 	'dragMeTwo',
 	['$drag', function ($drag) {

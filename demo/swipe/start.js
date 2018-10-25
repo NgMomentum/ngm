@@ -7,11 +7,12 @@
 msos.provide("demo.swipe.start");
 msos.require("ng.touch");
 
+
 angular.module(
 	"demo.swipe.start",
 	['ng', 'ng.touch']
 ).directive(
-	'ngCarousel',
+	'ngSwipeCarousel',
 	function () {
 		return function (scope, element) {
 			var el = element[0],

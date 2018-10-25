@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>angular-easyfb social plugins demo</title>
+
+    <link rel="stylesheet" href="./style.css" />
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../../css/site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+</head>
+<body>
+
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div id='body' data-ng-controller="demo.easyfb.start.ctrl" class="ng-cloak container">
+
+        <h2>angular-easyfb social plugins demo</h2>
+
+        <p>
+            Ref: <a href="https://developers.facebook.com/docs/plugins">https://developers.facebook.com/docs/plugins</a>
+        </p>
+
+        <p>&nbsp;</p>
+
+        <ul class="nav nav-tabs">
+            <li ng-repeat="dir in SOCIAL_PLUGINS" ng-class="{active: isActive(dir)}">
+                <a href="" ng-click="goto(dir)">{{ dir }}</a>
+            </li>
+        </ul>
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="pull-left hint-text">
+                    <span class="text-danger" ng-show="!pluginOn">No plugin in view</span>
+                    <span class="text-success" ng-show="!rendering">Social plugin rendered</span>
+                    <span class="text-muted" ng-show="rendering && pluginOn">Rendering...</span>
+                </div>
+                <div class="pull-right">
+                    <button class="btn btn-success" ng-click="pluginOn = !pluginOn" ng-show="!pluginOn">On</button>
+                    <button class="btn btn-default" ng-click="pluginOn = !pluginOn" ng-show="pluginOn">Off</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="ng-view-container">
+            <div ng-view></div>
+        </div>
+    </div>
+
+	<script>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.easyfb.start");
+			}
+		);
+	</script>
+
+</body>
+</html>

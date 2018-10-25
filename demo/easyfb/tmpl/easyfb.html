@@ -1,61 +1,34 @@
 
-    <div ng-controller="EasyFBLoginCtrl" class="container">
-        <h2>angular-easyfb API demo (promise version)</h2>
+	<div ng-controller="demo.easyfb.start.ctrl">
 
-        <div>
-            <button class="btn btn-primary" ng-click="login()"  ng-disabled="loginStatus.status == 'connected'">Connect with Facebook</button> &nbsp;
-            <button class="btn btn-danger"  ng-click="logout()" ng-disabled="!loginStatus || loginStatus.status != 'connected'">Logout</button> &nbsp;
-            <button class="btn btn-success" ng-click="share()">FB.ui</button>
-        </div>
+		<h2>angular-easyfb social plugins demo</h2>
 
-        <br>
+		<p>&nbsp;</p>
 
-        <h4>
-            Hello, <span ng-show="me.name">{{ me.name }}</span><span ng-show="me.error">unkown</span>!
-        </h4>
+		<div ng-if="pluginOn" on_ezfb_render="rendered();" class="fb-send-to-messenger" messenger_app_id="386469651480295" page_id="19292868552" color="white" size="xlarge"></div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <h4 class="text-info">$FB.loginStatus()</h4>
-                <div class="code-block" hljs source="loginStatusJSON"></div>
-            </div>
-            <div class="col-md-6">
-                <h4 class="text-info">$FB.api('/me') & $FB.api('/me/likes')</h4>
-                <div class="code-block" hljs source="apiResJSON"></div>
-            </div>
-        </div>
-    </div>
+		<ul class="nav nav-tabs">
+			<li ng-repeat="dir in SOCIAL_PLUGINS" ng-class="{active: isActive(dir)}">
+				<a href="" ng-click="goto(dir)">{{ dir }}</a>
+			</li>
+		</ul>
 
-    <div ng-controller="EasyFBMainCtrl" class="container">
-        <h2>angular-easyfb social plugins demo</h2>
-
-        <p>
-            Ref: <a href="https://developers.facebook.com/docs/plugins">https://developers.facebook.com/docs/plugins</a>
-        </p>
-
-        <p>&nbsp;</p>
-
-        <ul class="nav nav-tabs">
-            <li ng-repeat="dir in SOCIAL_PLUGINS" ng-class="{active: isActive(dir)}">
-                <a href="" ng-click="goto(dir)">{{ dir }}</a>
-            </li>
-        </ul>
-
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <div class="pull-left hint-text">
-                    <span class="text-danger" ng-show="!pluginOn">No plugin in view</span>
-                    <span class="text-success" ng-show="!rendering">Social plugin rendered</span>
-                    <span class="text-muted" ng-show="rendering && pluginOn">Rendering...</span>
-                </div>
-                <div class="pull-right">
-                    <button class="btn btn-success" ng-show="!pluginOn" ng-click="pluginOn = !pluginOn">On</button>
-                    <button class="btn btn-default" ng-show="pluginOn" ng-click="pluginOn = !pluginOn">Off</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="ng-view-container">
-            <div ng-view></div>
-        </div>
-    </div>
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="pull-left hint-text">
+					<span class="text-danger" ng-show="!pluginOn">No plugin in view</span>
+					<span class="text-success" ng-show="!rendering">Social plugin rendered</span>
+					<span class="text-muted" ng-show="rendering && pluginOn">Rendering...</span>
+				</div>
+				<div class="pull-right">
+					<button class="btn btn-success" ng-show="!pluginOn" ng-click="pluginOn = !pluginOn">On</button>
+					<button class="btn btn-default" ng-show="pluginOn" ng-click="pluginOn = !pluginOn">Off</button>
+				</div>
+			</div>
+		</div>
+<!--
+		<div class="ng-view-container">
+			<div ng-view></div>
+		</div>
+-->
+	</div>

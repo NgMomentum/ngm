@@ -1,82 +1,300 @@
 
-<div ng-controller="demo.material.controllers.icon.ctrl">
-
-    <style data-ng-ignore>
-        @font-face {
-            font-family: "icomoon";
-            src: url("https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.eot");
-            font-weight: normal;
-            font-style: normal;
-        }
-        
-        @font-face {
-            font-family: 'icomoon';
-            src: url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.eot?-cmq1um');
-            src: url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.eot?#iefix-cmq1um') format('embedded-opentype'), url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.woff?-cmq1um') format('woff'), url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.ttf?-cmq1um') format('truetype'), url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.svg?-cmq1um#icomoon') format('svg');
-            font-weight: normal;
-            font-style: normal;
-        }
-
-        /* Bootstrap Overrides */
-        [class^="icon-"]:before,
-        [class*=" icon-"]:before {
-          font-family:"icomoon";
-          display:inline-block;
-          vertical-align:middle;
-          line-height:1;
-          font-weight:normal;
-          font-style:normal;
-
-          text-decoration:inherit;
-          text-transform:none;
-          text-rendering:optimizeLegibility;
-          -webkit-font-smoothing:antialiased;
-          -moz-osx-font-smoothing:grayscale;
-        }
-        .icon-home:before {
-            content: "\e900";
-        }
-        .icon-clock:before {
-            content: "\e94e";
-        }
-        .icon-user-plus:before {
-            content: "\e973";
-        }
-        .icon-google-plus2:before {
-            content: "\ea89";
-        }
-        .icon-youtube4:before {
-            content: "\ea9a";
-        }
-        .icon-settings:before {
-            content: "\e600";
-        }
+<style data-ng-ignore>
+    @font-face {
+        font-family: "icomoon";
+        src: url("https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.eot");
+        font-weight: normal;
+        font-style: normal;
+    }
     
-        .glyph {
-            border-bottom: 1px dotted #ccc;
-            padding: 10px 0 20px;
-            margin-bottom: 20px;
-        }
+    @font-face {
+        font-family: 'icomoon';
+        src: url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.eot?-cmq1um');
+        src: url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.eot?#iefix-cmq1um') format('embedded-opentype'), url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.woff?-cmq1um') format('woff'), url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.ttf?-cmq1um') format('truetype'), url('https://cdn.rawgit.com/angular/material/master/docs/app/fonts/icomoon.svg?-cmq1um#icomoon') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+    
+    .icondemoFontIconsWithClassnames {
+        /* Bootstrap Overrides */
+        /* OLD STYLES */
+    }
+    .icondemoFontIconsWithClassnames .appDemoFontIconsWithClassnames {
+        padding: 25px;
+        width: 100%;
+    }
+    .icondemoFontIconsWithClassnames .appDemoFontIconsWithClassnames,
+    .icondemoFontIconsWithClassnames .appDemoFontIconsWithClassnames *:before,
+    .icondemoFontIconsWithClassnames .appDemoFontIconsWithClassnames *:after {
+        box-sizing: border-box;
+    }
+    .icondemoFontIconsWithClassnames [class^="icon-"]:before,
+    .icondemoFontIconsWithClassnames [class*=" icon-"]:before {
+        font-family: "icomoon";
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 1;
+        font-weight: normal;
+        font-style: normal;
+        text-decoration: inherit;
+        text-transform: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    .icondemoFontIconsWithClassnames .icon-home:before {
+        content: "\e900";
+    }
+    .icondemoFontIconsWithClassnames .icon-clock:before {
+        content: "\e94e";
+    }
+    .icondemoFontIconsWithClassnames .icon-user-plus:before {
+        content: "\e973";
+    }
+    .icondemoFontIconsWithClassnames .icon-google-plus2:before {
+        content: "\ea89";
+    }
+    .icondemoFontIconsWithClassnames .icon-youtube4:before {
+        content: "\ea9a";
+    }
+    .icondemoFontIconsWithClassnames .icon-settings:before {
+        content: "\e600";
+    }
+    .icondemoFontIconsWithClassnames md-progress-circular {
+        margin-bottom: 20px;
+    }
+    .icondemoFontIconsWithClassnames header {
+        overflow: hidden;
+    }
+    .icondemoFontIconsWithClassnames header h1 {
+        color: #888;
+        font-size: 36px;
+        font-weight: 300;
+    }
+    .icondemoFontIconsWithClassnames .container {
+        margin: 0 auto;
+        max-width: 1200px;
+        min-width: 960px;
+        padding: 40px 40px;
+        font: 14px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    .icondemoFontIconsWithClassnames .glyph {
+        border-bottom: 1px dotted #ccc;
+        padding: 10px 0 20px;
+        margin-bottom: 20px;
+    }
+    .icondemoFontIconsWithClassnames .preview-scale,
+    .icondemoFontIconsWithClassnames .preview-glyphs {
+        display: flex;
+        flex-direction: row;
+    }
+    .icondemoFontIconsWithClassnames .preview-scale {
+        color: #888;
+        font-size: 12px;
+        margin-top: 24px;
+    }
+    .icondemoFontIconsWithClassnames .step {
+        flex-grow: 1;
+        line-height: 0.5;
+    }
+    .icondemoFontIconsWithClassnames .usage {
+        margin-top: 10px;
+    }
+    .icondemoFontIconsWithClassnames .usage input {
+        font-family: monospace;
+        text-align: center;
+    }
+    .icondemoFontIconsWithClassnames .usage .point {
+        width: 150px;
+    }
+    .icondemoFontIconsWithClassnames .usage .class {
+        width: 250px;
+    }
+    .icondemoFontIconsWithClassnames md-radio-button {
+        display: inline-block;
+    }
+    .icondemoFontIconsWithClassnames .loading {
+        background-color: black;
+        filter: alpha(opacity=40);
+        height: 100%;
+        left: 0;
+        opacity: .40;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 90;
+    }
+    .icondemoFontIconsWithClassnames .loading md-progress-circular {
+        left: 50%;
+        position: fixed;
+        top: 48%;
+        z-index: 100;
+    }
+    .icondemoFontIconsWithLigatures {
+        /* Rules for sizing the icon.*/
+        /* Rules for using icons as black on a light background.*/
+        /* Rules for using icons as white on a dark background.*/
+    }
+    .icondemoFontIconsWithLigatures .appDemoFontIconsWithLigatures {
+        padding: 25px;
+        width: 100%;
+    }
+    .icondemoFontIconsWithLigatures .appDemoFontIconsWithLigatures,
+    .icondemoFontIconsWithLigatures .appDemoFontIconsWithLigatures *:before,
+    .icondemoFontIconsWithLigatures .appDemoFontIconsWithLigatures *:after {
+        box-sizing: border-box;
+    }
+    .icondemoFontIconsWithLigatures header {
+        overflow: hidden;
+    }
+    .icondemoFontIconsWithLigatures header h1 {
+        color: #888;
+        font-size: 36px;
+        font-weight: 300;
+    }
+    .icondemoFontIconsWithLigatures .container {
+        margin: 0 auto;
+        max-width: 1200px;
+        min-width: 960px;
+        padding: 40px 40px;
+        font: 14px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    .icondemoFontIconsWithLigatures .glyph {
+        border-bottom: 1px dotted #ccc;
+        padding: 10px 0 20px;
+        margin-bottom: 20px;
+    }
+    .icondemoFontIconsWithLigatures .preview-scale,
+    .icondemoFontIconsWithLigatures .preview-glyphs {
+        display: flex;
+        flex-direction: row;
+    }
+    .icondemoFontIconsWithLigatures .preview-scale {
+        color: #888;
+        font-size: 12px;
+        margin-top: 24px;
+    }
+    .icondemoFontIconsWithLigatures .step {
+        flex-grow: 1;
+        line-height: 0.5;
+    }
+    .icondemoFontIconsWithLigatures .usage {
+        margin-top: 10px;
+    }
+    .icondemoFontIconsWithLigatures .usage input {
+        font-family: monospace;
+        text-align: center;
+    }
+    .icondemoFontIconsWithLigatures .usage .point {
+        width: 150px;
+    }
+    .icondemoFontIconsWithLigatures .usage .class {
+        width: 250px;
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-18 {
+        font-size: 18px;
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-24 {
+        font-size: 24px;
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-36 {
+        font-size: 36px;
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-48 {
+        font-size: 48px;
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-dark {
+        color: rgba(0, 0, 0, 0.54);
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-dark.md-inactive {
+        color: rgba(0, 0, 0, 0.26);
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-light {
+        color: white;
+    }
+    .icondemoFontIconsWithLigatures .material-icons.md-light.md-inactive {
+        color: rgba(255, 255, 255, 0.3);
+    }
 
-        .preview-scale,
-        .preview-glyphs {
-            display: flex;
-            flex-direction: row;
-        }
-        .preview-scale {
-            color: #888;
-            font-size: 12px;
-            margin-top: 24px;
-        }
+	.icondemoLoadSvgIconsFromUrl md-progress-circular {
+		margin-bottom: 20px;
+	}
+	.icondemoLoadSvgIconsFromUrl md-icon {
+		margin: 20px;
+		margin-top: 0;
+		width: 24px;
+		height: 24px;
+	}
+	.icondemoLoadSvgIconsFromUrl .demo-content {
+		min-height: 210px;
+	}
+	.icondemoLoadSvgIconsFromUrl .appDemoSvgIcons {
+		padding: 25px;
+	}
+	.icondemoLoadSvgIconsFromUrl .s24 {
+		width: 24px;
+		height: 24px;
+		color: #f00;
+		}
+	.icondemoLoadSvgIconsFromUrl .s36 {
+		width: 36px;
+		height: 36px;
+		color: #0f0;
+	}
+	.icondemoLoadSvgIconsFromUrl .s48 {
+		width: 48px;
+		height: 48px;
+		color: #00f;
+	}
 
-        .step {
-            flex-grow: 1;
-            line-height: 0.5;
-        }
-    </style>
+	.icondemoSvgIconSets md-progress-circular {
+		margin-bottom: 20px;
+	}
+	.icondemoSvgIconSets md-icon {
+		margin: 20px;
+		margin-top: 0;
+		width: 24px;
+		height: 24px;
+	}
+	.icondemoSvgIconSets .demo-content {
+		min-height: 210px;
+	}
+	.icondemoSvgIconSets .appSvgIconSets {
+		padding: 25px;
+	}
+	.icondemoSvgIconSets .s48 {
+		width: 48px;
+		height: 48px;
+	}
+
+	.icondemoUsingTemplateRequest md-progress-circular {
+		margin-bottom: 20px;
+	}
+	.icondemoUsingTemplateRequest md-icon {
+		margin: 20px;
+		margin-top: 0;
+		width: 24px;
+		height: 24px;
+	}
+	.icondemoUsingTemplateRequest .demo-content {
+		min-height: 210px;
+	}
+	.icondemoUsingTemplateRequest .appUsingTemplateCache {
+		padding: 25px;
+	}
+	.icondemoUsingTemplateRequest .note {
+		font-size: 12px;
+		display: block;
+		margin-top: -2px;
+		padding-left: 25px;
+		color: #7f7e7e;
+	}
+</style>
+
+<div ng-controller="demo.material.controllers.icon.ctrl1" class="icondemoFontIconsWithClassnames">
 
     <p>Display 5 font-icons, each with different sizes and colors</p>
-
+    <!-- Display font icons from Icomoon.io: -->
     <div class="glyph" ng-repeat="font in fonts" layout="row">
         <div ng-repeat="it in sizes" flex layout-align="center center" style="text-align: center;" layout="column">
             <div flex></div>
@@ -88,4 +306,87 @@
             </div>
         </div>
     </div>
+</div>
+
+<div ng-controller="demo.material.controllers.icon.ctrl2" class="icondemoFontIconsWithLigatures">
+
+    <p>
+        Display 4 Material Design font-icons using ligatures [instead of CSS names]; each with different sizes and colors<br/>
+    </p>
+
+    <!-- Display font icons from Icomoon.io: -->
+    <div class="glyph" ng-repeat="font in fonts" layout="row">
+        <div ng-repeat="it in sizes" flex layout-align="center center" style="text-align: center;" layout="column">
+            <div flex></div>
+            <div class="preview-glyphs">
+                <md-icon ng-style="{color: font.color}" aria-label="{{ font.name }}" class="material-icons step" ng-class="it.size" ng-bind="font.name"></md-icon>
+            </div>
+        </div>
+    </div>
+
+    <p data-ng-ignore style="font-size:0.7em;padding-left: 25%">
+        <span style="color:darkblue; font-weight: bold">Cool Tip</span>: Copy an icon and then paste in a text editor to see its textual name!
+    </p>
+
+    <link data-ng-ignore href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+</div>
+
+<div ng-controller="demo.material.controllers.icon.ctrl3" layout="column" layout-margin class="icondemoLoadSvgIconsFromUrl">
+
+    <p>The simplest way to display a single SVG icon is by referencing it by URL:</p>
+
+    <p>
+        <md-icon md-svg-src="{{ insertDriveIconURL }}" aria-label="Insert Drive Icon"></md-icon>
+    </p>
+
+    <p>Style the icon size and color with CSS:</p>
+    <p>
+        <md-icon md-svg-src="ngm/demo/material/img/icons/cake.svg" class="s24" aria-label="Cake"></md-icon>
+        <md-icon md-svg-src="{{ getAndroid() }}" class="s36" aria-label="Android "></md-icon>
+        <md-icon md-svg-src="ngm/demo/material/img/icons/addShoppingCart.svg" class="s48" aria-label="Cart"></md-icon>
+    </p>
+
+    <p>Use data URLs (base64 or un-encoded):</p>
+    <p>
+        <md-icon md-svg-src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGcgaWQ9ImNha2UiPjxwYXRoIGQ9Ik0xMiA2YzEuMTEgMCAyLS45IDItMiAwLS4zOC0uMS0uNzMtLjI5LTEuMDNMMTIgMGwtMS43MSAyLjk3Yy0uMTkuMy0uMjkuNjUtLjI5IDEuMDMgMCAxLjEuOSAyIDIgMnptNC42IDkuOTlsLTEuMDctMS4wNy0xLjA4IDEuMDdjLTEuMyAxLjMtMy41OCAxLjMxLTQuODkgMGwtMS4wNy0xLjA3LTEuMDkgMS4wN0M2Ljc1IDE2LjY0IDUuODggMTcgNC45NiAxN2MtLjczIDAtMS40LS4yMy0xLjk2LS42MVYyMWMwIC41NS40NSAxIDEgMWgxNmMuNTUgMCAxLS40NSAxLTF2LTQuNjFjLS41Ni4zOC0xLjIzLjYxLTEuOTYuNjEtLjkyIDAtMS43OS0uMzYtMi40NC0xLjAxek0xOCA5aC01VjdoLTJ2Mkg2Yy0xLjY2IDAtMyAxLjM0LTMgM3YxLjU0YzAgMS4wOC44OCAxLjk2IDEuOTYgMS45Ni41MiAwIDEuMDItLjIgMS4zOC0uNTdsMi4xNC0yLjEzIDIuMTMgMi4xM2MuNzQuNzQgMi4wMy43NCAyLjc3IDBsMi4xNC0yLjEzIDIuMTMgMi4xM2MuMzcuMzcuODYuNTcgMS4zOC41NyAxLjA4IDAgMS45Ni0uODggMS45Ni0xLjk2VjEyQzIxIDEwLjM0IDE5LjY2IDkgMTggOXoiLz48L2c+PC9zdmc+" class="s24" aria-label="Cake">
+        </md-icon>
+
+        <md-icon md-svg-src="data:image/svg+xml;base64,{{ getAndroidEncoded() }}" class="s36" aria-label="Android">
+        </md-icon>
+
+        <!-- un-encoded -->
+        <md-icon md-svg-src="data:image/svg+xml, {{ getCartDecoded() }}" class="s48" aria-label="Cart">
+        </md-icon>
+    </p>
+</div>
+
+<div ng-controller="demo.material.controllers.icon.ctrl4" class="icondemoSvgIconSets" layout="column" layout-margin>
+
+    <p>Display an icon from a pre-registered set of icons:</p>
+
+    <p>
+        <md-icon md-svg-icon="alarm" style="color: #0F0;" aria-label="Alarm Icon"></md-icon>
+        <md-icon md-svg-icon="social:cake" style="color: #f00;width:60px;height:60px;" aria-label="Cake Icon"></md-icon>
+        <md-icon md-svg-icon="social:people" style="color: #00F;" class="s48" aria-label="People Icon"></md-icon>
+        <md-icon md-svg-icon="symbol:spinner" style="color: #f00;width:60px;height:60px;" aria-label="Spinner Icon"></md-icon>
+        <md-icon md-svg-icon="symbol:angular" class="s48" aria-label="Angular Icon"></md-icon>
+    </p>
+
+</div>
+
+<div ng-controller="demo.material.controllers.icon.ctrl5" class="icondemoUsingTemplateRequest" layout="column" layout-margin>
+
+    <p data-ng-ignore>
+        Pre-fetch and cache SVG icons using $templateRequest.<br/>
+        <span class="note"> NOTE: Show the Source views for details...</span>
+    </p>
+
+    <p>
+        <md-icon md-svg-icon="alarm-add" style="color:#000;" aria-label="Add"></md-icon>
+        <md-icon md-svg-icon="alarm-off" style="color:#f00;" aria-label="Off"></md-icon>
+        <md-icon md-svg-icon="social:cake" style="color:#00F;" aria-label="Cake"></md-icon>
+        <md-icon md-svg-src="ngm/demo/material/img/icons/android.svg" style="color:#0F0;" aria-label="Android"></md-icon>
+    </p>
+
 </div>

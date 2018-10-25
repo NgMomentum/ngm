@@ -29,7 +29,8 @@ msos.onload_functions.push(
 		// The basic technique below was derived from the example at:
 		// http://www.bennadel.com/blog/2554-loading-angularjs-components-with-requirejs-after-application-bootstrap.htm
 		demo.ng.start.config(
-			['$controllerProvider', '$provide', '$compileProvider', function ($controllerProvider, $provide, $compileProvider) {
+			['$controllerProvider', '$provide', '$compileProvider',
+			 function ($controllerProvider, $provide, $compileProvider) {
 
 				var app = demo.ng.start;
 

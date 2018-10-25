@@ -22,7 +22,7 @@ angular.module(
 
             var temp_b = 'demo.bootstrap.controllers.bootstrap.ctrl';
 
-            msos.console.info(temp_b + ' -> called.');
+            msos.console.info(temp_b + ' -> called, $scope: ', $scope);
 
         }
     ]

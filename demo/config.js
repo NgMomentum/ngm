@@ -35,7 +35,8 @@ if (msos.config.debug_css) {
 		msos.resource_url('fonts', 'css/fontawesome.uc.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.uc.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/theme.uc.css'),
-		msos.resource_url('ng', 'bootstrap/css/ui/misc.css')
+		msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
+		msos.resource_url('ng', 'material/css/redux.uc.css')
 	];
 
 } else {
@@ -44,7 +45,8 @@ if (msos.config.debug_css) {
 		msos.resource_url('fonts', 'css/fontawesome.min.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.min.css'),
 		msos.resource_url('ng', 'bootstrap/css/v337/theme.min.css'),
-		msos.resource_url('ng', 'bootstrap/css/ui/misc.css')
+		msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
+		msos.resource_url('ng', 'material/css/redux.min.css')
 	];
 
 }
@@ -58,10 +60,12 @@ if (msos.config.debug_script) {
 
 	// Debug full scripts (line no's mean something)
     msos.deferred_scripts = [
-		msos.resource_url('jquery', 'v321.uc.js'),
-		msos.resource_url('ng', 'v167_msos.uc.js'),
+		msos.resource_url('jquery', 'v331.uc.js'),
+		msos.resource_url('ng', 'v175_msos.uc.js'),
 		msos.resource_url('ng', 'ui/router/v1014_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
+		msos.resource_url('ng', 'material/v1110_msos.uc.js'),
+		msos.resource_url('ng', 'translate/v2170_msos.uc.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.uc.js')
 	];
@@ -81,10 +85,12 @@ if (msos.config.debug_script) {
 
 	// Standard minimized scripts
     msos.deferred_scripts = [
-		msos.resource_url('jquery', 'v321.min.js'),
-		msos.resource_url('ng', 'v167_msos.min.js'),
+		msos.resource_url('jquery', 'v331.min.js'),
+		msos.resource_url('ng', 'v175_msos.min.js'),
 		msos.resource_url('ng', 'ui/router/v1014_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
+		msos.resource_url('ng', 'material/v1110_msos.min.js'),
+		msos.resource_url('ng', 'translate/v2170_msos.min.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
 	];

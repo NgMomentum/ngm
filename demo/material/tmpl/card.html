@@ -1,12 +1,11 @@
 
-<div ng-controller="demo.material.controllers.card.ctrl">
+<style data-ng-ignore>
+    .card-media {
+        background-color: #999999;
+    }
+</style>
 
-    <style data-ng-ignore>
-        .card-media {
-            background-color: #999999;
-        }
-    </style>
-
+<div ng-controller="demo.material.controllers.card.ctrl1">
     <md-content class="md-padding" layout-xs="column" layout="row">
         <div flex-xs flex-gt-xs="50" layout="column">
             <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
@@ -36,13 +35,13 @@
 
                     <md-card-actions layout="column">
                         <md-button class="md-icon-button" aria-label="Favorite">
-                            <md-icon md-svg-icon="ngm/demo/material/img/icons/favorite.svg"></md-icon>
+                            <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg"></md-icon>
                         </md-button>
                         <md-button class="md-icon-button" aria-label="Settings">
-                            <md-icon md-svg-icon="ngm/demo/material/img/icons/menu.svg"></md-icon>
+                            <md-icon md-svg-icon="./ngm/demo/material/img/icons/menu.svg"></md-icon>
                         </md-button>
                         <md-button class="md-icon-button" aria-label="Share">
-                            <md-icon md-svg-icon="ngm/demo/material/img/icons/share-arrow.svg"></md-icon>
+                            <md-icon md-svg-icon="./ngm/demo/material/img/icons/share-arrow.svg"></md-icon>
                         </md-button>
                     </md-card-actions>
                 </md-card-content>
@@ -50,7 +49,7 @@
         </div>
         <div flex-xs flex-gt-xs="50" layout="column">
             <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch>
-                <md-card-title data-ng-ignore>
+                <md-card-title>
                     <md-card-title-text>
                         <span class="md-headline">Card with image</span>
                         <span class="md-subhead">Small</span>
@@ -65,7 +64,7 @@
                 </md-card-actions>
             </md-card>
             <md-card md-theme="{{ showDarkTheme ? 'dark-blue' : 'default' }}" md-theme-watch>
-                <md-card-title data-ng-ignore>
+                <md-card-title>
                     <md-card-title-text>
                         <span class="md-headline">Card with image</span>
                         <span class="md-subhead">Medium</span>
@@ -82,6 +81,209 @@
             <div layout layout-padding layout-align="center end" style="height:200px">
                 <md-checkbox ng-model="showDarkTheme">Use 'Dark' Themed Cards</md-checkbox>
             </div>
+        </div>
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.card.ctrl1">
+    <md-content class="md-padding" layout-xs="column" layout="row">
+        <div flex-xs flex-gt-xs="50" layout="column">
+            <md-card>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">Action buttons</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+                <md-card-actions layout="row" layout-align="end center">
+                    <md-button>Action 1</md-button>
+                    <md-button>Action 2</md-button>
+                </md-card-actions>
+            </md-card>
+            <md-card>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">Vertical action buttons</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+                <md-card-actions layout="column" layout-align="start">
+                    <md-button>Action 1</md-button>
+                    <md-button>Action 2</md-button>
+                </md-card-actions>
+            </md-card>
+        </div>
+        <div flex-xs flex-gt-xs="50" layout="column">
+            <md-card>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">Icon action buttons</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+                <md-card-actions layout="row" layout-align="end center">
+                    <md-button class="md-icon-button" aria-label="Favorite">
+                        <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" aria-label="Settings">
+                        <md-icon md-svg-icon="./ngm/demo/material/img/icons/menu.svg"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" aria-label="Share">
+                        <md-icon md-svg-icon="./ngm/demo/material/img/icons/share-arrow.svg"></md-icon>
+                    </md-button>
+                </md-card-actions>
+            </md-card>
+            <md-card>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-actions layout="row" layout-align="end center">
+                    <md-button class="md-icon-button" aria-label="Favorite">
+                        <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" aria-label="Settings">
+                        <md-icon md-svg-icon="./ngm/demo/material/img/icons/menu.svg"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" aria-label="Share">
+                        <md-icon md-svg-icon="./ngm/demo/material/img/icons/share-arrow.svg"></md-icon>
+                    </md-button>
+                </md-card-actions>
+            </md-card>
+
+            <md-card>
+                <md-card-header data-ng-ignore>
+                    <md-card-avatar>
+                        <img src="./ngm/demo/material/img/logo.svg" />
+                    </md-card-avatar>
+                    <md-card-header-text>
+                        <span class="md-title">AngularJS</span>
+                        <span class="md-subhead">Material</span>
+                    </md-card-header-text>
+                </md-card-header>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">Card header</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+            </md-card>
+        </div>
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.card.ctrl1">
+    <md-content class="md-padding" layout-xs="column" layout="row">
+        <div flex-xs flex-gt-xs="50" layout="column">
+            <md-card>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">In-card mixed actions</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-actions layout="row" layout-align="start center">
+                    <md-card-icon-actions>
+                        <md-button class="md-icon-button" aria-label="Favorite">
+                            <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg"></md-icon>
+                        </md-button>
+                        <md-button class="md-icon-button" aria-label="Share">
+                            <md-icon md-svg-icon="./ngm/demo/material/img/icons/share-arrow.svg"></md-icon>
+                        </md-button>
+                    </md-card-icon-actions>
+                    <md-button>Action 1</md-button>
+                    <md-button>Action 2</md-button>
+                </md-card-actions>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+            </md-card>
+            <md-card>
+                <md-card-header data-ng-ignore>
+                    <md-card-avatar>
+                        <img class="md-user-avatar" src="./ngm/demo/material/img/100-2.jpeg" />
+                    </md-card-avatar>
+                    <md-card-header-text>
+                        <span class="md-title">User</span>
+                        <span class="md-subhead">subhead</span>
+                    </md-card-header-text>
+                </md-card-header>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">In-card mixed actions</span>
+                        <span class="md-subhead">Reversed</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-actions layout="row" layout-align="start center">
+                    <md-button>Action 1</md-button>
+                    <md-button>Action 2</md-button>
+                    <md-card-icon-actions>
+                        <md-button class="md-icon-button" aria-label="toggle">
+                            <md-icon md-svg-icon="md-toggle-arrow"></md-icon>
+                        </md-button>
+                    </md-card-icon-actions>
+                </md-card-actions>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+            </md-card>
+        </div>
+        <div flex-xs flex-gt-xs="50" layout="column">
+            <md-card>
+                <md-card-header>
+                    <md-card-avatar>
+                        <md-icon class="md-avatar-icon" md-svg-icon="./ngm/demo/material/img/icons/menu.svg"></md-icon>
+                    </md-card-avatar>
+                    <md-card-header-text data-ng-ignore>
+                        <span class="md-title">Title</span>
+                        <span class="md-subhead">subhead</span>
+                    </md-card-header-text>
+                </md-card-header>
+                <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">
+                <md-card-title data-ng-ignore>
+                    <md-card-title-text>
+                        <span class="md-headline">In-card actions</span>
+                        <span class="md-subhead">Description</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-actions layout="row" layout-align="start center">
+                    <md-button>Action 1</md-button>
+                    <md-button>Action 2</md-button>
+                </md-card-actions>
+                <md-card-content data-ng-ignore>
+                    <p>
+                        The titles of Washed Out's breakthrough song and the first single from Paracosm share the two most important words in Ernest Greene's musical language: feel it. It's a simple request, as well...
+                    </p>
+                </md-card-content>
+            </md-card>
         </div>
     </md-content>
 </div>

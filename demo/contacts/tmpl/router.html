@@ -1,18 +1,31 @@
 
-<iframe id="ngm_iframe" data-ng-ignore src="./ngm/demo/paperjs/index.html"></iframe>
+	<iframe id="ngm_iframe" data-ng-ignore src="./ngm/demo/paperjs/candy_crash.html"></iframe>
 
-<div class="ngm_page ngm_overview">
+	<div data-ng-ignore>
 
-	<h2>Welcome to the UI-Router Demo</h2>
+		<h2>NgMomentum UI-Router Example</h2>
 
-	<p>
-		Use the menu above to navigate. Pay attention to the <code>$state</code> and <code>$stateParams</code> values below.
-	</p>
-	<p>
-		Click these links — <a href="#/c?id=1">Alice</a> or <a href="#/user/42">Bob</a> — to see a url redirect in action.
-	</p>
+		<p>
+			This section demonstrates the standard integration of AngularJS v1.x
+			UI-Router with NgMomentum. Our NgM version of UI-Router includes mostly
+			changes for enhanced debugging and code clarity. Otherwise, operation is
+			the same.
+		</p>
+		<p>
+			As you navigate this demo, pay attention to the <code>$state</code> and
+			<code>$stateParams</code> values below.
+		</p>
 
-	<p class="state">$state name = {{ diagnostic_state.current.name }}</p>
-	<p class="state">$stateParams = {{ diagnostic_stateParams }}</p>
-	<p class="state">$state url = {{ diagnostic_state.$current.url.source }}</p>
-</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<p class="state">$state name = {{ diagnostic_state.current.name }}</p>
+			<p class="state">$stateParams = {{ diagnostic_stateParams }}</p>
+			<p class="state">$state url = {{ diagnostic_state.$current.url.source }}</p>
+		</div>
+		<div class="col-md-6">
+			<div class="ngm_hint" data-ui-view="hint"></div>
+		</div>
+	</div>
+

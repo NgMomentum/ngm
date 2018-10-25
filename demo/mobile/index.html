@@ -37,9 +37,11 @@
 		}
 	</style>
 
+	<!-- NgMomentum initial page setup -->
 	<link rel="stylesheet" type="text/css" href="../../css/site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
+	<!-- NgMomentum scripts -->
 	<script src="../../msos/base.uc.js"></script>
 	<script src="../config.js"></script>
 
@@ -52,7 +54,8 @@
 		</h3>
 	</noscript>
 
-	<div id='body' class="ng-cloak" data-ng-controller="MainController" data-ui-prevent-touchmove-defaults>
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id='body' class="ng-cloak" data-ng-controller="demo.mobile.start.ctrl" data-ui-prevent-touchmove-defaults>
 
 		<div data-ng-include="'./tmpl/sidebarLeft.html'" data-ui-track-as-search-param='true' class="mobilesidebar mobilesidebar-left"></div>
 

@@ -56,7 +56,7 @@ angular.module(
                         msos.console.info('demo.bootstrap.controllers.modal.ctrl - $ctrl.open -> modal selectedItem: ' + selectedItem);
                         $ctrl.selected = selectedItem;
                     }, function open_modal_reject() {
-                        msos.console.warn('demo.bootstrap.controllers.modal.ctrl - $ctrl.open -> modal dismissed at: ' + new Date());
+                        msos.console.info('demo.bootstrap.controllers.modal.ctrl - $ctrl.open -> modal dismissed at: ' + new Date());
                     }
                 );
             };
@@ -80,7 +80,7 @@ angular.module(
                         $ctrl.selected = selectedItem;
                     },
                     function open_comp_modal_reject() {
-                        msos.console.warn('demo.bootstrap.controllers.modal.ctrl -> modal-component dismissed at: ' + new Date());
+                        msos.console.info('demo.bootstrap.controllers.modal.ctrl -> modal-component dismissed at: ' + new Date());
                     }
                 );
             };
@@ -94,7 +94,7 @@ angular.module(
                         ariaDescribedBy: 'modal-body-bottom',
                         templateUrl: 'stackedModal.html',
                         size: 'sm',
-                        controller: ['$scope', function ($scope) {
+                        controller: ['$scope', function uib_modal_open_bottom($scope) {
                             $scope.name = 'bottom';  
                         }]
                     }
@@ -107,7 +107,7 @@ angular.module(
                         ariaDescribedBy: 'modal-body-top',
                         templateUrl: 'stackedModal.html',
                         size: 'sm',
-                        controller: ['$scope', function ($scope) {
+                        controller: ['$scope', function uib_modal_open_top($scope) {
                             $scope.name = 'top';  
                         }]
                     }

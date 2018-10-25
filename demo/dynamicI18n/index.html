@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+    <title>NgM Dynamic Locale</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../../css/site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+
+</head>
+<body>
+
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div id='body' class="ng-cloak" data-ng-controller="demo.dynamicI18n.start.ctrl">
+
+		<div class="jumbotron" data-ng-ignore>
+			<div class="container">
+				<h1>Dynamic Locale via NgMomentum</h1>
+				<p>A library to change the locale at runtime. It changes the underlying <code>$locale</code> object, so changing the locale will change the formatting of all elements that use <code>$locale</code></p>
+				<p>
+					<a href="https://raw.githubusercontent.com/lgalfaso/angular-dynamic-locale/master/src/tmhDynamicLocale.js" class="btn btn-primary btn-lg">
+						<i class="glyphicon glyphicon-download"></i>&nbsp;&nbsp;Download
+					</a>
+					<a href="https://github.com/lgalfaso/angular-dynamic-locale" class="btn btn-default btn-lg">
+						<i class="glyphicon glyphicon-share"></i>&nbsp;&nbsp;View on GitHub
+					</a>
+				</p>
+			</div>
+		</div>
+
+		<div class="container" data-ng-ignore>
+			<h4>What is this?</h4>
+			<p>This angular module makes it possible to programmatically change the current locale.</p>
+		</div>
+
+		<div class="container" data-ng-ignore>
+			<h4>How do I use it?</h4>
+			<p>Install it via npm or bower</p>
+			<pre>$ npm install angular-dynamic-locale
+$ bower install angular-dynamic-locale</pre>
+
+			<p>To use, simply include it as a dependency in your app and you're done!</p>
+			<pre>angular.module('myApp', ['tmh.dynamicLocale'])</pre>
+		</div>
+
+		<div class="container">
+			<h4>Example</h4>
+			<p>Pick a locale <select ng-model="model.selectedLocale" ng-options="key as value for (key, value) in availableLocales" ng-change="changeLocale(model.selectedLocale)"></select></p>
+			<p>Selected locale id: {{model.selectedLocale}}</p>
+			<p>Current locale id: {{$locale.id}}</p>
+			<p>A big number: {{1234567890 | number}}</p>
+			<p>The Epoch was on: {{0 | date}}</p>
+			<p>One million of the local currency: {{1000000 | currency}}</p>
+		</div>
+	</div>
+
+	<script>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.dynamicI18n.start");
+			}
+		);
+	</script>
+
+</body>
+</html>

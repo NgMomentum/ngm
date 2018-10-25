@@ -143,7 +143,7 @@ msos.onload_func_done.push(
 				});
             }]
         ).controller(
-            'MainController',
+            'demo.mobile.start.ctrl',
             ['$rootScope', '$scope', function ($rootScope, $scope) {
                 var i = 0,
                     j = 0,

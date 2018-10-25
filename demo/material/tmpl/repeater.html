@@ -1,31 +1,104 @@
 
-<div ng-controller="demo.material.controllers.repeater.ctrl as ctrl">
+<style data-ng-ignore>
+    .virtualRepeatdemoDeferredLoading #vertical-container {
+        height: 292px;
+        width: 100%;
+        max-width: 400px;
+    }
+    .virtualRepeatdemoDeferredLoading .repeated-item {
+        border-bottom: 1px solid #ddd;
+        box-sizing: border-box;
+        height: 40px;
+        padding-top: 10px;
+    }
+    .virtualRepeatdemoDeferredLoading md-content {
+        margin: 16px;
+    }
+    .virtualRepeatdemoDeferredLoading md-virtual-repeat-container {
+        border: solid 1px grey;
+    }
+    .virtualRepeatdemoDeferredLoading .md-virtual-repeat-container .md-virtual-repeat-offsetter div {
+        padding-left: 16px;
+    }
 
-    <style data-ng-ignore>
-        #vertical-container {
-            height: 292px;
-            width: 100%;
-            max-width: 400px;
-        }
-        .repeated-item {
-            border-bottom: 1px solid #ddd;
-            box-sizing: border-box;
-            height: 40px;
-            padding-top: 10px;
-        }
-        md-content {
-            margin: 16px;
-        }
-        md-virtual-repeat-container {
-            border: solid 1px grey;
-        }
-        .md-virtual-repeat-container .md-virtual-repeat-offsetter div {
-            padding-left: 16px;
-        }
-    </style>
+    .virtualRepeatdemoHorizontalUsage #horizontal-container {
+        height: 100px;
+        width: 100%;
+        max-width: 830px;
+    }
+    .virtualRepeatdemoHorizontalUsage .repeated-item {
+        border-right: 1px solid #ddd;
+        box-sizing: border-box;
+        display: inline-block;
+        height: 84px;
+        padding-top: 35px;
+        text-align: center;
+        width: 50px;
+    }
+    .virtualRepeatdemoHorizontalUsage md-content {
+        margin: 16px;
+    }
+    .virtualRepeatdemoHorizontalUsage md-virtual-repeat-container {
+        border: solid 1px grey;
+    }
+
+    .virtualRepeatdemoInfiniteScroll #vertical-container {
+        height: 292px;
+        width: 100%;
+        max-width: 400px;
+    }
+    .virtualRepeatdemoInfiniteScroll .repeated-item {
+        border-bottom: 1px solid #ddd;
+        box-sizing: border-box;
+        height: 40px;
+        padding-top: 10px;
+    }
+    .virtualRepeatdemoInfiniteScroll md-content {
+        margin: 16px;
+    }
+    .virtualRepeatdemoInfiniteScroll md-virtual-repeat-container {
+        border: solid 1px grey;
+    }
+    .virtualRepeatdemoInfiniteScroll .md-virtual-repeat-container .md-virtual-repeat-offsetter div {
+        padding-left: 16px;
+    }
+    
+    .virtualRepeatdemoScrollTo .wrapper {
+        width: 100%;
+        max-width: 400px;
+    }
+    .virtualRepeatdemoScrollTo #vertical-container {
+        height: 292px;
+        width: 100%;
+        max-width: 400px;
+    }
+    .virtualRepeatdemoScrollTo #vertical-container .repeated-item {
+        border-bottom: 1px solid #ddd;
+        box-sizing: border-box;
+        height: 40px;
+        padding-top: 10px;
+    }
+    .virtualRepeatdemoScrollTo #vertical-container .repeated-item.header {
+        background-color: #106CC8;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+    }
+    .virtualRepeatdemoScrollTo #vertical-container md-content {
+        margin: 16px;
+    }
+    .virtualRepeatdemoScrollTo md-virtual-repeat-container {
+        border: solid 1px grey;
+    }
+    .virtualRepeatdemoScrollTo .md-virtual-repeat-container .md-virtual-repeat-offsetter div:not(.header) {
+        padding-left: 16px;
+    }
+</style>
+
+<div ng-controller="demo.material.controllers.repeater.ctrl1 as ctrl" class="virtualRepeatdemoDeferredLoading">
 
     <md-content layout="column">
-        <p>
+        <p data-ng-ignore>
             Display a list of 50,000 items that load on demand in a viewport of only 7 rows (height=40px).
             <br/><br/> This demo shows scroll and rendering performance gains when using <code>md-virtual-repeat</code>; achieved with the dynamic reuse of rows visible in the viewport area. Developers are required to explicitly use <code>md-virtual-repeat-container</code> as a wrapping parent container.
             <br/><br/> To enable load-on-demand behavior, developers must pass in a custom instance of mdVirtualRepeatModel (see the example's source for more info).
@@ -38,4 +111,63 @@
         </md-virtual-repeat-container>
     </md-content>
 
+</div>
+
+<div ng-controller="demo.material.controllers.repeater.ctrl2 as ctrl" class="virtualRepeatdemoHorizontalUsage">
+
+    <md-content layout="column">
+        <p data-ng-ignore>
+            Display 1000 item in a virtual-list with viewport of only 16 columns (width=50px).
+            <br/><br/> This demo shows scroll and rendering performance gains when using <code>md-virtual-repeat</code>; achieved with the dynamic reuse of rows visible in the viewport area. Developers are required to explicitly use <code>md-virtual-repeat-container</code> as a wrapping parent container.
+        </p>
+
+        <md-virtual-repeat-container id="horizontal-container" md-orient-horizontal>
+            <div md-virtual-repeat="item in ctrl.items" class="repeated-item" flex>
+                {{item}}
+            </div>
+        </md-virtual-repeat-container>
+    </md-content>
+
+</div>
+
+<div ng-controller="demo.material.controllers.repeater.ctrl3 as ctrl" class="virtualRepeatdemoInfiniteScroll">
+
+    <md-content layout="column">
+        <p data-ng-ignore>
+            Display an infinitely growing list of items in a viewport of only 7 rows (height=40px).
+            <br/><br/> This demo shows scroll and rendering performance gains when using <code>md-virtual-repeat</code>; achieved with the dynamic reuse of rows visible in the viewport area. Developers are required to explicitly use <code>md-virtual-repeat-container</code> as a wrapping parent container.
+            <br/><br/> To enable infinite scroll behavior, developers must pass in a custom instance of mdVirtualRepeatModel (see the example's source for more info).
+        </p>
+
+        <md-virtual-repeat-container id="vertical-container">
+            <div md-virtual-repeat="item in ctrl.infiniteItems" md-on-demand class="repeated-item" flex>
+                {{item}}
+            </div>
+        </md-virtual-repeat-container>
+    </md-content>
+
+</div>
+
+<div ng-controller="demo.material.controllers.repeater.ctrl4 as ctrl" class="virtualRepeatdemoScrollTo">
+
+    <md-content layout="column" class="md-padding">
+        <p data-ng-ignore>
+            Use the <code>md-top-index</code> attribute to watch which item is at the top of the scroll container, and also to jump to a specific item.
+        </p>
+
+        <div class="wrapper">
+            <md-input-container>
+                <md-select ng-model="ctrl.selectedYear" aria-label="Select a Year">
+                    <md-option ng-value="$index" ng-repeat="year in ctrl.years">{{ year }}</md-option>
+                </md-select>
+            </md-input-container>
+
+            <md-virtual-repeat-container id="vertical-container" md-top-index="ctrl.topIndex">
+                <div md-virtual-repeat="item in ctrl.items" class="repeated-item" ng-class="{header: item.header}" flex>
+                    {{item.text}}
+                </div>
+            </md-virtual-repeat-container>
+        </div>
+
+    </md-content>
 </div>

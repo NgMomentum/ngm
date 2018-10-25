@@ -7,7 +7,7 @@
 		<div class="col-md-6">
 			<div ng-controller="demo.bootstrap.controllers.carousel.ctrl">
 				<div style="height: 305px">
-					<div uib-carousel active="active" interval="myInterval" no-wrap="noWrapSlides">
+					<div uib-carousel active="active" interval="myInterval">
 						<div uib-slide ng-repeat="slide in slides track by slide.id" index="slide.id">
 							<img ng-src="{{slide.image}}" style="margin:auto;" />
 							<div class="carousel-caption">
@@ -19,13 +19,8 @@
 				</div>
 				<div class="row">
 					<div class="col-md-6">
-						<button type="button" class="btn btn-info" ng-click="addSlide()">Add Slide</button>
+						<button type="button" class="btn btn-info" ng-click="addDemoSlide()">Add Slide</button>
 						<button type="button" class="btn btn-info" ng-click="randomize()">Randomize slides</button>
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" ng-model="noWrapSlides" /> Disable Slide Looping
-							</label>
-						</div>
 					</div>
 					<div class="col-md-6">
 						Interval, in milliseconds: <input type="number" class="form-control" ng-model="myInterval">

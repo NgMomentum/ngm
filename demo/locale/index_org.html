@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>Angular-Translate via NgM</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../../css/site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+
+</head>
+<body>
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id='body' ng-controller="AppCtrl" class="ng-cloak">
+		<header class="ngm_header navbar navbar-default navbar-fixed-top navbar-inner">
+			<div class="container">
+				<div class="pull-right">
+                    <div ng-translate-language-select></div>
+                </div>
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-uib-toggle="collapse" data-uib-target="#js-navbar-collapse">
+						<span class="sr-only">Toggle navigation</span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+						</button>
+                    </div>
+
+                    <div class="collapse navbar-collapse" id="js-navbar-collapse">
+                        <ul class="nav navbar-nav">
+                            <li ng-class="{active: currentPath === '/'}">
+                                <a ng-href="#/">{{"views.index.Home" | translate}}</a>
+                            </li>
+                            <li ng-class="{active: currentPath === '/about'}">
+                                <a ng-href="#/about">{{"views.index.About" | translate}}</a>
+                            </li>
+                            <li ng-class="{active: currentPath === '/contacts'}">
+                                <a ng-href="#/contacts">{{"views.index.Contact" | translate}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="pull-right">
+                <span class="glyphicon glyphicon-time"></span> {{currentTime | date:'medium'}}
+            </div>
+
+            <div data-ui-view></div>
+        </div>
+
+        <div class="footer">
+            <div class="container">
+                <p><span class="glyphicon glyphicon-heart"></span> {{"views.index.from the Yeoman team" | translate}}</p>
+            </div>
+        </div>
+    </div>
+
+	<script>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.locale.start");
+			}
+		);
+	</script>
+
+</body>
+</html>

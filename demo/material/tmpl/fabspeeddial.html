@@ -1,0 +1,222 @@
+
+<style data-ng-ignore>
+	.fabSpeedDialdemoMoreOptions .md-fab-top-right {
+		top: 16px;
+	}
+	@media (max-device-width: 600px) {
+		.fabSpeedDialdemoMoreOptions .md-fab-top-right {
+			top: 9px;
+			right: 9px;
+		}
+	}
+	.fabSpeedDialdemoMoreOptions .md-fab.demo-fab.trigger-fab:hover, .fabSpeedDialdemoMoreOptions .md-fab.demo-fab.trigger-fab.md-focused, .fabSpeedDialdemoMoreOptions .md-fab.demo-fab.action-fab:hover, .fabSpeedDialdemoMoreOptions .md-fab.demo-fab.action-fab.md-focused {
+		background-color: #333;
+	}
+	.fabSpeedDialdemoMoreOptions .md-fab.demo-fab.action-fab {
+		background-color: #aaa;
+	}
+	.fabSpeedDialdemoMoreOptions md-content div[flex="50"] {
+		padding: 15px;
+	}
+	.fabSpeedDialdemoMoreOptions md-fab-speed-dial {
+		margin-top: 89px;
+	}
+	.fabSpeedDialdemoMoreOptions md-fab-speed-dial md-fab-trigger {
+		transition: all 0.3s ease-in-out;
+		transform: scale(1);
+	}
+	.fabSpeedDialdemoMoreOptions md-fab-speed-dial.md-scale.ng-hide-add.ng-hide-add-active, .fabSpeedDialdemoMoreOptions md-fab-speed-dial.md-fling.ng-hide-add.ng-hide-add-active {
+		display: flex !important;
+	}
+	.fabSpeedDialdemoMoreOptions md-fab-speed-dial.md-scale.ng-hide md-fab-trigger, .fabSpeedDialdemoMoreOptions md-fab-speed-dial.md-fling.ng-hide md-fab-trigger {
+		transform: scale(0);
+	}
+	.fabSpeedDialdemoMoreOptions .intro {
+		padding-left: 5px;
+	}
+</style>
+
+<div ng-controller="demo.material.controllers.fabspeeddial.ctrl1 as demo" layout="column">
+    <md-content class="md-padding" layout="column">
+        <p>
+            You may supply a direction of <code>left</code>, <code>up</code>, <code>down</code>, or
+            <code>right</code> through the <code>md-direction</code> attribute.
+        </p>
+
+        <div class="lock-size" layout="row" layout-align="center center">
+            <md-fab-speed-dial md-open="demo.isOpen" md-direction="{{demo.selectedDirection}}" ng-class="demo.selectedMode">
+                <md-fab-trigger>
+                    <md-button aria-label="menu" class="md-fab md-warn">
+                        <md-icon md-svg-src="ngm/demo/material/img/icons/menu.svg"></md-icon>
+                    </md-button>
+                </md-fab-trigger>
+
+                <md-fab-actions>
+                    <md-button aria-label="Twitter" class="md-fab md-raised md-mini">
+                        <md-icon md-svg-src="ngm/demo/material/img/icons/twitter.svg" aria-label="Twitter"></md-icon>
+                    </md-button>
+                    <md-button aria-label="Facebook" class="md-fab md-raised md-mini">
+                        <md-icon md-svg-src="ngm/demo/material/img/icons/facebook.svg" aria-label="Facebook"></md-icon>
+                    </md-button>
+                    <md-button aria-label="Google Hangout" class="md-fab md-raised md-mini">
+                        <md-icon md-svg-src="ngm/demo/material/img/icons/hangout.svg" aria-label="Google Hangout"></md-icon>
+                    </md-button>
+                </md-fab-actions>
+            </md-fab-speed-dial>
+        </div>
+
+        <div layout="row" layout-align="space-around">
+            <div layout="column" layout-align="start center">
+                <b>Direction</b>
+
+                <md-radio-group ng-model="demo.selectedDirection">
+                    <md-radio-button ng-repeat="direction in demo.availableDirections" ng-value="direction" class="text-capitalize">
+                        {{direction}}
+                    </md-radio-button>
+                </md-radio-group>
+            </div>
+
+            <div layout="column" layout-align="start center">
+                <b>Open/Closed</b>
+
+                <md-checkbox ng-model="demo.isOpen">
+                    Open
+                </md-checkbox>
+            </div>
+
+            <div layout="column" layout-align="start center">
+                <b>Animation Modes</b>
+
+                <md-radio-group ng-model="demo.selectedMode">
+                    <md-radio-button ng-repeat="mode in demo.availableModes" ng-value="mode">
+                        {{mode}}
+                    </md-radio-button>
+                </md-radio-group>
+            </div>
+        </div>
+
+    </md-content>
+</div>
+
+<div layout="column" ng-controller="demo.material.controllers.fabspeeddial.ctrl2 as demo" class="fabSpeedDialdemoMoreOptions">
+    <md-content class="md-padding" layout="column">
+
+        <p class="intro">
+            The speed dial supports many advanced usage scenarios. This demo shows many of them mixed together... and even includes a Toolbar - SpeedDial combination.
+        </p>
+
+        <md-toolbar>
+            <h3>
+                <md-button>Test</md-button>
+                <md-button>Test</md-button>
+                <md-button hide-sm>Test</md-button>
+                <md-button hide-sm>Test</md-button>
+                <md-button hide-sm>Test</md-button>
+                <md-button hide-sm>Test</md-button>
+                <md-button hide-sm>Test</md-button>
+            </h3>
+        </md-toolbar>
+
+        <md-fab-speed-dial ng-hide="demo.hidden" md-direction="left" md-open="demo.isOpen" class="md-scale md-fab-top-right" ng-class="{ 'md-hover-full': demo.hover }" ng-mouseenter="demo.isOpen=true" ng-mouseleave="demo.isOpen=false">
+            <md-fab-trigger>
+                <md-button aria-label="menu" class="md-fab md-warn">
+                    <md-tooltip md-direction="top" md-visible="tooltipVisible">Menu</md-tooltip>
+                    <md-icon md-svg-src="ngm/demo/material/img/icons/menu.svg" aria-label="menu"></md-icon>
+                </md-button>
+            </md-fab-trigger>
+
+            <md-fab-actions>
+                <div ng-repeat="item in demo.items">
+                    <md-button aria-label="{{item.name}}" class="md-fab md-raised md-mini" ng-click="demo.openDialog($event, item)">
+                        <md-tooltip md-direction="{{item.direction}}" md-visible="tooltipVisible" md-autohide="false">
+                            {{item.name}}
+                        </md-tooltip>
+
+                        <md-icon md-svg-src="{{item.icon}}" aria-label="{{item.name}}"></md-icon>
+                    </md-button>
+                </div>
+            </md-fab-actions>
+        </md-fab-speed-dial>
+    </md-content>
+
+    <md-content class="md-padding" layout="row" layout-sm="column" layout-align="space-around">
+        <div flex-gt-sm="45">
+            <h3>Tooltips</h3>
+
+            <p>
+                Each action item supports a tooltip using the standard approach as can be seen above.
+            </p>
+
+            <h3>ngHide</h3>
+
+            <p>
+                The speed dial also supports hiding using the standard <code>ng-hide</code> attribute. View the source to see how to apply the animation effect.
+
+                <md-checkbox ng-model="demo.hidden">
+                    Hide the speed dial.
+                </md-checkbox>
+            </p>
+
+            <h3>ngRepeat</h3>
+
+            <p>
+                You can easily use <code>ng-repeat</code> with the speed dial, but it requires a slightly different HTML structure in order to support the necessary DOM changes/styling.
+            </p>
+
+            <p>
+                Simply ensure that your <code>ng-repeat</code> is on a <code>div</code> (or any other tag) that wraps your items.
+            </p>
+        </div>
+
+        <div flex-gt-sm="45">
+            <h3>Hovering</h3>
+
+            <p>
+                You can also easily setup the speed dial to open on hover using the
+                <code>ng-mouseenter</code> and <code>ng-mouseleave</code> attributes.
+            </p>
+
+            <p>
+                If you want the user to be able to hover over the empty area where the actions will eventually appear, you must also add the
+                <code>md-hover-full</code> class to the speed dial element.
+
+                <md-checkbox ng-model="demo.hover">
+                    Enable "full hover" mode.
+                </md-checkbox>
+            </p>
+
+            <p>
+                Notice that in "full hover" mode, you cannot click on the last "Test" buttons on the toolbar as they are hidden by the speed dial. See the example code and docs for more information.
+            </p>
+
+            <h3>$mdDialog</h3>
+
+            <p>
+                You can also use the buttons to open a dialog. When clicked, the buttons above will open a dialog showing a message which item was clicked.
+            </p>
+        </div>
+    </md-content>
+
+    <script type="text/ng-template" id="dialog_script.html">
+        <md-dialog>
+            <md-toolbar>
+                <div class="md-toolbar-tools">Cool Dialog!</div>
+            </md-toolbar>
+
+            <md-dialog-content layout-padding>
+                Hello user! you clicked {{dialog.item.name}}.
+            </md-dialog-content>
+
+            <div class="md-actions">
+                <md-button aria-label="Close dialog" ng-click="dialog.close()" class="md-primary">
+                    Close Greeting
+                </md-button>
+
+                <md-button aria-label="Submit dialog" ng-click="dialog.submit()" class="md-primary">
+                    Submit
+                </md-button>
+            </div>
+        </md-dialog>
+    </script>
+
+</div>

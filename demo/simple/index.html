@@ -9,7 +9,7 @@
 	<meta name="description" content="Open source software for the mobile web!" />
 	<meta name="author" content="Dwight Vietzke" />
 
-	<title>Simple NgM Module Demo</title>
+	<title>NgM Simple Demo</title>
 
 	<!-- NgMomentum initial page setup -->
 	<link rel="stylesheet" type="text/css" href="../../css/site.css">
@@ -27,18 +27,20 @@
 		</h3>
 	</noscript>
 
-	<div id='body' class="ng-cloak content well">
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id='body' ng-controller="demo.simple.start.ctrl" class="ng-cloak container">
 
-		<h1>Simple NgMomentum Module Demo</h1>
+		<h1 data-ng-ignore>NgMomentum Simple Demo</h1>
 	
-		<div ng-controller="XmplController"> {{ greeting }} </div>
+		<div> {{ greeting }} </div>
 
-		<div data-ng-ignore>
+		<div class="well" data-ng-ignore>
 			<ul>
 				<li><a href="?debug=true">Debugging</a></li>
 				<li><a href="?verbose=true">Verbose Debugging</a></li>
 				<li><a href="?verbose=module">Verbose w/ Extended Module Output</a></li>
 				<li><a href="?verbose=browser">Verbose w/ Extended Browser Output</a></li>
+				<li><a href="?verbose=http">Verbose w/ Extended Http Output</a></li>
 				<li><a href="?verbose=promise">Verbose w/ Extended Promise Output</a></li>
 				<li><a href="?verbose=injector">Verbose w/ Extended Injection Output</a></li>
 				<li><a href="?verbose=compile">Verbose w/ Extended Compile Output</a></li>
@@ -53,7 +55,7 @@
 		</div>
 	</div>
 
-	<script data-ng-ignore>
+	<script>
 		msos.onload_func_pre.push(
 			function () {
 				"use strict";

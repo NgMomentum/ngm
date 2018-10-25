@@ -1,33 +1,31 @@
 
-<div ng-controller="demo.material.controllers.button.ctrl">
+<style data-ng-ignore>
+	.buttondemoBasicUsage section {
+		background: #f7f7f7;
+		border-radius: 3px;
+		text-align: center;
+		margin: 1em;
+		position: relative !important;
+		padding-bottom: 10 px;
+	}
+	.buttondemoBasicUsage md-content {
+        margin-right: 7px;
+    }
+    .buttondemoBasicUsage section.md-button {
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+    .buttondemoBasicUsage.label {
+        position: absolute;
+        bottom: 5px;
+        left: 7px;
+        font-size: 14px;
+        opacity: 0.54;
+    }
+</style>
 
-    <style data-ng-ignore>
-        section {
-            background: #f7f7f7;
-            border-radius: 3px;
-            text-align: center;
-            margin: 1em;
-            position: relative !important;
-            padding-bottom: 10px;
-        }
-        md-content {
-            margin-right: 7px;
-        }
-        section .md-button {
-            margin-top: 16px;
-            margin-bottom: 16px;
-        }
-        .label {
-            position: absolute;
-            bottom: 5px;
-            left: 7px;
-            font-size: 14px;
-            opacity: 0.54;
-        }
-    </style>
-
+<div ng-controller="demo.material.controllers.button.ctrl" class="buttondemoBasicUsage">
     <md-content>
-
         <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
             <md-button>{{title1}}</md-button>
             <md-button md-no-ink class="md-primary">Primary (md-noink)</md-button>
@@ -46,27 +44,27 @@
 
         <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
             <md-button class="md-fab" aria-label="Eat cake">
-                <md-icon md-svg-src="ngm/demo/material/img/icons/cake.svg"></md-icon>
+                <md-icon md-svg-src="./ngm/demo/material/img/icons/cake.svg"></md-icon>
             </md-button>
 
             <md-button class="md-fab md-primary" aria-label="Use Android">
-                <md-icon md-svg-src="ngm/demo/material/img/icons/android.svg"></md-icon>
+                <md-icon md-svg-src="./ngm/demo/material/img/icons/android.svg"></md-icon>
             </md-button>
 
             <md-button class="md-fab" ng-disabled="true" aria-label="Comment">
-                <md-icon md-svg-src="ngm/demo/material/img/icons/ic_comment_24px.svg"></md-icon>
+                <md-icon md-svg-src="./ngm/demo/material/img/icons/ic_comment_24px.svg"></md-icon>
             </md-button>
 
             <md-button class="md-fab md-primary md-hue-2" aria-label="Profile">
-                <md-icon md-svg-src="ngm/demo/material/img/icons/ic_people_24px.svg"></md-icon>
+                <md-icon md-svg-src="./ngm/demo/material/img/icons/ic_people_24px.svg"></md-icon>
             </md-button>
 
             <md-button class="md-fab md-mini" aria-label="Eat cake">
-                <md-icon md-svg-src="ngm/demo/material/img/icons/cake.svg"></md-icon>
+                <md-icon md-svg-src="./ngm/demo/material/img/icons/cake.svg"></md-icon>
             </md-button>
 
             <md-button class="md-fab md-mini md-primary" aria-label="Use Android">
-                <md-icon md-svg-src="ngm/demo/material/img/icons/android.svg" style="color: greenyellow;"></md-icon>
+                <md-icon md-svg-src="./ngm/demo/material/img/icons/android.svg" style="color: greenyellow;"></md-icon>
             </md-button>
             <div class="label">FAB</div>
         </section>
@@ -89,16 +87,16 @@
 
         <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
             <md-button class="md-icon-button md-primary" aria-label="Settings">
-                <md-icon md-svg-icon="ngm/demo/material/img/icons/menu.svg"></md-icon>
+                <md-icon md-svg-icon="./ngm/demo/material/img/icons/menu.svg"></md-icon>
             </md-button>
             <md-button class="md-icon-button md-accent" aria-label="Favorite">
-                <md-icon md-svg-icon="ngm/demo/material/img/icons/favorite.svg"></md-icon>
+                <md-icon md-svg-icon="./ngm/demo/material/img/icons/favorite.svg"></md-icon>
             </md-button>
             <md-button class="md-icon-button" aria-label="More">
-                <md-icon md-svg-icon="ngm/demo/material/img/icons/more_vert.svg"></md-icon>
+                <md-icon md-svg-icon="./ngm/demo/material/img/icons/more_vert.svg"></md-icon>
             </md-button>
             <md-button href="http://google.com" title="Launch Google.com in new window" target="_blank" ng-disabled="true" aria-label="Google.com" class="md-icon-button launch">
-                <md-icon md-svg-icon="ngm/demo/material/img/icons/launch.svg"></md-icon>
+                <md-icon md-svg-icon="./ngm/demo/material/img/icons/launch.svg"></md-icon>
             </md-button>
             <div class="label">Icon Button</div>
         </section>

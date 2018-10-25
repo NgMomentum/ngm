@@ -1,0 +1,106 @@
+
+<style data-ng-ignore>
+	.datepickerdemoCalendar label {
+		font-size: x-small;
+	}
+</style>
+<md-content ng-controller="demo.material.controllers.datepickermd.ctrl1 as ctrl" layout-padding>
+    <div layout-gt-xs="row">
+        <div flex-gt-xs>
+            <h4>Standard date-picker</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date"></md-datepicker>
+        </div>
+
+        <div flex-gt-xs>
+            <h4>Disabled date-picker</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" disabled></md-datepicker>
+        </div>
+    </div>
+
+    <div layout-gt-xs="row">
+        <div flex-gt-xs>
+            <h4>Opening the calendar when the input is focused</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" md-open-on-focus></md-datepicker>
+        </div>
+
+        <div flex-gt-xs>
+            <h4>Date-picker that goes straight to the year view</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-current-view="year" md-placeholder="Enter date"></md-datepicker>
+        </div>
+    </div>
+
+    <div layout-gt-xs="row">
+        <div flex-gt-xs>
+            <h4>Custom calendar trigger</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" md-is-open="ctrl.isOpen"></md-datepicker>
+            <md-button class="md-primary md-raised" ng-click="ctrl.isOpen = true">Open</md-button>
+        </div>
+
+        <div flex-gt-xs>
+            <h4>Date-picker that only allows for the month to be selected</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" md-mode="month"></md-datepicker>
+        </div>
+    </div>
+</md-content>
+
+<md-content ng-controller="demo.material.controllers.datepickermd.ctrl2 as ctrl" layout="column" layout-gt-sm="row" layout-padding class="datepickerdemoCalendar">
+    <div layout="column" flex-order="1" flex-order-gt-sm="0">
+        <md-subheader>Start Date</md-subheader>
+        <md-calendar ng-model="ctrl.startDate"></md-calendar>
+    </div>
+    <div layout="column" flex-order="1" flex-order-gt-sm="1">
+        <md-subheader>End Date</md-subheader>
+        <md-calendar ng-model="ctrl.endDate"></md-calendar>
+    </div>
+    <div layout="column" flex-order="0" flex-order-gt-sm="2">
+        <md-subheader>Dates</md-subheader>
+        <div>
+            <label>Start</label>
+            <div>{{ctrl.startDate | date:shortDate}}</div>
+        </div>
+        <div><label>End</label>
+            <div>{{ctrl.endDate | date:shortDate}}</div>
+        </div>
+    </div>
+</md-content>
+
+<md-content ng-controller="demo.material.controllers.datepickermd.ctrl3 as ctrl" layout-padding layout-margin>
+	<md-datepicker ng-model="ctrl.myDate" ng-change="ctrl.onDateChanged()" md-placeholder="Enter date"></md-datepicker>
+	Date: {{ctrl.myDate | date:shortDate}}
+</md-content>
+
+<md-content ng-controller="demo.material.controllers.datepickermd.ctrl4 as ctrl" layout-padding>
+    <div layout-gt-xs="row">
+        <div flex-gt-xs>
+            <h4>Date-picker with min date and max date</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" md-min-date="ctrl.minDate" md-max-date="ctrl.maxDate"></md-datepicker>
+        </div>
+
+        <div flex-gt-xs>
+            <h4>Only weekends are selectable</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" md-date-filter="ctrl.onlyWeekendsPredicate"></md-datepicker>
+        </div>
+    </div>
+
+    <div layout-gt-xs="row">
+        <div flex-gt-xs>
+            <h4>Only weekends within given range are selectable</h4>
+            <md-datepicker ng-model="ctrl.myDate" md-placeholder="Enter date" md-min-date="ctrl.minDate" md-max-date="ctrl.maxDate" md-date-filter="ctrl.onlyWeekendsPredicate"></md-datepicker>
+        </div>
+
+        <form name="myForm" flex-gt-xs>
+            <h4>Inside a md-input-container</h4>
+
+            <md-input-container>
+                <label>Enter date</label>
+                <md-datepicker ng-model="ctrl.myDate" name="dateField" md-min-date="ctrl.minDate" md-max-date="ctrl.maxDate"></md-datepicker>
+
+                <div ng-messages="myForm.dateField.$error">
+                    <div ng-message="valid">Use a valid date format</div>
+                    <div ng-message="mindate">Choose a date on or after {{ctrl.minDate | date:"shortDate"}}</div>
+                    <div ng-message="maxdate">Choose a date on or before {{ctrl.maxDate | date:"shortDate"}}</div>
+                </div>
+            </md-input-container>
+        </form>
+    </div>
+</md-content>

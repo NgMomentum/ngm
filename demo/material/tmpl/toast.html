@@ -1,5 +1,6 @@
 
-<div ng-controller="demo.material.controllers.toast.ctrl" layout-fill layout="column" class="inset" paddi>
+<div ng-controller="demo.material.controllers.toast.ctrl1" layout-fill layout="column" class="inset">
+
     <p>
         Toast can be dismissed with a swipe, a timer, or a button.<br/>
     </p>
@@ -16,6 +17,7 @@
     </div>
 
     <div layout="row" id="toastBounds">
+
         <div>
             <p><b>Toast Position: "{{getToastPosition()}}"</b></p>
             <md-checkbox ng-repeat="(name, isSelected) in toastPosition" ng-model="toastPosition[name]">
@@ -32,3 +34,14 @@
         </md-button>
     </div>
 </div>
+
+<div ng-controller="demo.material.controllers.toast.ctrl2" class="inset" style="height:300px; padding: 25px;">
+	<div layout="row">
+		<p>Toast can have multiple actions:</p>
+
+		<md-button ng-click="showCustomToast()" class="md-raised" style="padding-left: 10px;padding-right: 10px;">
+			Show Custom Toast
+		</md-button>
+	</div>
+</div>
+

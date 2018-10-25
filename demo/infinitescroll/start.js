@@ -27,7 +27,7 @@ msos.onload_func_done.push(
 				]);
 			}]
 		).controller(
-			'DemoController',
+			'demo.infinitescroll.start.ctrl',
 			['$scope', 'Reddit', function ($scope, Reddit) {
 				$scope.reddit = new Reddit();
 			}]

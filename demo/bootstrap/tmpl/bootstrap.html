@@ -11,7 +11,7 @@
 			modules. Standard AngularJS Bootstrap-UI is typically loaded in one shot, as a single
 			file, including templates. Not very efficient if you are only using a few components
 			for any given website. And the framework file is not small. NgM however, loads major
-			components "on demand". Only load the one's you need, when you need them.
+			components "on demand". Only loading the one's you need, when you need them.
 		</p>
 
 		<h4>NgM Bootstrap-UI Base Code</h4>
@@ -19,7 +19,7 @@
 		<p>
 			The base NgM Bootstrap-UI file includes the following modules. These are relatively small,
 			commonly used files which are frequent dependencies for other Bootstrap-UI components.
-			Only 36Kb uncompressed.
+			Only 36kB uncompressed.
 		</p>
 
 		<div class="row">
@@ -41,13 +41,19 @@
 		</div>
 
 		<h4>NgM Dependency Managment</h4>
-		<p>
-			Using NgM and MSOS allows loading JavaScript, HTML and CSS as modules (including std
-			AngularJS modules). Most important, MSOS modules call their own dependencies. Once defined,
-			you don't have to keep track of dependency chains. Complex dependency managment is handled
-			at the module level, unlike other module loading scripts. Thus NgM Bootstrap-UI component
-			modules and dependencies are loaded only once, as needed. Only missing dependencies are
-			loaded in future Bootstrap-UI component calls.
-		</p>
 
+		<p>
+			Using NgM and MSOS with our NgM Bootstrap-UI base and component files
+			allows loading almost all component JavaScript, HTML and CSS as modules. This
+			modular concept impacts initial script loading times significantly, while also
+			allowing a more diverse use of typical AngularJS framework components.
+		</p>
+		<p>
+			Most important, MSOS configured modules call their own dependencies. Once a
+			MSOS module is defined, you don't have to keep track of dependency chains and
+			component specific CSS files. Complex dependency managment is handled at the
+			module level, unlike other module loading scripts. Thus NgM Bootstrap-UI component
+			modules and dependencies are loaded only once, as needed. Only missing dependencies
+			are loaded in future NgM Bootstrap-UI component calls.
+		</p>
 	</div>

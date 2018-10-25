@@ -1,13 +1,13 @@
-<h1 class="page-title"><code>$stateProvider</code></h1>
-<p>
+<h1 class="page-title" data-ng-ignore><code>$stateProvider</code></h1>
+<p data-ng-ignore>
 	This page will explain about how you can attach CSS files to UI Router states. It assumes you already know how to makes states and what's required for them.
 </p>
 
-<h3>Examples</h3>
+<h3 data-ng-ignore>Examples</h3>
 
 <a name="simple"></a>
-<h4>Simple</h4>
-<p>
+<h4 data-ng-ignore>Simple</h4>
+<p data-ng-ignore>
 	The following is the simplest implementation possible:
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -19,11 +19,11 @@
 		}
 	})
 </pre>
-<p>
+<p data-ng-ignore>
 	Note that we're using the <code>data</code> node to attach our CSS file paths. The <code>css</code> node is the place this plugin listens to. So everything in there will be used
 </p>
 
-<p>
+<p data-ng-ignore>
 	You can also give your CSS files a name.
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -38,7 +38,7 @@
 	}
 </pre>
 
-<p>
+<p data-ng-ignore>
 	The advantage of doing this is that you'll be able to target the CSS definitions in a child state In the following example the <code>home</code> stylesheet gets a different path like this:
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -53,7 +53,7 @@
 	}
 </pre>
 
-<p>
+<p data-ng-ignore>
 	Or remove the stylesheet altogether:
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -68,7 +68,7 @@
 	}
 </pre>
 
-<p>
+<p data-ng-ignore>
 	Giving the CSS file paths in an object also allows you to send along optional custom data.<br>
 	<i>Note: Make sure a <code>url</code> node is set.</i>
 </p>
@@ -89,7 +89,7 @@
 	}
 </pre>
 
-<p>
+<p data-ng-ignore>
 	If you don't care about overwritten multiple CSS files, you can also use an array short-hand:
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -103,11 +103,12 @@
 </pre>
 <br>
 
-<h4>Advanced</h4>
-<p>
-	CSS file paths can't always be static, right? You can also use methods to dynamically build the CSS definitions at the moment it's required. All you need to do is follow the <a href="https://docs.angularjs.org/guide/di" target="_blank">dependency injection guidelines</a>.
+<h4 data-ng-ignore>Advanced</h4>
+<p data-ng-ignore>
+	CSS file paths can't always be static, right? You can also use methods to dynamically build the CSS definitions at the moment it's required. All you need to do is follow the
+	<a href="https://docs.angularjs.org/guide/di" target="_blank">dependency injection guidelines</a>.
 </p>
-<p>
+<p data-ng-ignore>
 	It works from the root level:
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -122,7 +123,7 @@
 	})
 </pre>
 
-<p>
+<p data-ng-ignore>
 	Or from a single definition level:
 </p>
 <pre class="code" apply-content highlight-lang="js">
@@ -140,20 +141,20 @@
 	})
 </pre>
 
-<p>
+<p data-ng-ignore>
 	<i>Note that the <code>$transition$</code> parameter is the transition that's happening at that very moment at the <code>onBefore</code> hook.</i>
 </p>
 
 <hr>
 
-<h3>Events</h3>
-<p>
+<h3 data-ng-ignore>Events</h3>
+<p data-ng-ignore>
 	There are a few event you can hook into when you've set up states with CSS files. All events are broadcasted on the root scope.
 </p>
 <ul class="list-methods">
 	<li>
-		<h4><code>uiRouterCss.loadingStarted</code></h4>
-		<p>
+		<h4 data-ng-ignore><code>uiRouterCss.loadingStarted</code></h4>
+		<p data-ng-ignore>
 			Fires during the <code>$transitions.onBefore</code> hook.
 		</p>
 		<pre class="code" apply-content highlight-lang="js">
@@ -162,8 +163,8 @@
 			});
 		</pre>
 
-		<h5><code>Parameters</code></h5>
-		<ul class="list-attributes">
+		<h5 data-ng-ignore><code>Parameters</code></h5>
+		<ul class="list-attributes" data-ng-ignore>
 			<li>
 				<code>event</code>
 				Default Angular event.
@@ -175,8 +176,8 @@
 		</ul>
 	</li>
 	<li>
-		<h4><code>uiRouterCss.loadingFinished</code></h4>
-		<p>
+		<h4 data-ng-ignore><code>uiRouterCss.loadingFinished</code></h4>
+		<p data-ng-ignore>
 			Fires after all CSS file definition promises have been completed. This is before the state's <code>$transitions.onSuccess</code> hook is fired.
 		</p>
 		<pre class="code" apply-content highlight-lang="js">
@@ -185,8 +186,8 @@
 			});
 		</pre>
 
-		<h5><code>Parameters</code></h5>
-		<ul class="list-attributes">
+		<h5 data-ng-ignore><code>Parameters</code></h5>
+		<ul class="list-attributes" data-ng-ignore>
 			<li>
 				<code>event</code>
 				Default Angular event.

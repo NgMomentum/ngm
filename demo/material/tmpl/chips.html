@@ -1,5 +1,149 @@
+<style>
+    .chipsdemoBasicUsage .errors {
+        font-size: 12px;
+        color: #dd2c00;
+        margin-top: 10px;
+    }
+    .chipsdemoBasicUsage .custom-chips md-chip {
+        position: relative;
+    }
+    .chipsdemoBasicUsage .custom-chips md-chip .md-chip-remove-container {
+        position: absolute;
+        right: 4px;
+        top: 4px;
+        margin-right: 0;
+        height: 24px;
+    }
+    .chipsdemoBasicUsage .custom-chips md-chip .md-chip-remove-container button.vegetablechip {
+        position: relative;
+        height: 24px;
+        width: 24px;
+        line-height: 30px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        transition: background 0.15s linear;
+        display: block;
+    }
+    .chipsdemoBasicUsage .custom-chips md-chip .md-chip-remove-container button.vegetablechip md-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(0.7);
+        color: white;
+        fill: white;
+    }
+    .chipsdemoBasicUsage .custom-chips md-chip .md-chip-remove-container button.vegetablechip:hover,
+    .chipsdemoBasicUsage .custom-chips md-chip .md-chip-remove-container button.vegetablechip:focus {
+        background: rgba(255, 0, 0, 0.8);
+    }
+    .chipsdemoBasicUsage .custom-chips md-chips-wrap.md-removable md-chip md-chip-template {
+        padding-right: 5px;
+    }
 
-<div ng-controller="demo.material.controllers.chips.ctrl as ctrl" layout="column">
+    .chipsdemoContactChips md-content.autocomplete {
+        min-height: 250px;
+    }
+    .chipsdemoContactChips md-content.autocomplete input {
+        min-width: 400px;
+    }
+    .chipsdemoContactChips .md-item-text.compact {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+    .chipsdemoContactChips .contact-item {
+        box-sizing: border-box;
+    }
+    .chipsdemoContactChips .contact-item.selected {
+        opacity: 0.5;
+    }
+    .chipsdemoContactChips .contact-item.selected h3 {
+        opacity: 0.5;
+    }
+    .chipsdemoContactChips .contact-item .md-list-item-text {
+        padding: 14px 0;
+        max-width: 190px;
+    }
+    .chipsdemoContactChips .contact-item .md-list-item-text h3 {
+        margin: 0 !important;
+        padding: 0;
+        line-height: 1.2em !important;
+    }
+    .chipsdemoContactChips .contact-item .md-list-item-text h3,
+    .chipsdemoContactChips .contact-item .md-list-item-text p {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    @media (min-width: 960px) {
+        .chipsdemoContactChips .contact-item {
+            float: left;
+            width: 33%;
+        }
+    }
+    .chipsdemoContactChips md-contact-chips {
+        margin-bottom: 10px;
+    }
+    .chipsdemoContactChips .md-chips {
+        padding: 5px 0 8px;
+    }
+    .chipsdemoContactChips .fixedRows {
+        height: 250px;
+        overflow: hidden;
+    }
+
+	.chipsdemoCustomInputs md-content.autocomplete {
+		min-height: 200px;
+	}
+	.chipsdemoCustomInputs input[type=number] {
+		width: 110px;
+	}
+	.chipsdemoCustomInputs .veggie-option {
+		float: left;
+		width: 20%;
+		box-sizing: border-box;
+		padding: 0 8px;
+	}
+	.chipsdemoCustomInputs .veggie-option .md-item-text {
+		padding: 8px;
+		background: #f0f0f0;
+		border-radius: 3px;
+	}
+	.chipsdemoCustomInputs .veggie-option .md-item-text h3,
+	.chipsdemoCustomInputs .veggie-option .md-item-text p {
+		padding: 0;
+		margin: 0;
+	}
+
+	.chipsdemoStaticChips p.note {
+		font-size: 12px;
+	}
+
+	.chipsdemoValidation .md-chips-messages {
+		color: #dd2c00;
+		position: relative;
+		order: 4;
+		overflow: hidden;
+	}
+	.chipsdemoValidation .md-chips-messages [ng-message] {
+		font-size: 12px;
+		line-height: 14px;
+		overflow: hidden;
+		margin-top: 0;
+		padding-top: 5px;
+	}
+	.chipsdemoValidation p.note {
+		font-size: 12px;
+	}
+
+
+</style>
+
+<div ng-controller="demo.material.controllers.chips.ctrl1 as ctrl" layout="column" class="chipsdemoBasicUsage">
 
     <md-content class="md-padding" layout="column">
         <h2 class="md-title">Use a custom chip template.</h2>
@@ -22,7 +166,6 @@
 
         <md-chips ng-model="ctrl.fruitNames" readonly="ctrl.readonly" md-removable="ctrl.removable"></md-chips>
 
-
         <br/>
         <h2 class="md-title">Make chips editable.</h2>
 
@@ -41,13 +184,13 @@
         <md-chips class="custom-chips" ng-model="ctrl.vegObjs" readonly="ctrl.readonly" md-transform-chip="ctrl.newVeg($chip)" md-removable="ctrl.removable">
             <md-chip-template>
                 <span>
-                    <strong>[{{$index}}] {{$chip.name}}</strong>
-                    <em>({{$chip.type}})</em>
-                </span>
+          <strong>[{{$index}}] {{$chip.name}}</strong>
+          <em>({{$chip.type}})</em>
+        </span>
             </md-chip-template>
             <button md-chip-remove class="md-primary vegetablechip">
-                <md-icon md-svg-icon="md-close"></md-icon>
-            </button>
+        <md-icon md-svg-icon="md-close"></md-icon>
+      </button>
         </md-chips>
 
         <br/>
@@ -58,5 +201,151 @@
         <p class="md-caption">
             <b>Note</b>: When md-removable is undefined, readonly automatically sets md-removable to false.
         </p>
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.chips.ctrl2 as ctrl" layout="column" class="chipsdemoContactChips">
+
+    <md-content class="md-padding autocomplete" layout="column">
+        <md-contact-chips ng-model="ctrl.contacts" ng-change="ctrl.onModelChange(ctrl.contacts)" md-contacts="ctrl.querySearch($query)" md-contact-name="name" md-contact-image="image" md-contact-email="email" md-require-match="true" md-highlight-flags="i" placeholder="To">
+        </md-contact-chips>
+
+        <md-list class="fixedRows">
+            <md-subheader class="md-no-sticky">Contacts</md-subheader>
+            <md-list-item class="md-2-line contact-item" ng-repeat="(index, contact) in ctrl.allContacts" ng-if="ctrl.contacts.indexOf(contact) < 0">
+                <img ng-src="{{contact.image}}" class="md-avatar" alt="{{contact.name}}" />
+                <div class="md-list-item-text compact">
+                    <h3>{{contact.name}}</h3>
+                    <p>{{contact.email}}</p>
+                </div>
+            </md-list-item>
+            <md-list-item class="md-2-line contact-item selected" ng-repeat="(index, contact) in ctrl.contacts">
+                <img ng-src="{{contact.image}}" class="md-avatar" alt="{{contact.name}}" />
+                <div class="md-list-item-text compact">
+                    <h3>{{contact.name}}</h3>
+                    <p>{{contact.email}}</p>
+                </div>
+            </md-list-item>
+        </md-list>
+
+        <br>
+        <h2 class="md-title">Searching asynchronously.</h2>
+
+        <md-contact-chips ng-model="ctrl.asyncContacts" md-contacts="ctrl.delayedQuerySearch($query)" md-contact-name="name" md-contact-image="image" md-contact-email="email" md-require-match="true" md-highlight-flags="i" placeholder="To">
+        </md-contact-chips>
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.chips.ctrl3 as ctrl" layout="column" class="chipsdemoCustomInputs">
+
+    <md-content class="md-padding" layout="column">
+        <h2 class="md-title">Use an <code>input</code> element with no model to build an ordered set of chips.</h2>
+        <md-chips ng-model="ctrl.numberChips">
+            <input type="number" placeholder="Enter a number">
+        </md-chips>
+
+        <br/>
+        <h2 class="md-title">Use an <code>input</code> element to build an ordered set of chips.</h2>
+        <md-chips ng-model="ctrl.numberChips2">
+            <input type="number" ng-model="ctrl.numberBuffer" placeholder="Enter a number">
+        </md-chips>
+
+        <br/>
+        <h2 class="md-title">Use <code>md-autocomplete</code> to build an ordered set of chips.</h2>
+
+        <md-chips ng-model="ctrl.selectedVegetables" md-autocomplete-snap md-transform-chip="ctrl.transformChip($chip)" md-require-match="ctrl.autocompleteDemoRequireMatch">
+            <md-autocomplete md-selected-item="ctrl.selectedItem" md-search-text="ctrl.searchText" md-items="item in ctrl.querySearch(ctrl.searchText)" md-item-text="item.name" placeholder="Search for a vegetable">
+                <span md-highlight-text="ctrl.searchText">{{item.name}} :: {{item.type}}</span>
+            </md-autocomplete>
+            <md-chip-template>
+                <span>
+          <strong>{{$chip.name}}</strong>
+          <em>({{$chip.type}})</em>
+        </span>
+            </md-chip-template>
+        </md-chips>
+
+        <p>
+            <md-checkbox ng-model="ctrl.autocompleteDemoRequireMatch">
+                Tell the autocomplete to require a match (when enabled you cannot create new chips)
+            </md-checkbox>
+        </p>
+
+        <br />
+        <h2 class="md-title">Vegetable Options</h2>
+
+        <md-list>
+            <md-list-item class="md-2-line veggie-option" ng-repeat="veg in ctrl.vegetables" layout="row" layout-wrap>
+                <div class="md-item-text md-whiteframe-z1" flex>
+                    <h3>{{veg.name}}</h3>
+                    <p>{{veg.type}}</p>
+                </div>
+            </md-list-item>
+        </md-list>
+
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.chips.ctrl4 as ctrl" layout="column">
+    <md-content class="md-padding" layout="column">
+
+        <h2 class="md-title">Use <code>md-separator-keys</code> to customize the key codes which trigger chip creation.</h2>
+        <md-chips ng-model="ctrl.tags" md-separator-keys="ctrl.keys" placeholder="Enter a tag" secondary-placeholder="Comma separated tags"></md-chips>
+        <br/>
+
+        <h2 class="md-title">Add custom separator key codes such as semicolon for e-mails.</h2>
+        <md-chips ng-model="ctrl.contacts" md-separator-keys="ctrl.customKeys"></md-chips>
+
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.chips.ctrl5 as ctrl" layout="column" class="chipsdemoStaticChips">
+
+    <md-content class="md-padding" layout="column">
+        <h2 class="md-title">Display a set of items as chips.</h2>
+
+        <md-chips>
+            <md-chip>Hockey</md-chip>
+            <md-chip>Lacrosse</md-chip>
+            <md-chip>Baseball</md-chip>
+
+            <!-- Static chips are transcluded -->
+            <md-chip>{{ctrl.chipText}}</md-chip>
+
+        </md-chips>
+
+        <p class="note" data-ng-ignore>
+            Static chips cannot be selected, removed or edited, and are not part of any model.<br/> If no <code>ng-model</code> is provided, there are no input elements in <code>md-chips</code>.
+        </p>
+
+    </md-content>
+</div>
+
+<div ng-controller="demo.material.controllers.chips.ctrl6 as ctrl" layout="column" class="chipsdemoValidation">
+    <md-content class="md-padding" layout="column">
+
+        <h2 class="md-title">Required</h2>
+
+        <form name="fruitForm">
+            <md-chips name="fruits" ng-model="ctrl.selectedFruit" ng-required="true" placeholder="Add a fruit">
+            </md-chips>
+            <div class="md-chips-messages" ng-show="fruitForm.fruits.$dirty || fruitForm.$submitted" ng-messages="fruitForm.fruits.$error">
+                <div ng-message="required">At least one fruit is required</div>
+            </div>
+        </form>
+
+        <h2 class="md-title">Max Chips</h2>
+        <form name="vegetableForm">
+            <md-chips name="vegetables" ng-model="ctrl.selectedVegetables" placeholder="Add a vegetable" md-max-chips="5">
+            </md-chips>
+            <div class="md-chips-messages" ng-show="vegetableForm.vegetables.$dirty || vegetableForm.$submitted" ng-messages="vegetableForm.vegetables.$error">
+                <div ng-message="md-max-chips">You reached the maximum number of vegetables</div>
+            </div>
+        </form>
+
+        <p class="note" data-ng-ignore>
+            Be aware that error messages for chips are not styled by default since they are not part of <code>md-input-container</code>.
+        </p>
+
     </md-content>
 </div>

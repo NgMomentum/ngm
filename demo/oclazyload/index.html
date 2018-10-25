@@ -9,27 +9,27 @@
 	<meta name="description" content="Open source software for the mobile web!" />
 	<meta name="author" content="Dwight Vietzke" />
 
-	<title>$ocLazyLoad Demo</title>
+	<title>NgM $ocLazyLoad Demo</title>
 
+	<!-- NgMomentum initial page setup -->
 	<link rel="stylesheet" type="text/css" href="../../css/site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
+	<!-- NgMomentum scripts -->
 	<script src="../../msos/base.uc.js"></script>
-	<script src="../../jquery/v321.uc.js"></script>
-	<script src="../../msos/core.uc.js"></script>
-	<script src="../../ng/v167_msos.uc.js"></script>
-	<script src="../../ng/ui/router/v1014_msos.uc.js"></script>
+	<script src="../config.js"></script>
 
 </head>
 <body>
 
-	<noscript data-ng-ignore>
+	<noscript>
 		<h3 id="no_javascript">
 			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
 		</h3>
 	</noscript>
 
-	<div data-ng-controller="demo.oclazyload.start.ctrl" class="container">
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id="body" data-ng-controller="demo.oclazyload.start.ctrl" class="ng-cloak container">
 
 		<h2 data-ng-ignore>$ocLazyLoad via NgMomentum</h2>
 
@@ -37,10 +37,10 @@
 			With ocLazyLoad you can lazy load js / css / templates with a service and/or a directive.<br/>
 		</p>
 
-		<div ui-view="lazyLoadView">ui-view not populated (no state is activated)</div>
+		<div ui-view="lazyLoadView"></div>
 	</div>
 
-	<script data-ng-ignore>
+	<script>
 		msos.onload_func_pre.push(
 			function () {
 				"use strict";

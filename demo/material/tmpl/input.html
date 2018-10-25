@@ -1,5 +1,56 @@
 
-<div ng-controller="demo.material.controllers.input.ctrl" layout="column" class="md-inline-form">
+<style data-ng-ignore>
+	.inputdemoErrors .inputErrorsApp {
+		min-height: 48px;
+	}
+	.inputdemoErrors md-input-container > p {
+		font-size: 0.8em;
+		text-align: left;
+	}
+
+	.inputdemoErrorsAdvanced {
+	}
+	.inputdemoErrorsAdvanced .hint {
+		/* Position the hint */
+		position: absolute;
+		left: 2px;
+		right: auto;
+		bottom: 7px;
+		/* Copy styles from ng-messages */
+		font-size: 12px;
+		line-height: 14px;
+		transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
+		/* Set our own color */
+		color: grey;
+	}
+	.inputdemoErrorsAdvanced .hint.ng-hide,
+	.inputdemoErrorsAdvanced .hint.ng-enter,
+	.inputdemoErrorsAdvanced .hint.ng-leave.ng-leave-active {
+		bottom: 26px;
+		opacity: 0;
+	}
+	.inputdemoErrorsAdvanced .hint.ng-leave,
+	.inputdemoErrorsAdvanced .hint.ng-enter.ng-enter-active {
+		bottom: 7px;
+		opacity: 1;
+	}
+
+	.inputdemoIcons .inputIconDemo {
+		min-height: 48px;
+	}
+	.inputdemoIcons md-input-container:not(.md-input-invalid) > md-icon.email {
+		color: green;
+	}
+	.inputdemoIcons md-input-container:not(.md-input-invalid) > md-icon.name {
+		color: dodgerblue;
+	}
+	.inputdemoIcons md-input-container.md-input-invalid > md-icon.email,
+	.inputdemoIcons md-input-container.md-input-invalid > md-icon.name {
+		color: red;
+	}
+</style>
+
+<div ng-controller="demo.material.controllers.input.ctrl1" layout="column" class="md-inline-form">
 
     <md-content md-theme="docs-dark" layout-gt-sm="row" layout-padding>
         <div>
@@ -25,9 +76,9 @@
                         <input ng-model="user.company" disabled>
                     </md-input-container>
 
-                    <md-input-container>
+					<md-input-container>
                         <label>Enter date</label>
-                        <md-datepicker ng-model="user.submissionDate"></md-datepicker>
+						<md-datepicker ng-model="user.submissionDate"></md-datepicker>
                     </md-input-container>
                 </div>
 
@@ -86,8 +137,244 @@
                     <label>Biography</label>
                     <textarea ng-model="user.biography" md-maxlength="150" rows="5" md-select-on-focus></textarea>
                 </md-input-container>
+
             </form>
         </div>
+    </md-content>
+
+</div>
+
+<div ng-controller="demo.material.controllers.input.ctrl2" layout="column" class="inputdemoErrors">
+
+    <md-content layout-padding>
+        <form name="projectForm">
+
+            <md-input-container class="md-block">
+                <label>Description</label>
+                <input md-maxlength="30" required md-no-asterisk name="description" ng-model="project.description">
+                <div ng-messages="projectForm.description.$error">
+                    <div ng-message="required">This is required.</div>
+                    <div ng-message="md-maxlength">The description must be less than 30 characters long.</div>
+                </div>
+            </md-input-container>
+
+            <div layout="row">
+                <md-input-container flex="50">
+                    <label>Client Name</label>
+                    <input required name="clientName" ng-model="project.clientName">
+                    <div ng-messages="projectForm.clientName.$error">
+                        <div ng-message="required">This is required.</div>
+                    </div>
+                </md-input-container>
+
+                <md-input-container flex="50">
+                    <label>Project Type</label>
+                    <md-select name="type" ng-model="project.type" required>
+                        <md-option value="app">Application</md-option>
+                        <md-option value="web">Website</md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+
+            <md-input-container class="md-block">
+                <label>Client Email</label>
+                <input required type="email" name="clientEmail" ng-model="project.clientEmail" minlength="10" maxlength="100" ng-pattern="/^.+@.+\..+$/" />
+
+                <div ng-messages="projectForm.clientEmail.$error" role="alert">
+                    <div ng-message-exp="['required', 'minlength', 'maxlength', 'pattern']">
+                        Your email must be between 10 and 100 characters long and look like an e-mail address.
+                    </div>
+                </div>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+                <label>Hourly Rate (USD)</label>
+                <input required type="number" step="any" name="rate" ng-model="project.rate" min="800" max="4999" ng-pattern="/^1234$/" />
+
+                <div ng-messages="projectForm.rate.$error" multiple md-auto-hide="false">
+                    <div ng-message="required">
+                        You've got to charge something! You can't just <b>give away</b> a Missile Defense System.
+                    </div>
+
+                    <div ng-message="min">
+                        You should charge at least $800 an hour. This job is a big deal... if you mess up, everyone dies!
+                    </div>
+
+                    <div ng-message="pattern">
+                        You should charge exactly $1,234.
+                    </div>
+
+                    <div ng-message="max">
+                        {{projectForm.rate.$viewValue | currency:"$":0}} an hour? That's a little ridiculous. I doubt even Bill Clinton could afford that.
+                    </div>
+                </div>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+                <md-checkbox name="tos" ng-model="project.tos" required>
+                    I accept the terms of service.
+                </md-checkbox>
+                <div ng-messages="projectForm.tos.$error" multiple md-auto-hide="false">
+                    <div ng-message="required">
+                        You must accept the terms of service before you can proceed.
+                    </div>
+                </div>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+                <md-switch class="md-primary" name="special" ng-model="project.special" required>
+                    Enable special options.
+                </md-switch>
+                <div ng-messages="projectForm.special.$error" multiple>
+                    <div ng-message="required">
+                        You must enable all special options before you can proceed.
+                    </div>
+                </div>
+            </md-input-container>
+            <div>
+                <md-button type="submit">Submit</md-button>
+            </div>
+
+            <p style="font-size:.8em; width: 100%; text-align: center;" data-ng-ignore>
+                Make sure to include <a href="https://docs.angularjs.org/api/ngMessages" target="_blank">ngMessages</a> module when using ng-message markup.
+            </p>
+        </form>
+    </md-content>
+
+</div>
+
+<div ng-controller="demo.material.controllers.input.ctrl3" layout="column" class="inputdemoErrorsAdvanced">
+
+    <md-content layout-padding>
+        <form name="userForm">
+            <div layout="row" layout-xs="column" layout-sm="column" layout-align="space-between center">
+                <div flex-gt-sm="80">
+                    <p>
+                        The <code>md-input-container</code> gives you the flexibility to display your messages using many standard angular directives.
+                    </p>
+
+                    <p>
+                        For instance, toggle the switch
+
+                        <span hide-xs hide-sm>to the right</span>
+                        <span hide-gt-sm>below</span> to see the messages switch between some custom hints, and the actual error messages. Note that some of the <code>ng-messages</code> containers use <code>ngIf</code> while others use <code>ng-show</code> or <code>ng-hide</code>.
+                    </p>
+                </div>
+
+                <md-input-container>
+                    <md-switch ng-model="showHints">Showing {{showHints ? "Hints" : "Errors"}}</md-switch>
+                </md-input-container>
+            </div>
+
+            <div layout-gt-sm="row">
+
+                <md-input-container class="md-block" flex-gt-sm>
+
+                    <label>Name</label>
+                    <input md-maxlength="30" required name="name" ng-model="user.name" />
+
+                    <div class="hint" ng-if="showHints">Tell us what we should call you!</div>
+
+                    <div ng-messages="userForm.name.$error" ng-if="!showHints">
+                        <div ng-message="required">Name is required.</div>
+                        <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
+                    </div>
+                </md-input-container>
+
+                <div flex="5" hide-xs hide-sm>
+                    <!-- Spacer //-->
+                </div>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                    <label>Social Security Number</label>
+                    <input name="social" ng-model="user.social" ng-pattern="/^[0-9]{3}-[0-9]{2}-[0-9]{4}$/" />
+
+                    <div class="hint" ng-if="showHints">###-##-####</div>
+
+                    <div ng-messages="userForm.social.$error" ng-if="!showHints">
+                        <div ng-message="pattern">###-##-#### - Please enter a valid SSN.</div>
+                    </div>
+                </md-input-container>
+
+            </div>
+
+            <div layout-gt-sm="row">
+
+                <md-input-container class="md-block" flex-gt-sm>
+                    <label>Email</label>
+                    <input name="email" ng-model="user.email" required minlength="10" maxlength="100" ng-pattern="/^.+@.+\..+$/" />
+
+                    <div class="hint" ng-show="showHints">How can we reach you?</div>
+
+                    <div ng-messages="userForm.email.$error" ng-hide="showHints">
+                        <div ng-message-exp="['required', 'minlength', 'maxlength', 'pattern']">
+                            Your email must be between 10 and 100 characters long and look like an e-mail address.
+                        </div>
+                    </div>
+                </md-input-container>
+
+                <div flex="5" hide-xs hide-sm>
+                    <!-- Spacer //-->
+                </div>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                    <label>Phone Number</label>
+                    <input name="phone" ng-model="user.phone" ng-pattern="/^[(][0-9]{3}[)] [0-9]{3}-[0-9]{4}$/" />
+
+                    <div class="hint" ng-show="showHints">(###) ###-####</div>
+
+                    <div ng-messages="userForm.phone.$error" ng-hide="showHints">
+                        <div ng-message="pattern">(###) ###-#### - Please enter a valid phone number.</div>
+                    </div>
+                </md-input-container>
+
+                <style data-ng-ignore>
+                    body[dir=rtl] .hint {
+                        right: 2px;
+                        left: auto;
+                    }
+                </style>
+            </div>
+
+        </form>
+    </md-content>
+
+</div>
+
+<div ng-controller="demo.material.controllers.input.ctrl4" layout="column" layout-padding class="inputdemoIcons">
+
+    <br/>
+    <md-content class="md-no-momentum">
+        <md-input-container class="md-icon-float md-block">
+            <!-- Use floating label instead of placeholder -->
+            <label>Name</label>
+            <md-icon md-svg-src="ngm/demo/material/img/icons/ic_person_24px.svg" class="name"></md-icon>
+            <input ng-model="user.name" type="text">
+        </md-input-container>
+
+        <md-input-container md-no-float class="md-block">
+            <md-icon md-svg-src="ngm/demo/material/img/icons/ic_phone_24px.svg"></md-icon>
+            <input ng-model="user.phone" type="text" placeholder="Phone Number">
+        </md-input-container>
+
+        <md-input-container class="md-block">
+            <!-- Use floating placeholder instead of label -->
+            <md-icon md-svg-src="ngm/demo/material/img/icons/ic_email_24px.svg" class="email"></md-icon>
+            <input ng-model="user.email" type="email" placeholder="Email (required)" ng-required="true">
+        </md-input-container>
+
+        <md-input-container md-no-float class="md-block">
+            <input ng-model="user.address" type="text" placeholder="Address">
+            <md-icon md-svg-src="ngm/demo/material/img/icons/ic_place_24px.svg" style="display:inline-block;"></md-icon>
+        </md-input-container>
+
+        <md-input-container class="md-icon-float md-icon-right md-block">
+            <label>Donation Amount</label>
+            <md-icon md-svg-src="ngm/demo/material/img/icons/ic_card_giftcard_24px.svg"></md-icon>
+            <input ng-model="user.donation" type="number" step="0.01">
+            <md-icon md-svg-src="ngm/demo/material/img/icons/ic_euro_24px.svg"></md-icon>
+        </md-input-container>
+
     </md-content>
 
 </div>

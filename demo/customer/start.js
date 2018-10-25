@@ -10,12 +10,8 @@
 
 /*global
     msos: false,
-    jQuery: false,
-    Modernizr: false,
-    _: false,
     angular: false,
-    demo: false,
-    ng: false
+    demo: false
 */
 
 msos.provide('demo.customer.start');
@@ -28,10 +24,9 @@ msos.require('demo.customer.services');
 demo.customer.start = angular.module(
 	'demo.customer.start',
 	[
-		'ngRoute',
-		'ngAnimate',
-		'ngSanitize',
-		'ngPostloader',
+		'ng.route',
+		'ng.sanitize',
+		'ng.postloader',
 		'ng.util.anchorscroll'
 	]
 ).config(

@@ -1,0 +1,58 @@
+
+	<iframe id="ngm_iframe" data-ng-ignore src="./ngm/demo/paperjs/smooth.html"></iframe>
+
+	<div data-ng-ignore>
+
+		<h2>AngularJS Material via NgMomentum</h2>
+
+		<p>
+			These demo pages highlight the use of NgMomentum (NgM) and MobileSiteOS (MSOS) as the
+			mechanism to load individual, near standard AngularJS Material v1.1.10 component
+			modules. Standard AngularJS Material is typically loaded in one shot, as a single
+			file, including templates. Not very efficient if you are only using a few components
+			for any given website. And the framework file is not small. NgM Material however,
+			loads major components "on demand". Only loading the one's you need, when you need them.
+		</p>
+
+		<h4>NgM Material Base Code</h4>
+
+		<p>
+			The base NgM Material file includes the following AngularJS Material specific injectables.
+			These are commonly used injected objects which are frequently required by many other
+			NgM Material components. This file is only 46kB uncompressed. The non-component specific
+			base CSS file is only 11kB uncompressed. It is important to note, that duplicate CSS code
+			to Bootstrap-UI (v3.3.7) and Normalize.css (v3.0.3) has been removed.
+		</p>
+
+		<div class="row">
+			<div class="col-md-6">
+				<ul class="list-group">
+					<li class="list-group-item">$mdCompiler</li>
+					<li class="list-group-item">$mdComponentRegistry</li>
+				</ul>
+			</div>
+			<div class="col-md-6">
+				<ul class="list-group">
+					<li class="list-group-item">$mdConstant</li>
+					<li class="list-group-item">$mdUtil</li>
+				</ul>
+			</div>
+		</div>
+
+		<h4>NgM Dependency Managment</h4>
+
+		<p>
+			Using NgM and MSOS with our NgM Material base and component files
+			allows loading almost all component JavaScript, HTML and CSS as modules. This
+			modular concept impacts initial script loading times significantly, while also
+			allowing a more diverse use of typical AngularJS framework components.
+		</p>
+		<p>
+			Most important, MSOS configured modules call their own dependencies. Once a
+			MSOS module is defined, you don't have to keep track of dependency chains and
+			component specific CSS files. Complex dependency managment is handled at the
+			module level, unlike other module loading scripts. Thus NgM Material component
+			modules and dependencies are loaded only once, as needed. Only missing dependencies
+			are loaded in future NgM Material component calls.
+		</p>
+	</div>

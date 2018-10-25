@@ -73,8 +73,6 @@ msos.onload_functions.push(
 													});
 												};
 
-												$rootScope.bootstrapLoaded = true;
-
 												msos.console.info(temp_oc + 'done.');
 											}
 										);
@@ -86,33 +84,34 @@ msos.onload_functions.push(
 		).controller(
 			'demo.oclazyload.start.ctrl',
 			['$scope', '$ocLazyLoad', function ($scope, $ocLazyLoad) {
+				var bs_file = msos.resource_url('ng', 'bootstrap/css/ui/modal.css'),
+					cfg = { events: true };
 
-				$ocLazyLoad.config.events = true;
+				$ocLazyLoad.config(cfg);
+				$scope.bootstrapLoaded = false;
 
-				$scope.$on('ocLazyLoad.moduleLoaded', function(e, params) {
-					msos.console.info(temp_oc + 'event module loaded', params);
-				});
+				$scope.$on(
+					'ocLazyLoad.moduleLoaded',
+					function (e, params) {
+						msos.console.info(temp_oc + 'event module loaded', params);
+					}
+				);
 
-				$scope.$on('ocLazyLoad.fileLoaded', function(e, file) {
-					msos.console.info(temp_oc + 'event file loaded', file);
-				});
-
-				$scope.loadBootstrap = function() {
-
-					var unbind = $scope.$on('ocLazyLoad.fileLoaded', function(e, file) {
-							if (file === msos.resource_url('ng', 'bootstrap/css/ui/modal.css')) {
+				var unbind = $scope.$on(
+						'ocLazyLoad.fileLoaded',
+						function (e, file) {
+							if (file === bs_file) {
 								$scope.bootstrapLoaded = true;
 								unbind();
 							}
-						});
+							msos.console.info(temp_oc + 'event file loaded', file);
+						}
+					);
 
-					$ocLazyLoad.load([
-						msos.resource_url('fonts', 'css/fontawesome.uc.css'),
-						msos.resource_url('ng', 'bootstrap/css/v337/wo_icons.uc.css'),
-						msos.resource_url('ng', 'bootstrap/css/v337/theme.uc.css'),
-						msos.resource_url('ng', 'bootstrap/css/ui/misc.css'),
-						msos.resource_url('ng', 'bootstrap/css/ui/modal.css')
-					]);
+				$scope.loadBootstrap = function () {
+					msos.console.info(temp_oc + 'loadBootstrap fired.');
+
+					$ocLazyLoad.load([bs_file]);
 				};
 			}]
 		);
@@ -123,6 +122,6 @@ msos.onload_func_post.push(
 	function () {
 		"use strict";
 
-		angular.bootstrap('body', ['demo.oclazyload.start']);
+		angular.bootstrap('#body', ['demo.oclazyload.start']);
 	}
 );
