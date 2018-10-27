@@ -136,8 +136,8 @@ ng.route.version = new msos.set_version(18, 7, 4);
             return isEagerInstantiationEnabled;
         };
 
-        this.$get = ['$rootScope', '$location', '$routeParams', '$q', '$injector', '$templateRequest', '$sce',
-            function ($rootScope,   $location,   $routeParams,   $q,   $injector,   $templateRequest,   $sce) {
+        this.$get = ['$rootScope', '$location', '$routeParams', '$q', '$injector', '$templateRequest', '$sce', '$browser',
+            function ($rootScope,   $location,   $routeParams,   $q,   $injector,   $templateRequest,   $sce,   $browser) {
 
             var forceReload = false,
                 preparedRoute,
