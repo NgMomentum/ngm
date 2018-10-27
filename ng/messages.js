@@ -1,6 +1,6 @@
 
 /**
- * @license AngularJS v1.7.2
+ * @license AngularJS v1.7.5
  * (c) 2010-2018 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -12,7 +12,7 @@
 
 msos.provide("ng.messages");
 
-ng.messages.version = new msos.set_version(18, 7, 3);
+ng.messages.version = new msos.set_version(18, 10, 25);
 
 
 (function (window, angular) {
@@ -118,7 +118,7 @@ ng.messages.version = new msos.set_version(18, 7, 3);
 		'ng.messages',
 		['ng']
 	).info(
-		{ angularVersion: '1.7.2' }
+		{ angularVersion: '1.7.5' }
 	).directive(
 		'ngMessages',
 		['$animate', function ($animate) {

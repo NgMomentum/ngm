@@ -4,7 +4,7 @@
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  *
- * Updated to v1.7.2
+ * Updated to v1.7.5
  */
 
 /*global
@@ -14,7 +14,7 @@
 
 msos.provide("ng.aria");
 
-ng.aria.version = new msos.set_version(18, 9, 2);
+ng.aria.version = new msos.set_version(18, 10, 25);
 ng.aria.ARIA_DISABLE_ATTR = 'ngAriaDisable';
 
 (function (window, angular) {
@@ -25,7 +25,9 @@ ng.aria.ARIA_DISABLE_ATTR = 'ngAriaDisable';
 			['ng']
         ).provider(
             '$aria', $AriaProvider
-        ),
+        ).info(
+			{ angularVersion: '1.7.5' }
+		),
         nodeBlackList = ['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'DETAILS', 'SUMMARY'],
         isNodeOneOf = function (elem, nodeTypeArray) {
             if (nodeTypeArray.indexOf(elem[0].nodeName) !== -1) {
@@ -278,7 +280,10 @@ ng.aria.ARIA_DISABLE_ATTR = 'ngAriaDisable';
                             if ($aria.config('bindKeydown') && !attr.ngKeydown && !attr.ngKeypress && !attr.ngKeyup) {
                                 elem.on('keydown', function (event) {
                                     var keyCode = event.which || event.keyCode;
-                                    if (keyCode === 32 || keyCode === 13) {
+                                    if (keyCode === 13 || keyCode === 32) {
+										if (nodeBlackList.indexOf(event.target.nodeName) === -1) {
+											event.preventDefault();
+										}
                                         scope.$apply(callback);
                                     }
 

@@ -1,10 +1,9 @@
 
 /**
- * @license AngularJS v1.6.7
+ * @license AngularJS v1.7.5
  * (c) 2010-2017 Google, Inc. http://angularjs.org
  * License: MIT
  *
- * Updated to v1.7.2
  */
 
 /*global
@@ -68,7 +67,7 @@ msos.provide("ng.util.cookies");
 		'ng.util.cookies',
 		['ng']
 	).info(
-		{ angularVersion: '1.7.2' }
+		{ angularVersion: '1.7.5' }
 	).provider(
 		'$cookies',
 		[function $CookiesProvider() {

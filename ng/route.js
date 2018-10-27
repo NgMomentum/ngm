@@ -29,6 +29,38 @@ ng.route.version = new msos.set_version(18, 7, 4);
 
     if (w_msos.config.verbose === 'route') { vb_rt = true; }
 
+	function routeToRegExp(path, opts) {
+		var keys = [],
+			pattern = path
+				.replace(/([().])/g, '\\$1')
+				.replace(/(\/)?:(\w+)(\*\?|[?*])?/g, function (_, slash, key, option) {
+					var optional = option === '?' || option === '*?',
+						star = option === '*' || option === '*?';
+
+					keys.push({name: key, optional: optional});
+					slash = slash || '';
+
+					return (
+						(optional ? '(?:' + slash : slash + '(?:') +
+						(star ? '(.+?)' : '([^/]+)') +
+						(optional ? '?)?' : ')')
+					);
+				})
+				.replace(/([/$*])/g, '\\$1');
+
+		if (opts.ignoreTrailingSlashes) {
+			pattern = pattern.replace(/\/+$/, '') + '/*';
+		}
+
+		return {
+			keys: keys,
+			regexp: new RegExp(
+				'^' + pattern + '(?:[?#]|$)',
+				opts.caseInsensitiveMatch ? 'i' : ''
+			)
+		};
+	}
+
     function $RouteProvider() {
         var routes = {},
             temp_rt = 'ng.route - $RouteProvider';
@@ -38,35 +70,6 @@ ng.route.version = new msos.set_version(18, 7, 4);
                 Object.create(parent),
                 extra
             );
-        }
-
-        function pathRegExp(path, opts) {
-            var insensitive = opts.caseInsensitiveMatch,
-                ret = {
-                    originalPath: path,
-                    regexp: path
-                },
-                ret_keys = ret.keys = [];
-
-            path = path
-                .replace(/([().])/g, '\\$1')
-                .replace(
-                    /(\/)?:(\w+)(\*\?|[?*])?/g,
-                    function(_na, slash, key, option) {
-                        var optional = (option === '?' || option === '*?') ? '?' : null,
-                            star = (option === '*' || option === '*?') ? '*' : null;
-
-                        ret_keys.push({ name: key, optional: !!optional });
-
-                        slash = slash || '';
-
-                        return '' + (optional ? '' : slash) + '(?:' + (optional ? slash : '') + ((star && '(.+?)') || '([^/]+)') + (optional || '') + ')' + (optional || '');
-                    }
-                ).replace(/([/$*])/g, '\\$1');
-
-            ret.regexp = new RegExp('^' + path + '$', insensitive ? 'i' : '');
-
-            return ret;
         }
 
         this.caseInsensitiveMatch = false;
@@ -92,19 +95,20 @@ ng.route.version = new msos.set_version(18, 7, 4);
                 routeCopy.caseInsensitiveMatch = this.caseInsensitiveMatch;
             }
 
-            routes[path] = w_angular.extend(
-                routeCopy,
-                path && pathRegExp(path, routeCopy)
-            );
+			routes[path] = w_angular.extend(
+				routeCopy,
+				{ originalPath: path },
+				path && routeToRegExp(path, routeCopy)
+			);
 
             // create redirection for trailing slashes
             if (path) {
                 redirectPath = (path[path.length - 1] === '/') ? path.substr(0, path.length - 1) : path + '/';
 
-                routes[redirectPath] = w_angular.extend(
-                    { redirectTo: path },
-                    pathRegExp(redirectPath, routeCopy)
-                );
+				routes[redirectPath] = w_angular.extend(
+					{ originalPath: path, redirectTo: path },
+					routeToRegExp(redirectPath, routeCopy)
+				);
             }
 
             if (vb_rt) {
@@ -383,6 +387,10 @@ ng.route.version = new msos.set_version(18, 7, 4);
 
                 w_msos.console.debug(temp_rt + temp_cr + 'start.');
 
+				function commit_route_noop() {
+					w_msos.console.debug(temp_rt + temp_cr + 'finally completed.');
+				}
+
                 if (preparedRouteIsUpdateOnly) {
                     lastRoute.params = nextRoute.params;
                     w_angular.copy(lastRoute.params, $routeParams);
@@ -392,6 +400,7 @@ ng.route.version = new msos.set_version(18, 7, 4);
                     $route.current = nextRoute;
 
                     nextRoutePromise = $q.when($q.defer('ng_route_when_commitRoute'), nextRoute);
+					$browser.$$incOutstandingRequestCount('$route');
 
                     nextRoutePromise.then(
                         getRedirectionData
@@ -428,7 +437,9 @@ ng.route.version = new msos.set_version(18, 7, 4);
                                     );
                                 }
                             }
-                        );
+                        ).finally(
+							function () { $browser.$$completeOutstandingRequest(commit_route_noop, '$route'); }
+						);
                 }
 
                 w_msos.console.debug(temp_rt + temp_cr + 'done!');

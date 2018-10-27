@@ -1,6 +1,6 @@
 
 /**
- * @license AngularJS v1.7.2
+ * @license AngularJS v1.7.5
  * (c) 2010-2017 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -12,7 +12,7 @@
 
 msos.provide("ng.resource");
 
-ng.resource.version = new msos.set_version(18, 7, 3);
+ng.resource.version = new msos.set_version(18, 10, 25);
 
 
 (function (window, angular) {
@@ -66,7 +66,7 @@ ng.resource.version = new msos.set_version(18, 7, 3);
 		'ng.resource',
 		['ng']
 	).info({
-        angularVersion: '1.7.2'
+        angularVersion: '1.7.5'
     }).provider(
 		'$resource',
 		function ResourceProvider() {
