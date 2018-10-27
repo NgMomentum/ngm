@@ -1,6 +1,6 @@
 
 /**
- * @license AngularJS v1.7.2
+ * @license AngularJS v1.7.5
  * (c) 2010-2018 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -20,7 +20,7 @@ msos.provide("ng.touch");
 		'ng.touch',
 		['ng']
 	).info(
-		{ angularVersion: '1.7.2' }
+		{ angularVersion: '1.7.5' }
 	).factory(
 		'$swipe',
 		function () {

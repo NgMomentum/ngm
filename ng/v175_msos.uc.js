@@ -235,6 +235,7 @@ msos.console.time('ng');
         $$AnimateJsProvider,
         $$AnimateJsDriverProvider,
         $$AnimateQueueProvider,
+		$$AnimateCacheProvider,
         $$AnimationProvider,
         trim = function (value) {
             return _.isString(value) ? jQuery.trim(value) : value;
@@ -1282,37 +1283,6 @@ msos.console.time('ng');
             value += ' linear all';
         }
         return [style, value];
-    }
-
-    function createLocalCacheLookup() {
-        var cache = Object.create(null);
-
-        return {
-            flush: function () {
-                cache = Object.create(null);
-            },
-
-            count: function (key) {
-                var entry = cache[key];
-                return entry ? entry.total : 0;
-            },
-
-            get: function (key) {
-                var entry = cache[key];
-                return entry && entry.value;
-            },
-
-            put: function (key, value) {
-                if (!cache[key]) {
-                    cache[key] = {
-                        total: 1,
-                        value: value
-                    };
-                } else {
-                    cache[key].total += 1;
-                }
-            }
-        };
     }
 
     function registerRestorableStyles(backup, node, properties) {
@@ -4097,6 +4067,15 @@ msos.console.time('ng');
                 join: []
             };
 
+		function getEventData(options) {
+			return {
+				addClass: options.addClass,
+				removeClass: options.removeClass,
+				from: options.from,
+				to: options.to
+			};
+		}
+
         function makeTruthyCssClassMap(classString) {
             if (!classString) {
                 return null;
@@ -4202,6 +4181,10 @@ msos.console.time('ng');
                     applyAnimationClasses,
                     contains,
                     $animate;
+
+				function removeFromDisabledElementsLookup(evt) {
+					disabledElementsLookup.delete(evt.target);
+				}
 
                 function postDigestTaskFactory() {
                     var postDigestCalled = false;
@@ -4599,9 +4582,9 @@ msos.console.time('ng');
                     }
 
                     if (skipAnimations) {
-                        if (documentHidden) { notifyProgress(runner, event, 'start'); }
+                        if (documentHidden) { notifyProgress(runner, event, 'start', getEventData(options)); }
                         close();
-                        if (documentHidden) { notifyProgress(runner, event, 'close'); }
+                        if (documentHidden) { notifyProgress(runner, event, 'close', getEventData(options)); }
                         if (va) {
                             msos_debug(temp_qa + ' ->  done, skip animations' + msos_indent + 'runner:', runner);
                         }
@@ -4752,7 +4735,7 @@ msos.console.time('ng');
                         realRunner = $$animation(element, event, animationDetails.options);
 
                         runner.setHost(realRunner);
-                        notifyProgress(runner, event, 'start', {});
+                        notifyProgress(runner, event, 'start', getEventData(options));
 
                         realRunner.done(function rs_pd_realrunner_done(status) {
 
@@ -4768,7 +4751,7 @@ msos.console.time('ng');
                                 clearElementAnimationState(node_qA);
                             }
 
-                            notifyProgress(runner, event, 'close', {});
+                            notifyProgress(runner, event, 'close', getEventData(options));
                         });
 
                         if (va) {
@@ -4861,6 +4844,12 @@ msos.console.time('ng');
                                     bool = !disabledElementsLookup.get(node_en);
                                     debug_en = 'el getter';
                                 } else {
+									if (!disabledElementsLookup.has(node_en)) {
+										jqLite(element).on(
+											'$destroy',
+											removeFromDisabledElementsLookup
+										);
+									}
                                     disabledElementsLookup.set(node_en, !bool);
                                     debug_en = 'el setter';
                                 }
@@ -4880,10 +4869,56 @@ msos.console.time('ng');
         ];
     }];
 
+	$$AnimateCacheProvider = function () {
+		var KEY = '$$ngAnimateParentKey',
+			parentCounter = 0,
+			cache = Object.create(null);
+
+		this.$get = [function () {
+			return {
+				cacheKey: function (node, method, addClass, removeClass) {
+					var parentNode = node.parentNode,
+						parentID = parentNode[KEY] || (parentNode[KEY] = ++parentCounter),
+						parts = [parentID, method, node.getAttribute('class')];
+
+					if (addClass) { parts.push(addClass); }
+					if (removeClass) { parts.push(removeClass); }
+
+					return parts.join(' ');
+				},
+				containsCachedAnimationWithoutDuration: function (key) {
+					var entry = cache[key];
+
+					return (entry && !entry.isValid) || false;
+				},
+				flush: function () { cache = Object.create(null); },
+				count: function (key) {
+					var entry = cache[key];
+
+					return entry ? entry.total : 0;
+				},
+				get: function (key) {
+					var entry = cache[key];
+
+					return entry && entry.value;
+				},
+				put: function (key, value, isValid) {
+					if (!cache[key]) {
+						cache[key] = { total: 1, value: value, isValid: isValid };
+					} else {
+						cache[key].total++;
+						cache[key].value = value;
+					}
+				}
+			};
+		}];
+	};
+
     $$AnimationProvider = function () {
         var NG_ANIMATE_REF_ATTR = 'ng-animate-ref',
             drivers = this.drivers = [],
-            RUNNER_STORAGE_KEY = '$$animationRunner';
+            RUNNER_STORAGE_KEY = '$$animationRunner',
+			PREPARE_CLASSES_KEY = '$$animatePrepareClasses';
 
         function setRunner(element, runner) {
             element.data(RUNNER_STORAGE_KEY, runner);
@@ -4897,8 +4932,8 @@ msos.console.time('ng');
             return element.data(RUNNER_STORAGE_KEY);
         }
 
-        this.$get = ['$$jqLite', '$rootScope', '$injector', '$$AnimateRunner', '$$Map', '$$rAFScheduler',
-            function ($$jqLite, $rootScope, $injector, $$AnimateRunner, $$Map, $$rAFScheduler) {
+        this.$get = ['$$jqLite', '$rootScope', '$injector', '$$AnimateRunner', '$$Map', '$$rAFScheduler', '$$animateCache',
+            function ($$jqLite, $rootScope, $injector, $$AnimateRunner, $$Map, $$rAFScheduler, $$animateCache) {
 
                 var temp_ap = 'ng - $$AnimationProvider - $get',
                     va = msos_verbose === 'animate' ? true : false,
@@ -4920,6 +4955,7 @@ msos.console.time('ng');
 
                         lookup.set(animation.domNode, animations[i] = {
                             domNode: animation.domNode,
+							element: animation.element,
                             fn: animation.fn,
                             children: []
                         });
@@ -4986,7 +5022,7 @@ msos.console.time('ng');
                                 row = [];
                             }
 
-                            row.push(entry.fn);
+                            row.push(entry);
                             entry.children.forEach(add_children);
 
                             remainingLevelEntries-= 1;
@@ -5009,8 +5045,7 @@ msos.console.time('ng');
                         isStructural = ['enter', 'move', 'leave'].indexOf(event) >= 0,
                         runner,
                         classes,
-                        tempClasses,
-                        prepareClassName;
+                        tempClasses;
 
                     if (va) {
                         msos_debug(temp_ia + ' - > start' + msos_indent + 'el: ' + debug_el_name + msos_indent + 'options:', options);
@@ -5039,7 +5074,6 @@ msos.console.time('ng');
                             $$jqLite.removeClass(element, tempClasses);
                         }
 
-                        element.removeClass(NG_ANIMATE_CLASSNAME);
 						runner.complete(!rejected);
                     }
 
@@ -5062,8 +5096,6 @@ msos.console.time('ng');
                         return runner;
                     }
 
-                    setRunner(element, runner);
-
                     classes = mergeClasses(element.attr('class'), mergeClasses(options.addClass, options.removeClass));
                     tempClasses = options.tempClasses;
 
@@ -5072,22 +5104,24 @@ msos.console.time('ng');
                         options.tempClasses = null;
                     }
 
-                    if (isStructural) {
-                        prepareClassName = 'ng-' + event + PREPARE_CLASS_SUFFIX;
-                        $$jqLite.addClass(element, prepareClassName);
-                    }
+					if (isStructural) {
+						element.data(PREPARE_CLASSES_KEY, 'ng-' + event + PREPARE_CLASS_SUFFIX);
+					}
 
                     function beforeStart() {
-                        element.addClass(NG_ANIMATE_CLASSNAME);
+						var prepareClassName;
 
-                        if (tempClasses) {
-                            $$jqLite.addClass(element, tempClasses);
-                        }
+						tempClasses = (tempClasses ? (tempClasses + ' ') : '') + NG_ANIMATE_CLASSNAME;
+						$$jqLite.addClass(element, tempClasses);
+
+						prepareClassName = element.data(PREPARE_CLASSES_KEY);
+
                         if (prepareClassName) {
                             $$jqLite.removeClass(element, prepareClassName);
-                            prepareClassName = null;
                         }
                     }
+
+					setRunner(element, runner);
 
                     animationQueue.push({
                         element: element,
@@ -5279,61 +5313,116 @@ msos.console.time('ng');
                     $rootScope.$$postDigest(function rs_pd_init_anim_prov() {
                         var temp_rs = temp_ia + ' - rs_pd_init_anim_prov -> ',
                             animations = [],
-                            groupedAnimations,
-                            toBeSortedAnimations;
+							groupedAnimations = [],
+                            toBeSortedAnimations = [],
+							finalAnimations,
+							i = 0,
+							j = 0,
+							innerArray,
+							entry,
+							element,
+							prepareClassName;
 
                         if (va) {
                             msos_debug(temp_rs + 'start.');
                         }
 
-                        forEach(animationQueue, function (entry) {
-                            if (getRunner(entry.element)) {
-                                animations.push(entry);
-                            } else {
-                                entry.close();
-                            }
-                        });
+                        forEach(
+							animationQueue,
+							function (entry) {
+								if (getRunner(entry.element)) {
+									animations.push(entry);
+								} else {
+									entry.close();
+								}
+							}
+						);
 
                         animationQueue.length = 0;
 
                         groupedAnimations = groupAnimations(animations);
-                        toBeSortedAnimations = [];
 
-                        forEach(groupedAnimations, function post_digest_group_anim(animationEntry) {
-                            toBeSortedAnimations.push({
-                                domNode: getDomNode(animationEntry.from ? animationEntry.from.element : animationEntry.element),
-                                fn: function triggerAnimationStart_rSpD() {
+                        forEach(
+							groupedAnimations,
+							function post_digest_group_anim(animationEntry) {
+								var element = animationEntry.from ? animationEntry.from.element : animationEntry.element,
+									extraClasses = options.addClass,
+									cacheKey;
 
-                                    animationEntry.beforeStart();
+								extraClasses = (extraClasses ? (extraClasses + ' ') : '') + NG_ANIMATE_CLASSNAME;
+								cacheKey = $$animateCache.cacheKey(element[0], animationEntry.event, extraClasses, options.removeClass);
 
-                                    var startAnimationFn,
-                                        closeFn = animationEntry.close,
-                                        targetElement = animationEntry.anchors ? (animationEntry.from.element || animationEntry.to.element) : animationEntry.element,
-                                        operation,
-                                        animationRunner;
+								toBeSortedAnimations.push({
+									element: element,
+									domNode: getDomNode(element),
+									fn: function triggerAnimationStart_rSpD() {
+										var startAnimationFn,
+											closeFn = animationEntry.close,
+											targetElement,
+											operation,
+											animationRunner;
 
-                                    if (getRunner(targetElement)) {
-                                        operation = invokeFirstDriver(animationEntry);
+										if ($$animateCache.containsCachedAnimationWithoutDuration(cacheKey)) {
+											closeFn();
+											return;
+										}
 
-                                        if (operation) {
-                                            startAnimationFn = operation.start;
-                                        }
-                                    }
+										animationEntry.beforeStart();
 
-                                    if (!startAnimationFn) {
-                                        closeFn();
-                                    } else {
-                                        animationRunner = startAnimationFn();
-                                        animationRunner.done(function (status) {
-                                            closeFn(!status);
-                                        });
-                                        updateAnimationRunners(animationEntry, animationRunner);
-                                    }
-                                }
-                            });
-                        });
+										targetElement = animationEntry.anchors ? (animationEntry.from.element || animationEntry.to.element) : animationEntry.element;
 
-                        $$rAFScheduler(sortAnimations(toBeSortedAnimations));
+										if (getRunner(targetElement)) {
+											operation = invokeFirstDriver(animationEntry);
+
+											if (operation) {
+												startAnimationFn = operation.start;
+											}
+										}
+
+										if (!startAnimationFn) {
+											closeFn();
+										} else {
+											animationRunner = startAnimationFn();
+											animationRunner.done(
+												function (status) { closeFn(!status); }
+											);
+											updateAnimationRunners(animationEntry, animationRunner);
+										}
+									}
+								});
+							}
+						);
+
+						finalAnimations = sortAnimations(toBeSortedAnimations);
+
+                        if (va) {
+                            msos_debug(temp_rs + ' finalAnimations:', finalAnimations);
+                        }
+
+						for (i = 0; i < finalAnimations.length; i += 1) {
+							innerArray = finalAnimations[i];
+
+							for (j = 0; j < innerArray.length; j += 1) {
+								entry = innerArray[j];
+								element = entry.element;
+
+								// the RAFScheduler code only uses functions
+								finalAnimations[i][j] = entry.fn;
+
+								if (i === 0) {
+									element.removeData(PREPARE_CLASSES_KEY);
+									continue;
+								}
+
+								prepareClassName = element.data(PREPARE_CLASSES_KEY);
+
+								if (prepareClassName) {
+									$$jqLite.addClass(element, prepareClassName);
+								}
+							}
+						}
+
+						$$rAFScheduler(finalAnimations);
 
                         if (va) {
                             msos_debug(temp_rs + ' done!');
@@ -6077,36 +6166,22 @@ msos.console.time('ng');
     }
 
     $AnimateCssProvider = function () {
-        var va = msos_verbose === 'animate' ? true : false,
-            gcsLookup = createLocalCacheLookup(),
-            gcsStaggerLookup = createLocalCacheLookup();
+        var va = msos_verbose === 'animate' ? true : false;
 
         this.$get = ['$window', '$$jqLite', '$$AnimateRunner', '$timeout',
-               '$$forceReflow', '$$rAFScheduler', '$$animateQueue',
+               '$$forceReflow', '$$rAFScheduler', '$$animateQueue', '$$animateCache',
             function ($window,   $$jqLite,   $$AnimateRunner,   $timeout,
-                $$forceReflow,   $$rAFScheduler, $$animateQueue) {
+                $$forceReflow,   $$rAFScheduler, $$animateQueue, $$animateCache) {
 
                 var applyAnimationClasses = applyAnimationClassesFactory($$jqLite),
                     temp_ap = 'ng - $AnimateCssProvider - $get',
-                    parentCounter = 0,
                     rafWaitQueue = [];
 
                 msos_debug(temp_ap + ' -> start.');
 
-                function gcsHashFn(node_gH, extraClasses) {
-                    var KEY = '$$ngAnimateParentKey',
-                        parentNode_gH = node_gH.parentNode;
-
-                    if (!parentNode_gH[KEY]) {
-                        parentCounter += 1;
-                        parentNode_gH[KEY] = parentCounter;
-                    }
-
-                    return parentNode_gH[KEY] + '-' + node_gH.getAttribute('class') + '-' + extraClasses;
-                }
-
-                function computeCachedCssStyles(node_cC, cacheKey, properties) {
-                    var timings = gcsLookup.get(cacheKey);
+                function computeCachedCssStyles(node_cC, cacheKey, allowNoDuration, properties) {
+                    var timings = $$animateCache.get(cacheKey),
+						hasDuration;
 
                     if (!timings) {
                         timings = computeCssStyles($window, node_cC, properties);
@@ -6115,18 +6190,21 @@ msos.console.time('ng');
                         }
                     }
 
-                    gcsLookup.put(cacheKey, timings);
+					hasDuration = allowNoDuration || (timings.transitionDuration > 0 || timings.animationDuration > 0);
+
+                    $$animateCache.put(cacheKey, timings, hasDuration);
 
                     return timings;
                 }
 
                 function computeCachedCssStaggerStyles(node_cSS, className, cacheKey, properties) {
                     var stagger,
+						staggerCacheKey = 'stagger-' + cacheKey,
                         staggerClassName;
 
-                    if (gcsLookup.count(cacheKey) > 0) {
+                    if ($$animateCache.count(cacheKey) > 0) {
 
-                        stagger = gcsStaggerLookup.get(cacheKey);
+                        stagger = $$animateCache.get(staggerCacheKey);
 
                         if (!stagger) {
                             staggerClassName = pendClasses(className, '-stagger');
@@ -6141,7 +6219,7 @@ msos.console.time('ng');
 
                             $$jqLite.removeClass(node_cSS, staggerClassName);
 
-                            gcsStaggerLookup.put(cacheKey, stagger);
+                            $$animateCache.put(staggerCacheKey, stagger, true);
                         }
                     }
 
@@ -6157,8 +6235,7 @@ msos.console.time('ng');
                     $$rAFScheduler.waitUntilQuiet(
                         function anim_css_prov_wait_quiet() {
 
-                            gcsLookup.flush();
-                            gcsStaggerLookup.flush();
+                            $$animateCache.flush();
 
                             var pageWidth = $$forceReflow(),
                                 i = 0;
@@ -6174,17 +6251,19 @@ msos.console.time('ng');
                     );
                 }
 
-                function computeTimings(node_cT, cacheKey) {
-                    var timings = computeCachedCssStyles(node_cT, cacheKey, DETECT_CSS_PROPERTIES),
+                function computeTimings(node_cT, cacheKey, allowNoDuration) {
+                    var timings = computeCachedCssStyles(node_cT, cacheKey, allowNoDuration, DETECT_CSS_PROPERTIES),
                         aD = timings.animationDelay,
                         tD = timings.transitionDelay;
 
                     timings.maxDelay = aD && tD ?
                         Math.max(aD, tD) :
                         (aD || tD);
+
                     timings.maxDuration = Math.max(
                         timings.animationDuration * timings.animationIterationCount,
-                        timings.transitionDuration);
+                        timings.transitionDuration
+					);
 
                     return timings;
                 }
@@ -6196,7 +6275,7 @@ msos.console.time('ng');
                         restoreStyles = {},
                         onAnimationProgress,
                         node_ACP = getDomNode(element),
-						classes = element.attr('class'),
+						classes,
                         temporaryStyles = [],
                         styles,
                         animationClosed,
@@ -6253,18 +6332,21 @@ msos.console.time('ng');
                         animationClosed = true;
                         animationPaused = false;
 
-                        if (!options.$$skipPreparationClasses) {
-                            $$jqLite.removeClass(element, preparationClasses);
-                        }
+						if (preparationClasses && !options.$$skipPreparationClasses) {
+							$$jqLite.removeClass(element, preparationClasses);
+						}
 
-                        $$jqLite.removeClass(element, activeClasses);
+						if (activeClasses) {
+							$$jqLite.removeClass(element, activeClasses);
+						}
 
                         blockKeyframeAnimations(node_ACP, false);
                         blockTransitions(node_ACP, false);
 
-                        forEach(temporaryStyles, function (entry) {
-                            node_ACP.style[entry[0]] = '';
-                        });
+                        forEach(
+							temporaryStyles,
+							function (entry) { node_ACP.style[entry[0]] = ''; }
+						);
 
                         applyAnimationClasses(element, options);
                         applyAnimationStyles(element, options);
@@ -6382,6 +6464,7 @@ msos.console.time('ng');
                         return closeAndReturnNoopAnimator();
                     }
 
+					classes = element.attr('class');
                     styles = packageStyles(options);
 
                     if (options.duration === 0 || (!Modernizr.cssanimations && !Modernizr.csstransitions)) {
@@ -6420,7 +6503,6 @@ msos.console.time('ng');
 
                     preparationClasses = [structuralClassName, addRemoveClassName].join(' ').trim();
                     fullClassName = classes + ' ' + preparationClasses;
-                    activeClasses = pendClasses(preparationClasses, ACTIVE_CLASS_SUFFIX);
                     hasToStyles = styles.to && Object.keys(styles.to).length > 0;
                     containsKeyframeAnimation = (options.keyframeStyle || '').length > 0;
 
@@ -6433,6 +6515,23 @@ msos.console.time('ng');
                         return closeAndReturnNoopAnimator();
                     }
 
+					cacheKey = $$animateCache.cacheKey(
+						node_ACP,
+						method,
+						options.addClass,
+						options.removeClass
+					);
+
+					if ($$animateCache.containsCachedAnimationWithoutDuration(cacheKey)) {
+						preparationClasses = null;
+
+                        if (va) {
+                            msos.console.warn(temp_ap + temp_ac + ' ->  done, no duration.');
+                        }
+
+						return closeAndReturnNoopAnimator();
+					}
+
                     if (options.stagger > 0) {
                         staggerVal = parseFloat(options.stagger);
                         stagger = {
@@ -6442,8 +6541,12 @@ msos.console.time('ng');
                             animationDuration: 0
                         };
                     } else {
-                        cacheKey = gcsHashFn(node_ACP, fullClassName);
-                        stagger = computeCachedCssStaggerStyles(node_ACP, preparationClasses, cacheKey, DETECT_STAGGER_CSS_PROPERTIES);
+                        stagger = computeCachedCssStaggerStyles(
+							node_ACP,
+							preparationClasses,
+							cacheKey,
+							DETECT_STAGGER_CSS_PROPERTIES
+						);
                     }
 
                     if (!options.$$skipPreparationClasses) {
@@ -6471,7 +6574,7 @@ msos.console.time('ng');
                         temporaryStyles.push(keyframeStyle);
                     }
 
-                    itemIndex = stagger ? options.staggerIndex >= 0 ? options.staggerIndex : gcsLookup.count(cacheKey) : 0;
+                    itemIndex = stagger ? options.staggerIndex >= 0 ? options.staggerIndex : $$animateCache.count(cacheKey) : 0;
 
                     isFirst = itemIndex === 0;
 
@@ -6479,7 +6582,12 @@ msos.console.time('ng');
                         blockTransitions(node_ACP, SAFE_FAST_FORWARD_DURATION_VALUE);
                     }
 
-                    timings = computeTimings(node_ACP, cacheKey);
+                    timings = computeTimings(
+						node_ACP,
+						cacheKey,
+						!isStructural
+					);
+
                     relativeDelay = timings.maxDelay;
 
                     maxDelay = Math.max(relativeDelay, 0);
@@ -6519,6 +6627,8 @@ msos.console.time('ng');
                         }
                         return closeAndReturnNoopAnimator();
                     }
+
+					activeClasses = pendClasses(preparationClasses, ACTIVE_CLASS_SUFFIX);
 
                     if (options.delay !== null && options.delay !== undefined) {
                         if (typeof options.delay !== 'boolean') {
@@ -6664,9 +6774,20 @@ msos.console.time('ng');
 
                             if (flags.recalculateTimingStyles) {
                                 fullClassName = node_ACP.getAttribute('class') + ' ' + preparationClasses;
-                                cacheKey = gcsHashFn(node_ACP, fullClassName);
 
-                                timings = computeTimings(node_ACP, cacheKey);
+								cacheKey = $$animateCache.cacheKey(
+									node_ACP,
+									method,
+									options.addClass,
+									options.removeClass
+								);
+
+                                timings = computeTimings(
+									node_ACP,
+									cacheKey,
+									false
+								);
+
                                 relativeDelay = timings.maxDelay;
                                 maxDelay = Math.max(relativeDelay, 0);
                                 maxDuration = timings.maxDuration;
@@ -23112,6 +23233,7 @@ msos.console.time('ng');
 					$$animateJs: $$AnimateJsProvider,
 					$$animateJsDriver: $$AnimateJsDriverProvider,
 					$$animateQueue: $$AnimateQueueProvider,
+					$$animateCache: $$AnimateCacheProvider,
 					$$AnimateRunner: $$AnimateRunProvider,
 					$$animateAsyncRun: $$AnimateAsyncRunProvider,
 					$browser: $BrowserProvider,

@@ -19,7 +19,7 @@ msos.require("ng.textng.setup");	// Duplicate, but emphasizes this is required (
 msos.require("rangy.core");
 msos.require("rangy.selectionsaverestore");
 
-ng.textng.core.version = new msos.set_version(18, 1, 11);
+ng.textng.core.version = new msos.set_version(18, 10, 27);
 ng.textng.core.ta_version = 'v1.5.16';
 
 // Start by loading our ngTextEditor specific.css stylesheet
@@ -400,7 +400,7 @@ var textAngular = angular.module(
                     return this.$editor().wrapSelection("formatBlock", "<" + this.name.toUpperCase() +">");
                 },
                 blockJavascript = function (link) {
-                    if (link.toLowerCase().indexOf('javascript')!==-1) {
+                    if (link && link.toLowerCase().indexOf('javascript')!==-1) {
                         return true;
                     }
                     return false;
