@@ -5,7 +5,7 @@
  *         This causes it to be incompatible with plugins that depend on @uirouter/core.
  *         We recommend switching to the ui-router-core.js and ui-router-angularjs.js bundles instead.
  *         For more information, see http://ui-router.github.io/blog/angular-ui-router-umd-bundles
- * @version v1.0.14
+ * @version v1.0.20
  * @link https://ui-router.github.io
  * @license MIT License, http://www.opensource.org/licenses/MIT
  */
@@ -15,7 +15,7 @@
     _: false
 */
 
-msos.console.info('ng/ui/router/v1014_msos -> start.');
+msos.console.info('ng/ui/router/v1020_msos -> start.');
 msos.console.time('ng/ui/router');
 
 (function (global, factory) {
@@ -200,12 +200,19 @@ msos.console.time('ng/ui/router');
 			$q: undefined,
 			$injector: undefined,
 		},
-		isState,
 		isPromise,
-		notImplemented = function (fnname) {
+		noImpl = function (fnname) {
 			return function () {
-				throw new Error(fnname + '(): No coreservices implementation for UI-Router is loaded.');
+				throw new Error("No implementation for " + fnname + ". The framework specific code did not implement this method.");
 			};
+		},
+		makeStub = function (service, methods) {
+			return methods.reduce(
+				function (acc, key) {
+					return ((acc[key] = noImpl(service + "." + key + "()")), acc);
+				},
+				{}
+			);
 		},
 		inArray = curry(_inArray),
 		removeFrom = curry(_removeFrom),
@@ -314,8 +321,9 @@ msos.console.time('ng/ui/router');
     function pattern(struct) {
         return function (x) {
             for (var i = 0; i < struct.length; i++) {
-                if (struct[i][0](x))
+                if (struct[i][0](x)) {
                     return struct[i][1](x);
+                }
             }
         };
     }
@@ -422,8 +430,6 @@ msos.console.time('ng/ui/router');
         return StateObject;
     }());
 
-    isState = StateObject.isState;
-
     function isInjectable(val) {
         if (_.isArray(val) && val.length) {
             var head = val.slice(0, -1),
@@ -461,14 +467,23 @@ msos.console.time('ng/ui/router');
     }
 
     function defaults(opts) {
-        var defaultsList = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
+        var defaultsList = [],
+			defaultVals,
+			_i = 0;
+
+        for (_i = 1; _i < arguments.length; _i += 1) {
             defaultsList[_i - 1] = arguments[_i];
         }
-        var _defaultsList = defaultsList.concat({}).reverse();
-        var defaultVals = extend.apply(null, _defaultsList);
 
-        return extend({}, defaultVals, _.pick(opts || {}, Object.keys(defaultVals)));
+        defaultVals = extend.apply(
+			void 0,
+			[{}].concat(defaultsList.reverse())
+		);
+
+        return extend(
+			defaultVals,
+			_.pick(opts || {}, Object.keys(defaultVals))
+		);
     }
 
     function ancestors(first, second) {
@@ -1514,6 +1529,7 @@ msos.console.time('ng/ui/router');
             name: type.name,
             pattern: type.pattern,
             inherit: type.inherit,
+			raw: type.raw,
             is: arrayHandler(type.is.bind(type), true),
             $arrayMode: mode
         });
@@ -1532,21 +1548,24 @@ msos.console.time('ng/ui/router');
     })(exports.DefType || (exports.DefType = {}));
 
     function unwrapShorthand(cfg) {
-        cfg = isShorthand(cfg) && {
-            value: cfg
-        } || cfg;
-
+        cfg = isShorthand(cfg) ? { value: cfg } : cfg;
+        getStaticDefaultValue.__cacheable = true;
         function getStaticDefaultValue() {
             return cfg.value;
         }
-
-        getStaticDefaultValue.__cacheable = true;
-
-        return extend(cfg, {
-            $$fn: isInjectable(cfg.value) ? cfg.value : getStaticDefaultValue,
-        });
+        var $$fn = isInjectable(cfg.value) ? cfg.value : getStaticDefaultValue;
+        return extend(cfg, { $$fn: $$fn });
     }
-    /** @hidden */
+
+    function getParamDeclaration(paramName, location, state) {
+        var noReloadOnSearch = (state.reloadOnSearch === false && location === exports.DefType.SEARCH) || undefined,
+			dynamic = find([state.dynamic, noReloadOnSearch], isDefined),
+			defaultConfig = isDefined(dynamic) ? { dynamic: dynamic } : {},
+			paramConfig = unwrapShorthand(state && state.params && state.params[paramName]);
+
+        return extend(defaultConfig, paramConfig);
+    }
+
     function getType(cfg, urlType, location, id, paramTypes) {
         if (cfg.type && urlType && urlType.name !== 'string')
             throw new Error("Param '" + id + "' has two type configurations.");
@@ -1608,17 +1627,27 @@ msos.console.time('ng/ui/router');
 	}
 
     Param = (function () {
-        function Param(id, type, config, location, urlMatcherFactory) {
-            config = unwrapShorthand(config);
-            type = getType(config, type, location, id, urlMatcherFactory.paramTypes);
-            var arrayMode = getArrayMode();
+        function Param(id, type, location, urlConfig, state) {
+            var config = getParamDeclaration(id, location, state),
+				arrayMode,
+				isOptional,
+				dynamic,
+				raw,
+				squash,
+				replace,
+				inherit$$1;
+
+            type = getType(config, type, location, id, urlConfig.paramTypes);
+
+            arrayMode = getArrayMode();
             type = arrayMode ? type.$asArray(arrayMode, location === exports.DefType.SEARCH) : type;
-            var isOptional = config.value !== undefined || location === exports.DefType.SEARCH;
-            var dynamic = isDefined(config.dynamic) ? !!config.dynamic : !!type.dynamic;
-            var raw = isDefined(config.raw) ? !!config.raw : !!type.raw;
-            var squash = getSquashPolicy(config, isOptional, urlMatcherFactory.defaultSquashPolicy());
-            var replace = getReplace(config, arrayMode, isOptional, squash);
-            var inherit$$1 = isDefined(config.inherit) ? !!config.inherit : !!type.inherit;
+            isOptional = config.value !== undefined || location === exports.DefType.SEARCH;
+            dynamic = isDefined(config.dynamic) ? !!config.dynamic : !!type.dynamic;
+            raw = isDefined(config.raw) ? !!config.raw : !!type.raw;
+            squash = getSquashPolicy(config, isOptional, urlConfig.defaultSquashPolicy());
+            replace = getReplace(config, arrayMode, isOptional, squash);
+            inherit$$1 = isDefined(config.inherit) ? !!config.inherit : !!type.inherit;
+
             // array config: param name (param[]) overrides default settings.  explicit config overrides param name.
             function getArrayMode() {
                 var arrayDefaults = {
@@ -2965,33 +2994,31 @@ msos.console.time('ng/ui/router');
         }
         return state.data;
     }
-    var getUrlBuilder = function ($urlMatcherFactoryProvider, root$$1) {
-        return function urlBuilder(state) {
-            var stateDec = state;
+
+	var getUrlBuilder = function ($urlMatcherFactoryProvider, root$$1) {
+        return function urlBuilder(stateObject) {
+            var state = stateObject.self,
+				parent,
+				parsed,
+				url;
             // For future states, i.e., states whose name ends with `.**`,
             // match anything that starts with the url prefix
-            if (stateDec && stateDec.url && stateDec.name && stateDec.name.match(/\.\*\*$/)) {
-                stateDec.url += '{remainder:any}'; // match any path (.*)
+            if (state && state.url && state.name && state.name.match(/\.\*\*$/)) {
+                state.url += '{remainder:any}'; // match any path (.*)
             }
-            var parsed = parseUrl(stateDec.url),
-                parent = state.parent;
-            var url = !parsed ? stateDec.url : $urlMatcherFactoryProvider.compile(parsed.val, {
-                params: state.params || {},
-                paramMap: function (paramConfig, isSearch) {
-                    if (stateDec.reloadOnSearch === false && isSearch)
-                        paramConfig = extend(paramConfig || {}, {
-                            dynamic: true
-                        });
-                    return paramConfig;
-                }
-            });
+
+            parent = stateObject.parent;
+            parsed = parseUrl(state.url);
+            url = !parsed ? state.url : $urlMatcherFactoryProvider.compile(parsed.val, { state: state });
+
             if (!url)
                 return null;
             if (!$urlMatcherFactoryProvider.isMatcher(url))
-                throw new Error("Invalid url '" + url + "' in state '" + state + "'");
-            return (parsed && parsed.root) ? url : ((parent && parent.navigable) || root$$1()).url.append(url);
+                throw new Error("Invalid url '" + url + "' in state '" + stateObject + "'");
+            return parsed && parsed.root ? url : ((parent && parent.navigable) || root$$1()).url.append(url);
         };
     };
+
     var getNavigableBuilder = function (isRoot) {
         return function navigableBuilder(state) {
             return !isRoot(state) && state.url ? state : (state.parent ? state.parent.navigable : null);
@@ -2999,16 +3026,22 @@ msos.console.time('ng/ui/router');
     };
     var getParamsBuilder = function (paramFactory) {
         return function paramsBuilder(state) {
-            var makeConfigParam = function (config, id) {
-                return paramFactory.fromConfig(id, null, config);
-            };
-            var urlParams = (state.url && state.url.parameters({
-                inherit: false
-            })) || [];
-            var nonUrlParams = values(mapObj(_.omit(state.params || {}, urlParams.map(prop('id'))), makeConfigParam));
-            return urlParams.concat(nonUrlParams).map(function (p) {
-                return [p.id, p];
-            }).reduce(applyPairs, {});
+            var makeConfigParam = function (config_na, id) {
+					return paramFactory.fromConfig(id, null, state.self);
+				},
+				urlParams = (state.url && state.url.parameters({ inherit: false })) || [],
+				nonUrlParams = values(
+					mapObj(
+						_.omit(state.params || {},
+						urlParams.map(prop('id'))),
+						makeConfigParam
+					)
+				);
+
+            return urlParams
+				.concat(nonUrlParams)
+				.map(function (p) { return [p.id, p]; })
+				.reduce(applyPairs, {});
         };
     };
 
@@ -3110,19 +3143,23 @@ msos.console.time('ng/ui/router');
     }
 
     var StateBuilder = (function () {
+
         function StateBuilder(matcher, urlMatcherFactory) {
             this.matcher = matcher;
-            var self = this;
-            var root$$1 = function () {
-				return matcher.find('');
-			};
-            var isRoot = function (state) {
-                return state.name === '';
-            };
+
+            var self = this,
+				root$$1 = function () {
+					return matcher.find('');
+				},
+				isRoot = function (state) {
+					return state.name === '';
+				};
 
             function parentBuilder(state) {
-                if (isRoot(state))
+                if (isRoot(state)) {
                     return null;
+                }
+
                 return matcher.find(self.parentName(state)) || root$$1();
             }
             this.builders = {
@@ -3313,31 +3350,31 @@ msos.console.time('ng/ui/router');
         return StateMatcher;
     }());
 
-    /** @module state */
-    /** for typedoc */
-    /** @internalapi */
     var StateQueueManager = (function () {
-        function StateQueueManager($registry, $urlRouter, states, builder, listeners) {
-            this.$registry = $registry;
-            this.$urlRouter = $urlRouter;
+
+        function StateQueueManager(router, states, builder, listeners) {
+            this.router = router;
             this.states = states;
             this.builder = builder;
             this.listeners = listeners;
             this.queue = [];
-            this.matcher = $registry.matcher;
         }
         /** @internalapi */
         StateQueueManager.prototype.dispose = function () {
             this.queue = [];
         };
         StateQueueManager.prototype.register = function (stateDecl) {
-            var queue = this.queue;
-            var state = StateObject.create(stateDecl);
-            var name = state.name;
-            if (!_.isString(name))
+            var queue = this.queue,
+				state = StateObject.create(stateDecl),
+				name = state.name;
+
+            if (!_.isString(name)) {
                 throw new Error('State must have a valid name');
-            if (this.states.hasOwnProperty(name) || inArray(queue.map(prop('name')), name))
+            }
+            if (this.states.hasOwnProperty(name) || inArray(queue.map(prop('name')), name)) {
                 throw new Error("State '" + name + "' is already defined");
+            }
+
             queue.push(state);
             this.flush();
             return state;
@@ -3347,101 +3384,137 @@ msos.console.time('ng/ui/router');
             var _a = this,
                 queue = _a.queue,
                 states = _a.states,
-                builder = _a.builder;
-            var registered = [], // states that got registered
+                builder = _a.builder,
+				registered = [], // states that got registered
                 orphans = [], // states that don't yet have a parent registered
-                previousQueueLength = {}; // keep track of how long the queue when an orphan was first encountered
-            var getState = function (name) {
-                return _this.states.hasOwnProperty(name) && _this.states[name];
-            };
+                previousQueueLength = {}, // keep track of how long the queue when an orphan was first encountered
+				getState = function (name) {
+					return _this.states.hasOwnProperty(name) && _this.states[name];
+				},
+				notifyListeners = function () {
+					if (registered.length) {
+						_this.listeners.forEach(
+							function (listener) {
+								return listener(
+										'registered',
+										registered.map(
+											function (s) { return s.self; }
+										)
+									);
+							}
+						);
+					}
+				},
+				state,
+				name_1,
+				result,
+				orphanIdx,
+				existingState,
+				existingFutureState,
+				prev;
+
             while (queue.length > 0) {
-                var state = queue.shift();
-                var name_1 = state.name;
-                var result = builder.build(state);
-                var orphanIdx = orphans.indexOf(state);
+
+                state = queue.shift();
+                name_1 = state.name;
+                result = builder.build(state);
+                orphanIdx = orphans.indexOf(state);
+
                 if (result) {
-                    var existingState = getState(name_1);
+                    existingState = getState(name_1);
+
                     if (existingState && existingState.name === name_1) {
                         throw new Error("State '" + name_1 + "' is already defined");
                     }
-                    var existingFutureState = getState(name_1 + '.**');
+
+                    existingFutureState = getState(name_1 + '.**');
+
                     if (existingFutureState) {
                         // Remove future state of the same name
-                        this.$registry.deregister(existingFutureState);
+                        this.router.stateRegistry.deregister(existingFutureState);
                     }
+
                     states[name_1] = state;
                     this.attachRoute(state);
-                    if (orphanIdx >= 0)
+
+                    if (orphanIdx >= 0) {
                         orphans.splice(orphanIdx, 1);
+                    }
+
                     registered.push(state);
                     continue;
                 }
-                var prev = previousQueueLength[name_1];
+
+                prev = previousQueueLength[name_1];
                 previousQueueLength[name_1] = queue.length;
+
                 if (orphanIdx >= 0 && prev === queue.length) {
-                    // Wait until two consecutive iterations where no additional states were dequeued successfully.
-                    // throw new Error(`Cannot register orphaned state '${name}'`);
                     queue.push(state);
+                    notifyListeners();
                     return states;
                 } else if (orphanIdx < 0) {
                     orphans.push(state);
                 }
+	
                 queue.push(state);
             }
-            if (registered.length) {
-                this.listeners.forEach(function (listener) {
-                    return listener('registered', registered.map(function (s) {
-                        return s.self;
-                    }));
-                });
-            }
+
+            notifyListeners();
             return states;
         };
+
         StateQueueManager.prototype.attachRoute = function (state) {
-            if (state.abstract || !state.url)
+            if (state.abstract || !state.url) {
                 return;
-            this.$urlRouter.rule(this.$urlRouter.urlRuleFactory.create(state));
+            }
+
+			var rulesApi = this.router.urlService.rules;
+            rulesApi.rule(rulesApi.urlRuleFactory.create(state));
         };
+
         return StateQueueManager;
     }());
 
     var StateRegistry = (function () {
-        /** @internalapi */
-        function StateRegistry(_router) {
-            this._router = _router;
+
+        function StateRegistry(router) {
+            this.router = router;
             this.states = {};
             this.listeners = [];
             this.matcher = new StateMatcher(this.states);
-            this.builder = new StateBuilder(this.matcher, _router.urlMatcherFactory);
-            this.stateQueue = new StateQueueManager(this, _router.urlRouter, this.states, this.builder, this.listeners);
+            this.builder = new StateBuilder(this.matcher, router.urlMatcherFactory);
+            this.stateQueue = new StateQueueManager(router, this.states, this.builder, this.listeners);
             this._registerRoot();
         }
-        /** @internalapi */
+
         StateRegistry.prototype._registerRoot = function () {
             var rootStateDef = {
-                name: '',
-                url: '^',
-                views: null,
-                params: {
-                    '#': {
-                        value: null,
-                        type: 'hash',
-                        dynamic: true
-                    }
-                },
-                abstract: true
-            };
-            var _root = this._root = this.stateQueue.register(rootStateDef);
-            _root.navigable = null;
+					name: '',
+					url: '^',
+					views: null,
+					params: {
+						'#': {
+							value: null,
+							type: 'hash',
+							dynamic: true
+						}
+					},
+					abstract: true
+				};
+
+			this._root = this.stateQueue.register(rootStateDef);
+            this._root.navigable = null;
         };
-        /** @internalapi */
+
         StateRegistry.prototype.dispose = function () {
             var _this = this;
             this.stateQueue.dispose();
             this.listeners = [];
-            this.get().forEach(function (state) {
-                return _this.get(state) && _this.deregister(state);
-            });
+            this.get().forEach(
+				function (state) {
+					return _this.get(state) && _this.deregister(state);
+				}
+			);
         };
 
         StateRegistry.prototype.onStatesChanged = function (listener) {
@@ -3478,43 +3551,66 @@ msos.console.time('ng/ui/router');
 				children = getChildren([state]),
 				deregistered = [state].concat(children).reverse();
 
-			deregistered.forEach(
+            deregistered.forEach(
 				function (_state) {
-					var $ur = _this._router.urlRouter;
+					var rulesApi = _this.router.urlService.rules;
 
-					$ur.rules().filter(propEq('state', _state)).forEach($ur.removeRule.bind($ur));
-					delete _this.states[_state.name];
-				}
-			);
+                rulesApi
+                    .rules()
+                    .filter(propEq('state', _state))
+                    .forEach(function (rule) { return rulesApi.removeRule(rule); });
+                // Remove state from registry
+                delete _this.states[_state.name];
+            });
 
             return deregistered;
         };
 
         StateRegistry.prototype.deregister = function (stateOrName) {
-            var _state = this.get(stateOrName);
+            var _state = this.get(stateOrName),
+				deregisteredStates;
 
-            if (!_state)
+            if (!_state) {
                 throw new Error("Can't deregister state; not found: " + stateOrName);
-            var deregisteredStates = this._deregisterTree(_state.$$state());
-            this.listeners.forEach(function (listener) {
-                return listener('deregistered', deregisteredStates.map(function (s) {
-                    return s.self;
-                }));
-            });
+            }
+
+            deregisteredStates = this._deregisterTree(_state.$$state());
+
+            this.listeners.forEach(
+				function (listener) {
+					return listener(
+						'deregistered',
+						deregisteredStates.map(
+							function (s) { return s.self; }
+						)
+					);
+				}
+			);
+
             return deregisteredStates;
         };
+
         StateRegistry.prototype.get = function (stateOrName, base) {
-            var _this = this;
-            if (arguments.length === 0)
-                return Object.keys(this.states).map(function (name) {
-                    return _this.states[name].self;
-                });
-            var found = this.matcher.find(stateOrName, base);
-            return found && found.self || null;
+            var _this = this,
+				found;
+
+            if (arguments.length === 0) {
+                return Object.keys(this.states).map(
+					function (name) {
+						return _this.states[name].self;
+					}
+				);
+			}
+
+            found = this.matcher.find(stateOrName, base);
+
+            return (found && found.self) || null;
         };
+
         StateRegistry.prototype.decorator = function (name, func) {
             return this.builder.builder(name, func);
         };
+
         return StateRegistry;
     }());
 
@@ -3544,32 +3640,29 @@ msos.console.time('ng/ui/router');
     };
 
     var splitOnSlash = splitOnDelim('/');
+	var defaultConfig = {
+        state: { params: {} },
+        strict: true,
+        caseInsensitive: true,
+    };
 
     var UrlMatcher = (function () {
 
         function UrlMatcher(pattern$$1, paramTypes, paramFactory, config) {
             var _this = this;
 
-            this.config = config;
-            this._cache = {
-                path: [this]
-            };
+            this._cache = { path: [this] };
             this._children = [];
             this._params = [];
             this._segments = [];
             this._compiled = [];
-            this.pattern = pattern$$1;
-            this.config = defaults(this.config, {
-                params: {},
-                strict: true,
-                caseInsensitive: false,
-                paramMap: identity
-            });
+            this.config = config = defaults(config, defaultConfig);
+			this.pattern = pattern$$1;
 
 			var placeholder = /([:*])([\w\[\]]+)|\{([\w\[\]]+)(?:\:\s*((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g,
 				searchPlaceholder = /([:]?)([\w\[\].-]+)|\{([\w\[\].-]+)(?:\:\s*((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g,
-                last = 0,
 				patterns = [],
+				last = 0,
 				matchArray,
 				checkParamErrors = function (id) {
 					if (!UrlMatcher.nameValidator.test(id)) {
@@ -3582,9 +3675,9 @@ msos.console.time('ng/ui/router');
 				matchDetails = function (m, isSearch) {
 					var id = m[2] || m[3],
 						regexp = isSearch ? m[4] : m[4] || (m[1] === '*' ? '[\\s\\S]*' : null),
-						makeRegexpType = function (regexp) {
+						makeRegexpType = function (str) {
 								return inherit(paramTypes.type(isSearch ? 'query' : 'path'), {
-									pattern: new RegExp(regexp, _this.config.caseInsensitive ? 'i' : undefined)
+									pattern: new RegExp(str, _this.config.caseInsensitive ? 'i' : undefined)
 								}
 							);
 						};
@@ -3592,27 +3685,26 @@ msos.console.time('ng/ui/router');
 					return {
 						id: id,
 						regexp: regexp,
-						cfg: _this.config.params[id],
 						segment: pattern$$1.substring(last, m.index),
 						type: !regexp ? null : paramTypes.type(regexp) || makeRegexpType(regexp)
 					};
 				},
-				p,
+				details,
 				segment,
 				i,
 				search;
 
             while ((matchArray = placeholder.exec(pattern$$1))) {
-                p = matchDetails(matchArray, false);
+                details = matchDetails(matchArray, false);
 
-                if (p.segment.indexOf('?') >= 0) {
+                if (details.segment.indexOf('?') >= 0) {
                     break;
                 }
 
-                checkParamErrors(p.id);
-                this._params.push(paramFactory.fromPath(p.id, p.type, this.config.paramMap(p.cfg, false)));
-                this._segments.push(p.segment);
-                patterns.push([p.segment, tail(this._params)]);
+                checkParamErrors(details.id);
+                this._params.push(paramFactory.fromPath(details.id, details.type, config.state));
+                this._segments.push(details.segment);
+                patterns.push([details.segment, tail(this._params)]);
                 last = placeholder.lastIndex;
             }
 
@@ -3627,9 +3719,9 @@ msos.console.time('ng/ui/router');
                 if (search.length > 0) {
                     last = 0;
                     while ((matchArray = searchPlaceholder.exec(search))) {
-                        p = matchDetails(matchArray, true);
-                        checkParamErrors(p.id);
-                        this._params.push(paramFactory.fromSearch(p.id, p.type, this.config.paramMap(p.cfg, true)));
+                        details = matchDetails(matchArray, true);
+                        checkParamErrors(details.id);
+                        this._params.push(paramFactory.fromSearch(details.id, details.type, config.state));
                         last = placeholder.lastIndex;
                         // check if ?&
                     }
@@ -3967,88 +4059,98 @@ msos.console.time('ng/ui/router');
         return UrlMatcher;
     }());
 
+    var __assign = (undefined && undefined.__assign) || Object.assign || function (t) {
+		var s,
+			i = 0,
+			n = arguments.length,
+			p;
+
+		for (i = 1; i < n; i += 1) {
+			s = arguments[i];
+			for (p in s) {
+				if (Object.prototype.hasOwnProperty.call(s, p)) { t[p] = s[p]; }
+			}
+			
+		}
+
+		return t;
+    };
+
+    var ParamFactory = (function () {
+
+        function ParamFactory(router) {
+			this.router = router;
+		}
+
+        ParamFactory.prototype.fromConfig = function (id, type, state) {
+            return new Param(id, type, exports.DefType.CONFIG, this.router.urlService.config, state);
+        };
+        ParamFactory.prototype.fromPath = function (id, type, state) {
+            return new Param(id, type, exports.DefType.PATH, this.router.urlService.config, state);
+        };
+        ParamFactory.prototype.fromSearch = function (id, type, state) {
+            return new Param(id, type, exports.DefType.SEARCH, this.router.urlService.config, state);
+        };
+
+        return ParamFactory;
+    }());
+
     var UrlMatcherFactory = (function () {
-        function UrlMatcherFactory() {
-            var _this = this;
 
-            this.paramTypes = new ParamTypes();
-            this._isCaseInsensitive = false;
-            this._isStrictMode = true;
-            this._defaultSquashPolicy = false;
-            this._getConfig = function (config) {
-                return extend({
-                    strict: _this._isStrictMode,
-                    caseInsensitive: _this._isCaseInsensitive
-                }, config);
-            };
-            this.paramFactory = {
-                fromConfig: function (id, type, config) {
-                    return new Param(id, type, config, exports.DefType.CONFIG, _this);
-                },
-                fromPath: function (id, type, config) {
-                    return new Param(id, type, config, exports.DefType.PATH, _this);
-                },
-                fromSearch: function (id, type, config) {
-                    return new Param(id, type, config, exports.DefType.SEARCH, _this);
-                },
-            };
-            extend(this, {
-                UrlMatcher: UrlMatcher,
-                Param: Param
-            });
+        function UrlMatcherFactory(router) {
+
+            this.router = router;
+            this.paramFactory = new ParamFactory(this.router);
+
+            extend(
+				this,
+				{ UrlMatcher: UrlMatcher, Param: Param }
+			);
         }
-        /** @inheritdoc */
-        UrlMatcherFactory.prototype.caseInsensitive = function (value) {
-			this._isCaseInsensitive = isDefined(value) ? value : this._isCaseInsensitive;
-            return this._isCaseInsensitive;
-        };
-        /** @inheritdoc */
-        UrlMatcherFactory.prototype.strictMode = function (value) {
-			this._isStrictMode = isDefined(value) ? value : this._isStrictMode;
-            return this._isStrictMode;
-        };
-        /** @inheritdoc */
-        UrlMatcherFactory.prototype.defaultSquashPolicy = function (value) {
-            if (isDefined(value) && value !== true && value !== false && !_.isString(value)) {
-                throw new Error('Invalid squash policy: ' + value + '. Valid policies: false, true, arbitrary-string');
-            }
 
-			this._defaultSquashPolicy = isDefined(value) ? value : this._defaultSquashPolicy;
-            return this._defaultSquashPolicy;
-        };
+        UrlMatcherFactory.prototype.compile = function (pattern$$1, config) {
+            var urlConfig = this.router.urlService.config,
+				params = config && !config.state && config.params,
+				globalConfig;
 
-        UrlMatcherFactory.prototype.compile = function (pattern, config) {
-            return new UrlMatcher(pattern, this.paramTypes, this.paramFactory, this._getConfig(config));
+            config = params ? __assign({ state: { params: params } }, config) : config;
+            globalConfig = {
+				strict: urlConfig._isStrictMode,
+				caseInsensitive: urlConfig._isCaseInsensitive
+			};
+
+            return new UrlMatcher(pattern$$1, urlConfig.paramTypes, this.paramFactory, extend(globalConfig, config));
         };
 
         UrlMatcherFactory.prototype.isMatcher = function (object) {
-            // TODO: typeof?
-            if (!_.isObject(object))
+
+            if (!_.isObject(object)) {
                 return false;
+            }
+
             var result = true;
-            forEach(UrlMatcher.prototype, function (val, name) {
-                if (_.isFunction(val))
-                    result = result && (isDefined(object[name]) && _.isFunction(object[name]));
-            });
+
+            forEach(
+				UrlMatcher.prototype,
+				function (val$$1, name) {
+					if (_.isFunction(val$$1)) {
+						result = result && (isDefined(object[name]) && _.isFunction(object[name]));
+					}
+				}
+			);
+
             return result;
         };
 
-        UrlMatcherFactory.prototype.type = function (name, definition, definitionFn) {
-            var type = this.paramTypes.type(name, definition, definitionFn);
-            return !isDefined(definition) ? type : this;
-        };
-
-        /** @hidden */
         UrlMatcherFactory.prototype.$get = function () {
-            this.paramTypes.enqueue = false;
-            this.paramTypes._flushTypeQueue();
+            var urlConfig = this.router.urlService.config;
+
+            urlConfig.paramTypes.enqueue = false;
+            urlConfig.paramTypes._flushTypeQueue();
+
             return this;
         };
 
-        /** @internalapi */
-        UrlMatcherFactory.prototype.dispose = function () {
-            this.paramTypes.dispose();
-        };
         return UrlMatcherFactory;
     }());
 
@@ -4060,27 +4162,29 @@ msos.console.time('ng/ui/router');
             return this.router.urlMatcherFactory.compile(str);
         };
         UrlRuleFactory.prototype.create = function (what, handler) {
-            var _this = this;
-            var makeRule = pattern([
-                [_.isString, function (_what) {
-                    return makeRule(_this.compile(_what));
-                }],
-                [is(UrlMatcher), function (_what) {
-                    return _this.fromUrlMatcher(_what, handler);
-                }],
-                [isState, function (_what) {
-                    return _this.fromState(_what, _this.router);
-                }],
-                [is(RegExp), function (_what) {
-                    return _this.fromRegExp(_what, handler);
-                }],
-                [_.isFunction, function (_what) {
-                    return new BaseUrlRule(_what, handler);
-                }],
-            ]);
-            var rule = makeRule(what);
-            if (!rule)
-                throw new Error("invalid 'what' in when()");
+            var _this = this,
+				isState = StateObject.isState,
+				makeRule = pattern([
+					[_.isString, function (_what) {
+						return makeRule(_this.compile(_what));
+					}],
+					[is(UrlMatcher), function (_what) {
+						return _this.fromUrlMatcher(_what, handler);
+					}],
+					[isState, function (_what) {
+						return _this.fromState(_what, _this.router);
+					}],
+					[is(RegExp), function (_what) {
+						return _this.fromRegExp(_what, handler);
+					}],
+					[_.isFunction, function (_what) {
+						return new BaseUrlRule(_what, handler);
+					}],
+				]),
+				rule = makeRule(what);
+
+            if (!rule) { throw new Error("invalid 'what' in when()"); }
+
             return rule;
         };
 
@@ -4189,179 +4293,33 @@ msos.console.time('ng/ui/router');
         return url;
     }
 
-	var prioritySort = function (a, b) {
-		return (b.priority || 0) - (a.priority || 0);
-	};
-	/** @hidden */
-	var typeSort = function (a, b) {
-		var weights = { 'STATE': 4, 'URLMATCHER': 4, 'REGEXP': 3, 'RAW': 2, 'OTHER': 1 };
-		return (weights[a.type] || 0) - (weights[b.type] || 0);
-	};
-	/** @hidden */
-	var urlMatcherSort = function (a, b) {
-		return !a.urlMatcher || !b.urlMatcher ? 0 : UrlMatcher.compare(a.urlMatcher, b.urlMatcher);
-	};
-	/** @hidden */
-	var idSort = function (a, b) {
-		// Identically sorted STATE and URLMATCHER best rule will be chosen by `matchPriority` after each rule matches the URL
-		var useMatchPriority = { STATE: true, URLMATCHER: true };
-		var equal = useMatchPriority[a.type] && useMatchPriority[b.type];
-		return equal ? 0 : (a.$id || 0) - (b.$id || 0);
-	};
-
-    var defaultRuleSortFn = function (a, b) {
-		var cmp = prioritySort(a, b);
-
-		if (cmp !== 0) {
-			return cmp;
-		}
-
-		cmp = typeSort(a, b);
-
-		if (cmp !== 0) {
-			return cmp;
-		}
-
-		cmp = urlMatcherSort(a, b);
-
-		if (cmp !== 0) {
-			return cmp;
-		}
-
-		return idSort(a, b);
-	};
-
     var UrlRouter = (function () {
-        /** @hidden */
+
         function UrlRouter(router) {
-            /** @hidden */
-            this._sortFn = defaultRuleSortFn;
-            /** @hidden */
-            this._rules = [];
-            /** @hidden */
-            this.interceptDeferred = false;
-            /** @hidden */
-            this._id = 0;
-            /** @hidden */
-            this._sorted = false;
-            this._router = router;
+
+            this.router = router;
             this.urlRuleFactory = new UrlRuleFactory(router);
-            createProxyFunctions(val(UrlRouter.prototype), this, val(this));
         }
-        /** @internalapi */
-        UrlRouter.prototype.dispose = function () {
-            this.listen(false);
-            this._rules = [];
-            delete this._otherwiseFn;
-        };
-        /** @inheritdoc */
-		UrlRouter.prototype.sort = function (compareFn) {
-			this._rules = this.stableSort(this._rules, this._sortFn = compareFn || this._sortFn);
-			this._sorted = true;
-		};
-        UrlRouter.prototype.ensureSorted = function () {
-			if (!this._sorted) { this.sort(); }
-        };
-		UrlRouter.prototype.stableSort = function (arr, compareFn) {
-			var arrOfWrapper = arr.map(function (elem, idx) { return ({ elem: elem, idx: idx }); });
-			arrOfWrapper.sort(function (wrapperA, wrapperB) {
-				var cmpDiff = compareFn(wrapperA.elem, wrapperB.elem);
-				return cmpDiff === 0 ? wrapperA.idx - wrapperB.idx : cmpDiff;
-			});
-			return arrOfWrapper.map(function (wrapper) { return wrapper.elem; });
-		};
-        UrlRouter.prototype.match = function (url) {
-            var _this = this;
-            this.ensureSorted();
-            url = extend({
-                path: '',
-                search: {},
-                hash: ''
-            }, url);
-            var rules = this.rules();
-            if (this._otherwiseFn)
-                rules.push(this._otherwiseFn);
-            // Checks a single rule. Returns { rule: rule, match: match, weight: weight } if it matched, or undefined
-            var checkRule = function (rule) {
-                var match = rule.match(url, _this._router);
-                return match && {
-                    match: match,
-                    rule: rule,
-                    weight: rule.matchPriority(match)
-                };
-            };
-
-            var best;
-            for (var i = 0; i < rules.length; i++) {
-                // Stop when there is a 'best' rule and the next rule sorts differently than it.
-                if (best && this._sortFn(rules[i], best.rule) !== 0)
-                    break;
-                var current = checkRule(rules[i]);
-                // Pick the best MatchResult
-                best = (!best || current && current.weight > best.weight) ? current : best;
-            }
-            return best;
-        };
-        /** @inheritdoc */
-        UrlRouter.prototype.sync = function (evt) {
-            if (evt && evt.defaultPrevented)
-                return;
-            var router = this._router,
-                $url = router.urlService,
-                $state = router.stateService;
-            var url = {
-                path: $url.path(),
-                search: $url.search(),
-                hash: $url.hash(),
-            };
-            var best = this.match(url);
-            var applyResult = pattern([
-                [_.isString, function (newurl) {
-                    return $url.url(newurl, true);
-                }],
-                [TargetState.isDef, function (def) {
-                    return $state.go(def.state, def.params, def.options);
-                }],
-                [is(TargetState), function (target) {
-                    return $state.go(target.state(), target.params(), target.options());
-                }],
-            ]);
-            applyResult(best && best.rule.handler(best.match, url, router));
-        };
-
-        UrlRouter.prototype.listen = function (enabled) {
-            var _this = this;
-
-            if (enabled === false) {
-				if (this._stopFn) {
-					this._stopFn();
-				}
-                delete this._stopFn;
-            } else {
-				this._stopFn = this._stopFn ||
-					this._router.urlService.onChange(
-						function (evt) { return _this.sync(evt); }
-					);
-				return this._stopFn;
-            }
-        };
 
         UrlRouter.prototype.update = function (read) {
-            var $url = this._router.locationService;
-			if (read) {
-				this.location = $url.url();
-				return;
-			}
-			if ($url.url() === this.location) {
-				return;
-			}
+            var $url = this.router.locationService;
 
-			$url.url(this.location, true);
+            if (read) {
+                this.location = $url.url();
+                return;
+            }
+
+            if ($url.url() === this.location) {
+                return;
+            }
+	
+            $url.url(this.location, true);
         };
 
         UrlRouter.prototype.push = function (urlMatcher, params, options) {
             var replace = options && !!options.replace;
-            this._router.urlService.url(urlMatcher.format(params || {}), replace);
+
+            this.router.urlService.url(urlMatcher.format(params || {}), replace);
         };
 
         UrlRouter.prototype.href = function (urlMatcher, params, options) {
@@ -4376,95 +4334,37 @@ msos.console.time('ng/ui/router');
                 return null;
             }
 
-            options = options || {
-                absolute: false
-            };
+            options = options || { absolute: false };
 
-            cfg = this._router.urlService.config;
-            isHtml5 = cfg.html5Mode();
+            cfg = this.router.urlService.config;
+			isHtml5 = cfg.html5Mode();
 
             if (!isHtml5 && url !== null) {
                 url = '#' + cfg.hashPrefix() + url;
             }
 
-            url = appendBasePath(url, isHtml5, options.absolute, ng_from_import.baseHref);
+            url = appendBasePath(url, isHtml5, options.absolute, cfg.baseHref());
 
             if (!options.absolute || !url) {
                 return url;
             }
 
-			slash = (!isHtml5 && url ? '/' : '');
-			cfgPort = cfg.port();
-			port = (cfgPort === 80 || cfgPort === 443 ? '' : ':' + cfgPort);
+            slash = !isHtml5 && url ? '/' : '';
+            cfgPort = cfg.port();
+            port = (cfgPort === 80 || cfgPort === 443 ? '' : ':' + cfgPort);
 
-			return [cfg.protocol(), '://', cfg.host(), port, slash, url].join('');
-        };
-
-        UrlRouter.prototype.rule = function (rule) {
-            var _this = this;
-            if (!UrlRuleFactory.isUrlRule(rule))
-                throw new Error('invalid rule');
-            rule.$id = this._id++;
-            rule.priority = rule.priority || 0;
-            this._rules.push(rule);
-            this._sorted = false;
-            return function () {
-                return _this.removeRule(rule);
-            };
-        };
-        /** @inheritdoc */
-        UrlRouter.prototype.removeRule = function (rule) {
-            removeFrom(this._rules, rule);
-        };
-        /** @inheritdoc */
-        UrlRouter.prototype.rules = function () {
-            this.ensureSorted();
-            return this._rules.slice();
-        };
-        /** @inheritdoc */
-        UrlRouter.prototype.otherwise = function (handler) {
-            var handlerFn = getHandlerFn(handler);
-            this._otherwiseFn = this.urlRuleFactory.create(val(true), handlerFn);
-            this._sorted = false;
-        };
-
-        /** @inheritdoc */
-        UrlRouter.prototype.initial = function (handler) {
-            var handlerFn = getHandlerFn(handler);
-            var matchFn = function (urlParts, router) {
-                return router.globals.transitionHistory.size() === 0 && !!/^\/?$/.exec(urlParts.path);
-            };
-            this.rule(this.urlRuleFactory.create(matchFn, handlerFn));
-        };
-
-        UrlRouter.prototype.when = function (matcher, handler, options) {
-            var rule = this.urlRuleFactory.create(matcher, handler);
-            if (isDefined(options && options.priority))
-                rule.priority = options.priority;
-            this.rule(rule);
-            return rule;
-        };
-
-        UrlRouter.prototype.deferIntercept = function (defer) {
-            if (defer === undefined)
-                defer = true;
-            this.interceptDeferred = defer;
+            return [cfg.protocol(), '://', cfg.host(), port, slash, url].join('');
         };
 
         return UrlRouter;
     }());
 
-    function getHandlerFn(handler) {
-        if (!_.isFunction(handler) && !_.isString(handler) && !is(TargetState)(handler) && !TargetState.isDef(handler)) {
-            throw new Error("'handler' must be a string, function, TargetState, or have a state: 'newtarget' property");
-        }
-        return _.isFunction(handler) ? handler : val(handler);
-    }
-
     var ViewService = (function () {
 
-        function ViewService() {
+        function ViewService(router) {
             var _this = this;
+
+			this.router = router;
 
             this._uiViews = [];
             this._viewConfigs = [];
@@ -4473,6 +4373,12 @@ msos.console.time('ng/ui/router');
             this._pluginapi = {
 				_rootViewContext: this._rootViewContext.bind(this),
 				_viewConfigFactory: this._viewConfigFactory.bind(this),
+				_registeredUIView: function (id) {
+					return find(
+						_this._uiViews,
+						function (view) { return _this.router.$id + "." + view.id === id; }
+					);
+				},
 				_registeredUIViews: function () { return _this._uiViews; },
 				_activeViewConfigs: function () { return _this._viewConfigs; },
 				_onSync: function (listener) {
@@ -4658,137 +4564,372 @@ msos.console.time('ng/ui/router');
         function UIRouterGlobals() {
 
             this.params = new StateParams();
-            /** @internalapi */
             this.lastStartedTransitionId = -1;
-            /** @internalapi */
             this.transitionHistory = new Queue([], 1);
-            /** @internalapi */
             this.successfulTransitions = new Queue([], 1);
         }
+
         UIRouterGlobals.prototype.dispose = function () {
             this.transitionHistory.clear();
             this.successfulTransitions.clear();
             this.transition = null;
         };
+
         return UIRouterGlobals;
     }());
 
-    var makeStub = function (keys) {
-        return keys.reduce(function (acc, key) {
-            return (acc[key] = notImplemented(key), acc);
-        }, {
-            dispose: noop_rt
-        });
-    };
-    /** @hidden */
-    var locationServicesFns = ['url', 'path', 'search', 'hash', 'onChange'];
-    /** @hidden */
-    var locationConfigFns = ['port', 'protocol', 'host', 'baseHref', 'html5Mode', 'hashPrefix'];
-    /** @hidden */
-    var umfFns = ['type', 'caseInsensitive', 'strictMode', 'defaultSquashPolicy'];
-    /** @hidden */
-    var rulesFns = ['sort', 'when', 'initial', 'otherwise', 'rules', 'rule', 'removeRule'];
-    /** @hidden */
-    var syncFns = ['deferIntercept', 'listen', 'sync', 'match'];
-    /**
-     * API for URL management
-     */
+	var prioritySort = function (a, b) {
+		return (b.priority || 0) - (a.priority || 0);
+	};
+
+	var typeSort = function (a, b) {
+		var weights = { STATE: 4, URLMATCHER: 4, REGEXP: 3, RAW: 2, OTHER: 1 };
+		return (weights[a.type] || 0) - (weights[b.type] || 0);
+	};
+
+	var urlMatcherSort = function (a, b) {
+		return !a.urlMatcher || !b.urlMatcher ? 0 : UrlMatcher.compare(a.urlMatcher, b.urlMatcher);
+	};
+
+	var idSort = function (a, b) {
+		// Identically sorted STATE and URLMATCHER best rule will be chosen by `matchPriority` after each rule matches the URL
+		var useMatchPriority = { STATE: true, URLMATCHER: true },
+			equal = useMatchPriority[a.type] && useMatchPriority[b.type];
+
+		return equal ? 0 : (a.$id || 0) - (b.$id || 0);
+	};
+
+    var defaultRuleSortFn = function (a, b) {
+		var cmp = prioritySort(a, b);
+
+		if (cmp !== 0) {
+			return cmp;
+		}
+
+		cmp = typeSort(a, b);
+
+		if (cmp !== 0) {
+			return cmp;
+		}
+
+		cmp = urlMatcherSort(a, b);
+
+		if (cmp !== 0) {
+			return cmp;
+		}
+
+		return idSort(a, b);
+	};
+
+    function getHandlerFn(handler) {
+        if (!_.isFunction(handler) && !_.isString(handler) && !is(TargetState)(handler) && !TargetState.isDef(handler)) {
+            throw new Error("'handler' must be a string, function, TargetState, or have a state: 'newtarget' property");
+        }
+        return _.isFunction(handler) ? handler : val(handler);
+    }
+
+    var UrlRules = (function () {
+
+        function UrlRules(router) {
+
+            this.router = router;
+            this._sortFn = defaultRuleSortFn;
+            this._rules = [];
+            this._id = 0;
+            this.urlRuleFactory = new UrlRuleFactory(router);
+        }
+
+        UrlRules.prototype.dispose = function () {
+            this._rules = [];
+            delete this._otherwiseFn;
+        };
+
+        UrlRules.prototype.initial = function (handler) {
+            var handlerFn = getHandlerFn(handler),
+				matchFn = function (urlParts, router) {
+					return router.globals.transitionHistory.size() === 0 && !!/^\/?$/.exec(urlParts.path);
+				};
+
+            this.rule(this.urlRuleFactory.create(matchFn, handlerFn));
+        };
+ 
+        UrlRules.prototype.otherwise = function (handler) {
+            var handlerFn = getHandlerFn(handler);
+            this._otherwiseFn = this.urlRuleFactory.create(val(true), handlerFn);
+            this._sorted = false;
+        };
+
+        UrlRules.prototype.removeRule = function (rule) {
+            removeFrom(this._rules, rule);
+        };
+
+        UrlRules.prototype.rule = function (rule) {
+            var _this = this;
+
+            if (!UrlRuleFactory.isUrlRule(rule)) {
+                throw new Error('invalid rule');
+            }
+
+            rule.$id = this._id++;
+            rule.priority = rule.priority || 0;
+            this._rules.push(rule);
+            this._sorted = false;
+
+            return function () { return _this.removeRule(rule); };
+        };
+
+        UrlRules.prototype.rules = function () {
+            this.ensureSorted();
+            return this._rules.concat(this._otherwiseFn ? [this._otherwiseFn] : []);
+        };
+
+        UrlRules.prototype.sort = function (compareFn) {
+            var sorted = this.stableSort(this._rules, (this._sortFn = compareFn || this._sortFn)),
+				group = 0,
+				i = 0;
+
+            for (i = 0; i < sorted.length; i += 1) {
+                sorted[i]._group = group;
+                if (i < sorted.length - 1 && this._sortFn(sorted[i], sorted[i + 1]) !== 0) {
+                    group++;
+                }
+            }
+
+            this._rules = sorted;
+            this._sorted = true;
+        };
+
+        UrlRules.prototype.ensureSorted = function () {
+			if (!this._sorted) { this.sort(); }
+        };
+
+        UrlRules.prototype.stableSort = function (arr, compareFn) {
+            var arrOfWrapper = arr.map(
+					function (elem, idx) { return ({ elem: elem, idx: idx }); }
+				);
+
+            arrOfWrapper.sort(
+				function (wrapperA, wrapperB) {
+					var cmpDiff = compareFn(wrapperA.elem, wrapperB.elem);
+
+					return cmpDiff === 0 ? wrapperA.idx - wrapperB.idx : cmpDiff;
+				}
+			);
+
+            return arrOfWrapper.map(
+				function (wrapper) { return wrapper.elem; }
+			);
+        };
+
+        UrlRules.prototype.when = function (matcher, handler, options) {
+            var rule = this.urlRuleFactory.create(matcher, handler);
+
+            if (isDefined(options && options.priority)) {
+                rule.priority = options.priority;
+            }
+
+            this.rule(rule);
+
+            return rule;
+        };
+
+        return UrlRules;
+    }());
+
+    var UrlConfig = (function () {
+
+		function UrlConfig(router) {
+            var _this = this;
+
+            this.router = router;
+            this.paramTypes = new ParamTypes();
+            this._isCaseInsensitive = false;
+            this._isStrictMode = true;
+            this._defaultSquashPolicy = false;
+            this.dispose = function () {
+				return _this.paramTypes.dispose();
+			};
+            this.baseHref = function () {
+				return _this.router.locationConfig.baseHref();
+			};
+            this.hashPrefix = function (newprefix) {
+				return _this.router.locationConfig.hashPrefix(newprefix);
+			};
+            this.host = function () {
+				return _this.router.locationConfig.host();
+			};
+            this.html5Mode = function () {
+				return _this.router.locationConfig.html5Mode();
+			};
+            this.port = function () {
+				return _this.router.locationConfig.port();
+			};
+            this.protocol = function () {
+				return _this.router.locationConfig.protocol();
+			};
+        }
+
+        UrlConfig.prototype.caseInsensitive = function (value) {
+            return (this._isCaseInsensitive = isDefined(value) ? value : this._isCaseInsensitive);
+        };
+
+        UrlConfig.prototype.defaultSquashPolicy = function (value) {
+            if (isDefined(value) && value !== true && value !== false && !isString(value)) {
+                throw new Error("Invalid squash policy: " + value + ". Valid policies: false, true, arbitrary-string");
+            }
+
+            return (this._defaultSquashPolicy = isDefined(value) ? value : this._defaultSquashPolicy);
+        };
+
+        UrlConfig.prototype.strictMode = function (value) {
+            return (this._isStrictMode = isDefined(value) ? value : this._isStrictMode);
+        };
+
+        UrlConfig.prototype.type = function (name, definition, definitionFn) {
+            var type = this.paramTypes.type(name, definition, definitionFn);
+
+            return !isDefined(definition) ? type : this;
+        };
+
+        return UrlConfig;
+    }());
+
     var UrlService = (function () {
         /** @hidden */
-        function UrlService(router, lateBind) {
-            if (lateBind === void 0) {
-                lateBind = true;
-            }
+        function UrlService(router) {
+			var _this = this;
+
             this.router = router;
-            this.rules = {};
-            this.config = {};
-            // proxy function calls from UrlService to the LocationService/LocationConfig
-            var locationServices = function () {
-                return router.locationService;
+			this.interceptDeferred = false;
+
+            this.rules = new UrlRules(this.router);
+            this.config = new UrlConfig(this.router);
+
+            this.url = function (newurl, replace, state) {
+                return _this.router.locationService.url(newurl, replace, state);
             };
-            createProxyFunctions(locationServices, this, locationServices, locationServicesFns, lateBind);
-            var locationConfig = function () {
-                return router.locationConfig;
-            };
-            createProxyFunctions(locationConfig, this.config, locationConfig, locationConfigFns, lateBind);
-            var umf = function () {
-                return router.urlMatcherFactory;
-            };
-            createProxyFunctions(umf, this.config, umf, umfFns);
-            var urlRouter = function () {
-                return router.urlRouter;
-            };
-            createProxyFunctions(urlRouter, this.rules, urlRouter, rulesFns);
-            createProxyFunctions(urlRouter, this, urlRouter, syncFns);
+            this.path = function () { return _this.router.locationService.path(); };
+            this.search = function () { return _this.router.locationService.search(); };
+            this.hash = function () { return _this.router.locationService.hash(); };
+            this.onChange = function (callback) { return _this.router.locationService.onChange(callback); };
         }
-        UrlService.prototype.url = function () {
-            return;
+
+        UrlService.prototype.dispose = function () {
+            this.listen(false);
+            this.rules.dispose();
         };
 
-        /** @inheritdoc */
-        UrlService.prototype.path = function () {
-            return;
-        };
-
-        /** @inheritdoc */
-        UrlService.prototype.search = function () {
-            return;
-        };
-
-        /** @inheritdoc */
-        UrlService.prototype.hash = function () {
-            return;
-        };
-
-        /** @inheritdoc */
-        UrlService.prototype.onChange = function () {
-            return;
-        };
-
-        UrlService.prototype.parts = function () {
+       UrlService.prototype.parts = function () {
             return {
-                path: this.path(),
-                search: this.search(),
-                hash: this.hash()
-            };
-        };
-        UrlService.prototype.dispose = function () {};
-        /** @inheritdoc */
-        UrlService.prototype.sync = function () {
-            return;
-        };
-        /** @inheritdoc */
-        UrlService.prototype.listen = function () {
-            return;
+				path: this.path(),
+				search: this.search(),
+				hash: this.hash()
+			};
         };
 
-        /** @inheritdoc */
-        UrlService.prototype.deferIntercept = function () {
-            return;
+        UrlService.prototype.sync = function (evt) {
+            if (evt && evt.defaultPrevented){
+                return;
+            }
+
+            var _a = this.router,
+				urlService = _a.urlService,
+				stateService = _a.stateService,
+				url = {
+					path: urlService.path(),
+					search: urlService.search(),
+					hash: urlService.hash()
+				},
+				best = this.match(url),
+				applyResult = pattern(
+					[
+						[_.isString, function (newurl) { return urlService.url(newurl, true); }],
+						[TargetState.isDef, function (def) { return stateService.go(def.state, def.params, def.options); }],
+						[is(TargetState), function (target) { return stateService.go(target.state(), target.params(), target.options()); }],
+					]
+				);
+
+            applyResult(best && best.rule.handler(best.match, url, this.router));
         };
-        /** @inheritdoc */
-        UrlService.prototype.match = function () {
-            return;
+
+        UrlService.prototype.listen = function (enabled) {
+            var _this = this;
+
+            if (enabled === false) {
+				if (this._stopListeningFn) {
+					this._stopListeningFn();
+					delete this._stopListeningFn;
+				}
+				return undefined;
+            }
+
+			if (_.isUndefined(this._stopListeningFn)) {
+				this._stopListeningFn = this.router.urlService.onChange(function (evt) { return _this.sync(evt); });
+			}
+
+			return this._stopListeningFn;
         };
-		/** @hidden */
-		UrlService.locationServiceStub = makeStub(locationServicesFns);
-		/** @hidden */
-		UrlService.locationConfigStub = makeStub(locationConfigFns);
+
+        UrlService.prototype.deferIntercept = function (defer) {
+            if (defer === undefined) {
+                defer = true;
+            }
+            this.interceptDeferred = defer;
+        };
+
+        UrlService.prototype.match = function (url) {
+            var _this = this,
+				rules,
+				checkRule,
+				best,
+				i = 0,
+				current;
+
+            url = extend(
+				{ path: '', search: {}, hash: '' },
+				url
+			);
+
+            rules = this.rules.rules();
+
+            checkRule = function (rule) {
+                var match = rule.match(url, _this.router);
+                return match && { match: match, rule: rule, weight: rule.matchPriority(match) };
+            };
+
+            for (i = 0; i < rules.length; i += 1) {
+                // Stop when there is a 'best' rule and the next rule sorts differently than it.
+                if (best && best.rule._group !== rules[i]._group) {
+                    break;
+                }
+
+                current = checkRule(rules[i]);
+                // Pick the best MatchResult
+                best = !best || (current && current.weight > best.weight) ? current : best;
+            }
+
+            return best;
+        };
 
         return UrlService;
     }());
 
-    var _routerInstance = 0;
+    var _routerInstance = 0,
+		locSvcFns = ['url', 'path', 'search', 'hash', 'onChange'],
+		locCfgFns = ['port', 'protocol', 'host', 'baseHref', 'html5Mode', 'hashPrefix'],
+		locationServiceStub = makeStub('LocationServices', locSvcFns),
+		locationConfigStub = makeStub('LocationConfig', locCfgFns);
 
     var UIRouter = (function () {
 
         function UIRouter(locationService, locationConfig) {
             if (locationService === void 0) {
-                locationService = UrlService.locationServiceStub;
+                locationService = locationServiceStub;
             }
             if (locationConfig === void 0) {
-                locationConfig = UrlService.locationConfigStub;
+                locationConfig = locationConfigStub;
             }
+
             this.locationService = locationService;
             this.locationConfig = locationConfig;
 
@@ -4796,14 +4937,14 @@ msos.console.time('ng/ui/router');
             this._disposed = false;
             this._disposables = [];
             this.trace = trace;
-            this.viewService = new ViewService();
+            this.viewService = new ViewService(this);
             this.globals = new UIRouterGlobals();
 			this.transitionService = new TransitionService(this);
-            this.urlMatcherFactory = new UrlMatcherFactory();
+            this.urlMatcherFactory = new UrlMatcherFactory(this);
             this.urlRouter = new UrlRouter(this);
+			this.urlService = new UrlService(this);
             this.stateRegistry = new StateRegistry(this);
             this.stateService = new StateService(this);
-            this.urlService = new UrlService(this);
             this._plugins = {};
             this.viewService._pluginapi._rootViewContext(this.stateRegistry.root());
             this.globals.$current = this.stateRegistry.root();
@@ -4812,7 +4953,7 @@ msos.console.time('ng/ui/router');
             this.disposable(this.stateService);
             this.disposable(this.stateRegistry);
             this.disposable(this.transitionService);
-            this.disposable(this.urlRouter);
+            this.disposable(this.urlService);
             this.disposable(locationService);
             this.disposable(locationConfig);
         }
@@ -4877,22 +5018,16 @@ msos.console.time('ng/ui/router');
 		isTransition = inArray(TRANSITION_TOKENS);
 
 	var treeChangesCleanup = function (trans) {
-    
-		var replaceTransitionWithNull = function (r) {
+		var nodes = values(trans.treeChanges()).reduce(unnestR, []).reduce(uniqR, []),
+			replaceTransitionWithNull = function (r) {
 				return isTransition(r.token) ? Resolvable.fromData(r.token, null) : r;
-			},
-			cleanPath = function (path) {
-				return path.map(
-					function (node) {
-						var resolvables = node.resolvables.map(replaceTransitionWithNull);
+			};
 
-						return extend(node.clone(), { resolvables: resolvables });
-					}
-				);
-			},
-			treeChanges = trans.treeChanges();
-
-		mapObj(treeChanges, cleanPath, treeChanges);
+		nodes.forEach(
+			function (node) {
+				node.resolvables = node.resolvables.map(replaceTransitionWithNull);
+			}
+		);
 	};
 
     var redirectToHook = function (trans) {
@@ -5255,13 +5390,12 @@ msos.console.time('ng/ui/router');
             this._router = _router;
             this.$view = _router.viewService;
             this._deregisterHookFns = {};
-            this._pluginapi = createProxyFunctions(val(this), {}, val(this), [
-                '_definePathType',
-                '_defineEvent',
-                '_getPathTypes',
-                '_getEvents',
-                'getHooks',
-            ]);
+            this._pluginapi = createProxyFunctions(
+				val(this),
+				{},
+				val(this),
+				['_definePathType', '_defineEvent', '_getPathTypes', '_getEvents', 'getHooks',]
+			);
             this._defineCorePaths();
             this._defineCoreEvents();
             this._registerCoreTransitionHooks();
@@ -6305,6 +6439,9 @@ msos.console.time('ng/ui/router');
             html5Mode = _.isObject(html5Mode) ? html5Mode.enabled : html5Mode;
             return html5Mode && ng_from_import.history_pushstate;
         };
+		Ng1LocationServices.prototype.baseHref = function () {
+            return this._baseHref || (this._baseHref = this.$browser.baseHref() || this.$window.location.pathname);
+        };
         Ng1LocationServices.prototype.url = function (newUrl, replace, state) {
             if (replace === void 0) {
                 replace = false;
@@ -6317,9 +6454,11 @@ msos.console.time('ng/ui/router');
                 this.$location.state(state);
             return this.$location.url();
         };
-        Ng1LocationServices.prototype._runtimeServices = function ($rootScope, $location, $browser) {
+        Ng1LocationServices.prototype._runtimeServices = function ($rootScope, $location, $browser, $window) {
             var _this = this;
             this.$location = $location;
+			this.$browser = $browser;
+			this.$window = $window;
 
             // Bind $locationChangeSuccess to the listeners registered in LocationService.onChange
             $rootScope.$on(
@@ -6334,16 +6473,15 @@ msos.console.time('ng/ui/router');
 				}
 			);
 
-            var _loc = val($location),
-				_browser = val($browser);
+            var _loc = val($location);
 
             createProxyFunctions(_loc, this, _loc, ['replace', 'path', 'search', 'hash']);
             createProxyFunctions(_loc, this, _loc, ['port', 'protocol', 'host']);
-			createProxyFunctions(_browser, this, _browser, ['baseHref']);
         };
 
         Ng1LocationServices.monkeyPatchPathParameterType = function (router) {
-            var pathType = router.urlMatcherFactory.type('path');
+
+            var pathType = router.urlService.config.type('path');
 
 			pathType.encode = function (val) {
 				return val !== null && val !== undefined ? val.toString().replace(/(~|\/)/g, function (m) { return ({ '~': '~~', '/': '~2F' }[m]); }) : val;
@@ -6360,50 +6498,58 @@ msos.console.time('ng/ui/router');
 		var temp_ur = 'ng.ui.router - UrlRouterProvider';
 
         function UrlRouterProvider(router) {
-			msos_debug(temp_ur + ' -> start.');
-            this._router = router;
-            this._urlRouter = router.urlRouter;
-			msos_debug(temp_ur + ' ->  done!');
+            this.router = router;
         }
 
         UrlRouterProvider.prototype.$get = function () {
 			msos_debug(temp_ur + ' - $get -> start.');
 
-            var urlRouter = this._urlRouter,
+            var urlService = this.router.urlService,
 				debug = 'skipped listen().';
 
-            urlRouter.update(true);
+            this.router.urlRouter.update(true);
 
-            if (!urlRouter.interceptDeferred) {
-                urlRouter.listen();
+            if (!urlService.interceptDeferred) {
+                urlService.listen();
 				debug = 'called listen().';
             }
 
 			msos_debug(temp_ur + ' - $get ->  done, ' + debug);
-            return urlRouter;
+            return this.router.urlRouter;
         };
 
         UrlRouterProvider.prototype.rule = function (ruleFn) {
-            var _this = this;
-            if (!_.isFunction(ruleFn))
+
+            if (!_.isFunction(ruleFn)) {
                 throw new Error("'rule' must be a function");
-            var match = function () {
-                return ruleFn(services.$injector, _this._router.locationService);
-            };
-            var rule = new BaseUrlRule(match, identity);
-            this._urlRouter.rule(rule);
+            }
+
+            var _this = this,
+				match = function () {
+					return ruleFn(
+						services.$injector,
+						_this.router.locationService
+					);
+				},
+				rule = new BaseUrlRule(match, identity);
+
+			this.router.urlService.rules.rule(rule);
+
             return this;
         };
 
         UrlRouterProvider.prototype.otherwise = function (rule) {
-            var _this = this;
-            var urlRouter = this._urlRouter;
+            var _this = this,
+				urlRules = this.router.urlService.rules;
+
             if (_.isString(rule)) {
-                urlRouter.otherwise(rule);
+                urlRules.otherwise(rule);
             } else if (_.isFunction(rule)) {
-                urlRouter.otherwise(function () {
-                    return rule(services.$injector, _this._router.locationService);
-                });
+                urlRules.otherwise(
+					function () {
+						return rule(services.$injector, _this.router.locationService);
+					}
+				);
             } else {
                 throw new Error("'rule' must be a string or function");
             }
@@ -6412,9 +6558,11 @@ msos.console.time('ng/ui/router');
 
         UrlRouterProvider.prototype.when = function (what, handler) {
             if (_.isArray(handler) || _.isFunction(handler)) {
-                handler = UrlRouterProvider.injectableHandler(this._router, handler);
+                handler = UrlRouterProvider.injectableHandler(this.router, handler);
             }
-            this._urlRouter.when(what, handler);
+
+            this.router.urlService.rules.when(what, handler);
+
             return this;
         };
 
@@ -6433,13 +6581,13 @@ msos.console.time('ng/ui/router');
         };
 
         UrlRouterProvider.prototype.deferIntercept = function (defer) {
-            this._urlRouter.deferIntercept(defer);
+			this.router.urlService.deferIntercept(defer);
         };
 
         return UrlRouterProvider;
     }());
 
-    var mod_init = ng_from_import.module('ng.ui.router.init', ["ng"]);
+    var mod_init = ng_from_import.module('ng.ui.router.init', ['ng']);
     var mod_util = ng_from_import.module('ng.ui.router.util', ['ng', 'ng.ui.router.init']);
     var mod_rtr = ng_from_import.module('ng.ui.router.router', ['ng.ui.router.util']);
     var mod_state = ng_from_import.module('ng.ui.router.state', ['ng.ui.router.router', 'ng.ui.router.util']);
@@ -6462,13 +6610,13 @@ msos.console.time('ng/ui/router');
         Ng1LocationServices.monkeyPatchPathParameterType(router);
         // backwards compat: also expose router instance as $uiRouterProvider.router
 
-        function $get($location, $browser, $rootScope) {
-            ng1LocationService._runtimeServices($rootScope, $location, $browser);
+        function $get($location, $browser, $window, $rootScope) {
+            ng1LocationService._runtimeServices($rootScope, $location, $browser, $window);
             delete router.router;
             delete router.$get;
             return router;
         }
-		$get.$inject = ['$location', '$browser', '$rootScope'];
+		$get.$inject = ['$location', '$browser', '$window', '$rootScope'];
 
         router.router = router;
         router.$get = $get;
@@ -6494,12 +6642,26 @@ msos.console.time('ng/ui/router');
     // This effectively calls $get() on `$uiRouterProvider` to trigger init (when ng enters runtime)
     runBlock.$inject = ['$injector', '$q', '$uiRouter'];
 
-    function runBlock($injector, $q, $uiRouter) {
-        services.$injector = $injector;
-        services.$q = $q;
+    function runBlock($injector$$1, $q$$1, $uiRouter) {
+        services.$injector = $injector$$1;
+        services.$q = $q$$1;
+
+        if (msos.config.debug && !$injector$$1.hasOwnProperty('strictDi')) {
+            try {
+                $injector$$1.invoke(
+					function (checkStrictDi) {
+						msos.console.error('ng.ui.router - runBlock -> strictDi error:', checkStrictDi);
+					}
+				);
+            }
+            catch (error) {
+                $injector$$1.strictDi = !!/strict mode/.exec(error && error.toString());
+            }
+        }
         // The $injector is now available.
         // Find any resolvables that had dependency annotation deferred
-        $uiRouter.stateRegistry.get()
+        $uiRouter.stateRegistry
+			.get()
             .map(function (x) {
                 return x.$$state().resolvables;
             })
@@ -6508,7 +6670,7 @@ msos.console.time('ng/ui/router');
                 return x.deps === 'deferred';
             })
             .forEach(function (resolvable) {
-                resolvable.deps = $injector.annotate(resolvable.resolveFn);
+                resolvable.deps = $injector$$1.annotate(resolvable.resolveFn, $injector$$1.strictDi);
 				return resolvable.deps;
             });
     }
@@ -6645,7 +6807,9 @@ msos.console.time('ng/ui/router');
                 // HACK: This is to allow ng-clicks to be processed before the transition is initiated:
                 transition = $timeout(
 					function ui_router_clickhook_to() {
-						$state.go(target.uiState, target.uiStateParams, target.uiStateOpts);
+						if (!el.attr('disabled')) {
+							$state.go(target.uiState, target.uiStateParams, target.uiStateOpts);
+						}
 					},
 					10,
 					false
@@ -7284,16 +7448,15 @@ msos.console.time('ng/ui/router');
 					}
 
                     // Wait for the component to appear in the DOM
-                    if (_.isString(cfg.viewDecl.component)) {
-                        var cmp_1 = cfg.viewDecl.component;
-                        var kebobName = kebobString(cmp_1);
+                    if (_.isString(cfg.component)) {
+                        var kebobName = kebobString(cfg.component);
                         var tagRegexp_1 = new RegExp('^(x-|data-)?' + kebobName + '$', 'i');
                         var getComponentController = function () {
                             var directiveEl = [].slice.call($element[0].children)
                                 .filter(function (el) {
                                     return el && el.tagName && tagRegexp_1.exec(el.tagName);
                                 });
-                            return directiveEl && ng_from_import.element(directiveEl).data('$' + cmp_1 + 'Controller');
+                            return directiveEl && ng_from_import.element(directiveEl).data("$" + cfg.component + "Controller");
                         };
                         var deregisterWatch_1 = scope.$watch(getComponentController, function (ctrlInstance) {
                             if (!ctrlInstance)
@@ -7442,5 +7605,5 @@ msos.console.time('ng/ui/router');
 
 })));
 
-msos.console.info('ng/ui/router/v1014_msos -> done!');
+msos.console.info('ng/ui/router/v1020_msos -> done!');
 msos.console.timeEnd('ng/ui/router');

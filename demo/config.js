@@ -62,7 +62,7 @@ if (msos.config.debug_script) {
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v331.uc.js'),
 		msos.resource_url('ng', 'v175_msos.uc.js'),
-		msos.resource_url('ng', 'ui/router/v1014_msos.uc.js'),
+		msos.resource_url('ng', 'ui/router/v1020_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
 		msos.resource_url('ng', 'material/v1110_msos.uc.js'),
 		msos.resource_url('ng', 'translate/v2170_msos.uc.js'),
@@ -87,7 +87,7 @@ if (msos.config.debug_script) {
     msos.deferred_scripts = [
 		msos.resource_url('jquery', 'v331.min.js'),
 		msos.resource_url('ng', 'v175_msos.min.js'),
-		msos.resource_url('ng', 'ui/router/v1014_msos.min.js'),
+		msos.resource_url('ng', 'ui/router/v1020_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
 		msos.resource_url('ng', 'material/v1110_msos.min.js'),
 		msos.resource_url('ng', 'translate/v2170_msos.min.js'),
