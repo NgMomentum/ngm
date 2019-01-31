@@ -835,13 +835,12 @@ msos.notify = {
 	}
 };
 
-// Add error notification (Overwritten in msos.onerror for server notification)
-window.onerror = function (msg, url, line, col, er) {
+msos.on_js_error = function (msg, url, line, col, er) {
 	"use strict";
 
-	var error_txt = 'JavaScript Error!';
+	var error_txt = 'Javascript Error!';
 
-	msos.console.error('window.onerror -> fired, line: ' + line + ', url: ' + url + ', error: ' + msg, er);
+	msos.console.error('msos.on_js_error -> fired, line: ' + line + ', url: ' + url + ', error: ' + msg, er);
 
 	// Timing and availability of i18n common loading is a factor (so isolate)
 	if (msos.i18n && msos.i18n.common && msos.i18n.common.bundle) {
@@ -1289,6 +1288,11 @@ msos.run_onload = function () {
     }
 };
 
+// *******************************************
+// Add error notification
+// *******************************************
+
+window.onerror = msos.on_js_error;
 
 // *******************************************
 // Start main MobileSiteOS functions

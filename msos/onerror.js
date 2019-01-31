@@ -17,9 +17,8 @@
 */
 
 msos.provide("msos.onerror");
-msos.require("msos.i18n.common");
 
-msos.onerror.version = new msos.set_version(17, 4, 7);
+msos.onerror.version = new msos.set_version(18, 11, 13);
 
 
 msos.onerror.generate = function () {
@@ -33,9 +32,9 @@ msos.onerror.generate = function () {
             msos.console.info('msos.onerror.generate -> sent, status: ' + status);
         };
 
-    window.onerror = function (msg, url, line) {
+    window.onerror = function (msg, url, line, col, er) {
 
-        msos.console.error('window.onerror -> fired, line: ' + line + ', url: ' + url + ', error: ' + msg);
+        msos.on_js_error(msg, url, line, col, er);
 
         jQuery.ajax({
             type: "GET",
@@ -51,8 +50,6 @@ msos.onerror.generate = function () {
             success: on_success,
             error: msos.ajax_error
         });
-	
-		msos.notify.error(msg, msos.i18n.common.bundle.error);
 
         if (window.opener && window.opener.msos) {
             window.opener.msos.console.error('child window.onerror -> ' + window.name + ': ' + msg);

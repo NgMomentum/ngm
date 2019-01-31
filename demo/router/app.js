@@ -19,7 +19,7 @@ msos.require("demo.router.app.states");
 
 // Load the very large Visualizer file
 demo.router.app.vis = new msos.loader();
-demo.router.app.vis.load(msos.resource_url('ng', 'ui/router/ui-router-visualizer.uc.js'));
+demo.router.app.vis.load(msos.resource_url('ng', 'ui/router/visualizer.uc.js'));
 
 
 demo.router.app.setProp = function setProp(obj, key, val) {
