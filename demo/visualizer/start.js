@@ -10,7 +10,7 @@ msos.require("ng.util.oclazyload");
 
 // Load the very large Visualizer file
 demo.visualizer.start.vis = new msos.loader();
-demo.visualizer.start.vis.load(msos.resource_url('ng', 'ui/router/ui-router-visualizer.uc.js'));
+demo.visualizer.start.vis.load(msos.resource_url('ng', 'ui/router/visualizer.uc.js'));
 
 
 var HomeController = function () {
