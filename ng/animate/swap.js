@@ -43,7 +43,8 @@ ng.animate.swap.version = new msos.set_version(18, 7, 3);
                     }
                     if (value || value === 0) {
 						$transclude(
-							function (clone, childScope) {
+							undefined,		// no scope
+							function ngAnimateSwapTransclude(clone, childScope) {
 								previousElement = clone;
 								previousScope = childScope;
 								$animate.enter(clone, null, $element);

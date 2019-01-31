@@ -59,9 +59,7 @@ ng.react.version = new msos.set_version(18, 1, 15);
 
     function applied(fn, scope) {
 
-        if (fn.wrappedInApply) {
-            return fn;
-        }
+        if (fn.wrappedInApply) { return fn; }
 
         var wrapped = function () {
             var args = arguments,
@@ -85,7 +83,7 @@ ng.react.version = new msos.set_version(18, 1, 15);
     function applyFunctions(obj, scope, propsConfig) {
 
         return Object.keys(obj || {}).reduce(
-			function(prev, key) {
+			function (prev, key) {
 				var value = obj[key],
 					config = (propsConfig || {})[key] || {};
 
@@ -204,11 +202,14 @@ ng.react.version = new msos.set_version(18, 1, 15);
     var reactDirective = function ($injector) {
 
         return function (reactComponentName, props, conf, injectableProps) {
+
             var directive = {
 					restrict: 'E',
 					replace: true,
 					link: function (scope, elem, attrs) {
 						var reactComponent = getReactComponent(reactComponentName, $injector),
+							renderMyComponent,
+							propExpressions,
 							ngAttrNames = [];
 
 						props = props || Object.keys(reactComponent.propTypes || {});
@@ -222,30 +223,51 @@ ng.react.version = new msos.set_version(18, 1, 15);
 							props = ngAttrNames;
 						}
 
-						var renderMyComponent = function () {
-								var scopeProps = {},
-									config = {};
+						renderMyComponent = function () {
+							var scopeProps = {},
+								config = {};
 
-								props.forEach(
-									function (prop) {
-										var propName = getPropName(prop);
-
-											scopeProps[propName] = scope.$eval(findAttribute(attrs, propName));
-											config[propName] = getPropConfig(prop);
-									}
-								);
-
-								scopeProps = applyFunctions(scopeProps, scope, config);
-								scopeProps = _angular.extend({}, scopeProps, injectableProps);
-								renderComponent(reactComponent, scopeProps, scope, elem);
-							},
-							propExpressions = props.map(
+							props.forEach(
 								function (prop) {
-									return (_.isArray(prop)) ? [attrs[getPropName(prop)], getPropConfig(prop)] : attrs[prop];
+									var propName = getPropName(prop);
+
+									scopeProps[propName] = scope.$eval(findAttribute(attrs, propName));
+									config[propName] = getPropConfig(prop);
 								}
 							);
 
-						watchProps(attrs.watchDepth, scope, propExpressions, renderMyComponent);
+							scopeProps = applyFunctions(
+								scopeProps,
+								scope,
+								config
+							);
+
+							scopeProps = _angular.extend(
+								{},
+								scopeProps,
+								injectableProps
+							);
+
+							renderComponent(
+								reactComponent,
+								scopeProps,
+								scope,
+								elem
+							);
+						};
+
+						propExpressions = props.map(
+							function (prop) {
+								return (_.isArray(prop)) ? [attrs[getPropName(prop)], getPropConfig(prop)] : attrs[prop];
+							}
+						);
+
+						watchProps(
+							attrs.watchDepth,
+							scope,
+							propExpressions,
+							renderMyComponent
+						);
 
 						renderMyComponent();
 
@@ -265,8 +287,8 @@ ng.react.version = new msos.set_version(18, 1, 15);
 					}
 				};
 
-				return _angular.extend(directive, conf);
-			};
+			return _angular.extend(directive, conf);
+		};
 	};
 
     _angular.module(

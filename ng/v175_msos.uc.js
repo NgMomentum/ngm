@@ -193,6 +193,7 @@ msos.console.time('ng');
         },
         ngto_string = Object.prototype.toString,
         getPrototypeOf = Object.getPrototypeOf,
+		componentCache = {},
         urlCache = {},
         urlParsingNode = window.document.createElement('a'),
         originUrl,
@@ -252,9 +253,11 @@ msos.console.time('ng');
         nodeDebugName_ = function (element, add_classes) {
 			var jq_el = jQuery(element);
 
+			if (!jq_el[0]) { return 'na'; }
+
 			add_classes = Boolean(add_classes);
 
-            return jq_el.data('debug') || nodeName_(jq_el) + (jq_el[0].id ? '#' + jq_el[0].id : '') + (add_classes ? ' (' + (jq_el.attr('class') || 'na') + ')' : '');
+            return jq_el.data('debug') || nodeName_(jq_el) + (jq_el[0].id ? '#' + jq_el[0].id : '') + (add_classes ? ' (' + (jq_el.attr('class') || 'no class') + ')' : '');
         },
         uid = 0,
         scope_uid = 0,
@@ -479,6 +482,7 @@ msos.console.time('ng');
 				charset: true,
 				defer: true,
 				as: true,
+				nonce: true,
 				media: true,
 				multiple: true,
 				disabled: true,
@@ -713,14 +717,6 @@ msos.console.time('ng');
         return keys;
     }
 
-    function setHashKey(obj, h) {
-        if (h) {
-            obj.$$hashKey = h;
-        } else {
-            delete obj.$$hashKey;
-        }
-    }
-
     function baseExtend(dst, objs, deep) {
 
         if (!_.isObject(dst)) {
@@ -772,7 +768,12 @@ msos.console.time('ng');
             }
         }
 
-        setHashKey(dst, h);
+		if (h) {
+			dst.$$hashKey = h;
+			msos_debug('ng - baseExtend -> set $$hashKey:' + h);
+		} else if (dst.hasOwnProperty('$$hashKey')) {
+			delete dst.$$hashKey;
+		}
         return dst;
     }
 
@@ -1189,7 +1190,7 @@ msos.console.time('ng');
             value = styleTuple[1];
 
         if (msos_verbose === 'animate') {
-            msos_debug('ng - applyInlineStyle -> called' + msos_indent + 'prop: ' + prop + msos_indent + 'value: ' + value + msos_indent + 'node: ' + nodeDebugName_(node));
+            msos_debug('ng - applyInlineStyle -> called' + msos_indent + 'prop: ' + prop + msos_indent + 'value: ' + value + msos_indent + 'node: ' + nodeDebugName_(node, true));
         }
 
         node.style[prop] = value;
@@ -1611,7 +1612,13 @@ msos.console.time('ng');
                 }
             }
 
-            setHashKey(destination, h);
+			if (h) {
+				destination.$$hashKey = h;
+				msos_debug('ng - copy - copyRecurse -> set $$hashKey:' + h);
+			} else if (destination.hasOwnProperty('$$hashKey')) {
+				delete destination.$$hashKey;
+			}
+
             return destination;
         };
 
@@ -2151,10 +2158,15 @@ msos.console.time('ng');
         var key = obj && obj.$$hashKey,
             objType;
 
+		if (obj === undefined && msos_verbose) {
+			msos.console.warn('ng - hashKey -> called for undefined.');
+		}
+
         if (key) {
             if (typeof key === 'function') {
                 key = obj.$$hashKey();
             }
+			msos_debug('ng - hashKey -> called for fn, key: ' + key);
             return key;
         }
 
@@ -2166,6 +2178,7 @@ msos.console.time('ng');
             key = objType + ':' + obj;
         }
 
+		msos_debug('ng - hashKey -> called, key: ' + key);
         return key;
     }
 
@@ -2916,7 +2929,7 @@ msos.console.time('ng');
                 msos_debug(temp_ci + ' - service -> called: ' + name);
             }
 
-			return factory(name, ['$injector', function ($injector) {
+			return factory(name, ['$injector', function create_service($injector) {
 				return $injector.instantiate(constructor, undefined, name);
 			}]);
 		}
@@ -2956,7 +2969,7 @@ msos.console.time('ng');
 					decorInstance;
 
 				if (msos_verbose) {
-                    msos_debug(temp_ci + ' - decorator - origProvider.$get -> start, for: ' + dec_name + ',  original instance:', origInstance);
+                    msos_debug(temp_ci + ' - decorator - origProvider.$get -> start, for: ' + dec_name + msos_indent + 'original:', origInstance);
                 }
 
                 decorInstance = instanceInjector.invoke(
@@ -2967,7 +2980,7 @@ msos.console.time('ng');
                 );
 
                 if (msos_verbose) {
-                    msos_debug(temp_ci + ' - decorator - origProvider.$get ->  done, for: ' + dec_name + ', decorator instance:', decorInstance);
+                    msos_debug(temp_ci + ' - decorator - origProvider.$get ->  done, for: ' + dec_name + msos_indent + 'decorator:', decorInstance);
                 }
 
                 return decorInstance;
@@ -4277,7 +4290,7 @@ msos.console.time('ng');
 
                 function clearElementAnimationState(node) {
                     if (va) {
-                        msos_debug(temp_aq + ' - clearElementAnimationState -> called' + msos_indent + 'node: ' + nodeDebugName_(node));
+                        msos_debug(temp_aq + ' - clearElementAnimationState -> called' + msos_indent + 'node: ' + nodeDebugName_(node, true));
                     }
                     node.removeAttribute(NG_ANIMATE_ATTR_NAME);
                     activeAnimationsLookup['delete'](node);
@@ -4298,14 +4311,14 @@ msos.console.time('ng');
 
                     activeAnimationsLookup.set(node, newValue);
 
-                    msos_debug(temp_aq + ' - markElementAnimationState -> called' + msos_indent + 'state: ' + state + msos_indent + 'node: ' + nodeDebugName_(node));
+                    msos_debug(temp_aq + ' - markElementAnimationState -> called' + msos_indent + 'state: ' + state + msos_indent + 'node: ' + nodeDebugName_(node, true));
                 }
 
                 function closeChildAnimations(node) {
                     var children = node.querySelectorAll('[' + NG_ANIMATE_ATTR_NAME + ']');
 
                     if (va) {
-                        msos_debug(temp_aq + ' - closeChildAnimations -> called' + msos_indent + 'node: ' + nodeDebugName_(node));
+                        msos_debug(temp_aq + ' - closeChildAnimations -> called' + msos_indent + 'node: ' + nodeDebugName_(node, true));
                     }
 
                     forEach(children, function (child) {
@@ -4325,12 +4338,13 @@ msos.console.time('ng');
                     });
                 }
 
-                function areAnimationsAllowed(node_aAA) {
-                    var temp_aa = temp_aq + ' - areAnimationsAllowed -> ',
+                function allowAnim(node_aAA) {
+                    var temp_aa = temp_aq + ' - allowAnim -> ',
+						temp_aa2 = ', node: ' + nodeDebugName_(node_aAA, true),
                         db_notes = '',
                         parentNode_aAA = node_aAA.parentNode,
                         parentHost_aAA = jqLite.data(node_aAA, NG_ANIMATE_PIN_DATA),
-                        bodyNodeDetected = (node_aAA === bodyNode_aAA) || node_aAA.nodeName === 'HTML',
+                        bodyNodeDetected = (node_aAA === bodyNode_aAA),
                         rootNodeDetected = (node_aAA === rootNode_aAA),
                         parentAnimationDetected = false,
                         elementDisabled = disabledElementsLookup.get(node_aAA),
@@ -4343,13 +4357,13 @@ msos.console.time('ng');
                         bool_out;
 
                     if (msos_verbose) {
-                        msos_debug(temp_aa + 'start, node: ' + nodeDebugName_(node_aAA));
+                        msos_debug(temp_aa + 'start' + temp_aa2);
                     }
 
                     if (parentHost_aAA) {
                         parentNode_aAA = getDomNode(parentHost_aAA);
                         if (va) {
-                            msos_debug(temp_aa + 'assigned parent host, new parentNode:' + nodeDebugName_(parentNode_aAA));
+                            msos_debug(temp_aa + 'has parent host, new parentNode: ' + nodeDebugName_(parentNode_aAA, true));
                         }
                     }
 
@@ -4357,7 +4371,9 @@ msos.console.time('ng');
                         db_notes += '\n     |while|';
 
                         if (!rootNodeDetected) {
-                            rootNodeDetected = (parentNode_aAA === rootNode_aAA);
+							// Stop at first indication that AngularJS compilation is contained.
+							// $rootElement is not always <body> or <html> (sometime element are magically add to the page, ie: modals, popups)
+                            rootNodeDetected = (parentNode_aAA === rootNode_aAA) || (rootNode_aAA.nodeName === 'BODY' ? parentNode_aAA.nodeName === 'BODY' : parentNode_aAA.nodeName === 'HTML');
                             db_notes += 'no_root1_' + rootNodeDetected + '|';
                         }
 
@@ -4418,15 +4434,15 @@ msos.console.time('ng');
                             }
                         }
 
-						// very experimental (record each parent node's, are animations allowed)
+						// very experimental (record each parent node's, "are animations allowed")
 						allowedElement = allowedElementsLookup.get(parentNode_aAA);
 
-						if (!allowedElement) {
-							allowedElement = areAnimationsAllowed(parentNode_aAA);
+						if (_.isUndefined(allowedElement)) {
+							allowedElement = allowAnim(parentNode_aAA);
 							allowedElementsLookup.set(parentNode_aAA, allowedElement);
 						}
 
-						db_notes += ', for: ' + nodeDebugName_(parentNode_aAA);
+						db_notes += ', for: ' + nodeDebugName_(parentNode_aAA, true);
 
                         parentNode_aAA = parentNode_aAA.parentNode;
                     }
@@ -4444,8 +4460,8 @@ msos.console.time('ng');
 
                     bool_out = (allowAnimation && rootNodeDetected && bodyNodeDetected) ? true : false;
 
-                    if (msos_verbose) {
-                        msos_debug(temp_aa + ' done, output: ' + bool_out);
+					if (msos_verbose) {
+                        msos_debug(temp_aa + ' done' + temp_aa2 + ', output: ' + bool_out);
                     }
 
                     return bool_out;
@@ -4541,10 +4557,11 @@ msos.console.time('ng');
                     if (!skipAnimations && (!hasExistingAnimation || existingAnimation.state !== PRE_DIGEST_STATE)) {
 
 						// experimental (record each node's, are animations allowed)
+						// We are looking for the parent's with no child animations at any depth.
 						allowedElement = allowedElementsLookup.get(node_qA);
 
-						if (!allowedElement) {
-							allowedElement = areAnimationsAllowed(node_qA);
+						if (_.isUndefined(allowedElement)) {
+							allowedElement = allowAnim(node_qA);
 							allowedElementsLookup.set(node_qA, allowedElement);
 						}
 
@@ -4692,7 +4709,7 @@ msos.console.time('ng');
                             realRunner;
 
                         if (va) {
-                            msos_debug(temp_rp + ' -> start' + msos_indent + 'node: ' + nodeDebugName_(node_qA) + msos_indent + 'original el: ' + debug_el_name);
+                            msos_debug(temp_rp + ' -> start' + msos_indent + 'node: ' + nodeDebugName_(node_qA, true) + msos_indent + 'original el: ' + debug_el_name);
                         }
 
                         element = stripCommentsFromElement(originalElement);
@@ -4740,7 +4757,7 @@ msos.console.time('ng');
                         realRunner.done(function rs_pd_realrunner_done(status) {
 
 							if (va) {
-								msos_debug(temp_rp + ' - rs_pd_realrunner_done -> called' + msos_indent + 'node: ' + nodeDebugName_(node_qA) + msos_indent + 'status: ' + status);
+								msos_debug(temp_rp + ' - rs_pd_realrunner_done -> called' + msos_indent + 'node: ' + nodeDebugName_(node_qA, true) + msos_indent + 'status: ' + status);
 							}
 
                             close(!status);
@@ -5553,7 +5570,7 @@ msos.console.time('ng');
                 },
 
                 leave: function (element, options) {
-                    return $$animateQueue.push(element, 'leave', prepareAnimateOptions(options), function () {
+                    return $$animateQueue.push(element, 'leave', prepareAnimateOptions(options), function animate_leave_rm() {
                         element.remove();
                     });
                 },
@@ -5739,13 +5756,13 @@ msos.console.time('ng');
                         }
 
                         if (va) {
-                            msos_debug(temp_ar + ' - AnimateRunner - getPromise -> called, cnt: ' + self.count + ', host: ' + this.name + msos_indent + 'promise:', this.promise);
+                            msos_debug(temp_ar + ' - AnimateRunner - getPromise -> called' + msos_indent + 'cnt: ' + self.count + ', host: ' + this.name + msos_indent + 'promise:', this.promise);
                         }
 
                         return self.promise;
                     },
                     then: function (resolveHandler, rejectHandler) {
-                        msos_debug(temp_ar + ' - AnimateRunner - then -> called, cnt: ' + this.count + ', host: ' + this.name);
+                        msos_debug(temp_ar + ' - AnimateRunner - then -> called' + msos_indent + 'cnt: ' + this.count + ', host: ' + this.name);
 
                         return this.getPromise().then(resolveHandler, rejectHandler);
                     },
@@ -6108,6 +6125,11 @@ msos.console.time('ng');
 				task_type = taskType || br_tasktracker.DEFAULT_TASK_TYPE,
                 fn_name = fn.name || fn.ng_name || 'anonymous';
 
+			if (!_.isNumber(delay)) {
+				delay = browser_std_defer;
+				msos.console.error(temp_br + temp_df + ' -> failed for delay is not a number:', delay);
+			}
+
             delay = delay || browser_std_defer; 
 			br_tasktracker.incTaskCount(task_type);
 
@@ -6413,7 +6435,7 @@ msos.console.time('ng');
                         elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
 
                         if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
-                            msos_debug(temp_ap + temp_ac + temp_oap + 'fire close' + msos_indent + 'target:' + nodeDebugName_(ev.target));
+                            msos_debug(temp_ap + temp_ac + temp_oap + 'fire close' + msos_indent + 'target:' + nodeDebugName_(ev.target, true));
                             animationCompleted = true;
                             close();
                         }
@@ -6727,7 +6749,7 @@ msos.console.time('ng');
                                 i = 0;
 
                             if (va) {
-                                msos_debug(temp_ap + temp_ac + ' - onAnimationExpired -> start' + msos_indent + 'node: ' + nodeDebugName_(element) + msos_indent + 'key: ' + ANIMATE_TIMER_KEY + msos_indent + 'data:', animationsData);
+                                msos_debug(temp_ap + temp_ac + ' - onAnimationExpired -> start' + msos_indent + 'node: ' + nodeDebugName_(element, true) + msos_indent + 'key: ' + ANIMATE_TIMER_KEY + msos_indent + 'data:', animationsData);
                             }
 
                             if (animationsData) {
@@ -6738,7 +6760,7 @@ msos.console.time('ng');
                             }
 
                             if (va) {
-                                msos_debug(temp_ap + temp_ac + ' - onAnimationExpired ->  done' + msos_indent + 'node: ' + nodeDebugName_(element));
+                                msos_debug(temp_ap + temp_ac + ' - onAnimationExpired ->  done' + msos_indent + 'node: ' + nodeDebugName_(element, true));
                             }
                         }
 
@@ -6752,7 +6774,7 @@ msos.console.time('ng');
                                 currentTimerData;
 
                             if (va) {
-                                msos_debug(temp_ap + temp_ac + ' - triggerAnimationStart -> called' + msos_indent + 'node: ' + nodeDebugName_(element));
+                                msos_debug(temp_ap + temp_ac + ' - triggerAnimationStart -> called' + msos_indent + 'node: ' + nodeDebugName_(element, true));
                             }
 
                             if (animationClosed) { return; }
@@ -7194,7 +7216,7 @@ msos.console.time('ng');
                 function initDriverFnCSS(animationDetails) {
 
 					if (msos_verbose === 'animate') {
-						msos_debug(temp_cd + ' - initDriverFnCSS -> called' + msos_indent + 'node:' + nodeDebugName_(animationDetails.element));
+						msos_debug(temp_cd + ' - initDriverFnCSS -> called' + msos_indent + 'node:' + nodeDebugName_(animationDetails.element, true));
 					}
 
                     return animationDetails.from && animationDetails.to ? prepareFromToAnchorAnimation(animationDetails.from, animationDetails.to, animationDetails.anchors) : prepareRegularAnimation(animationDetails);
@@ -7462,7 +7484,10 @@ msos.console.time('ng');
 			PROP_CONTEXTS = createMap(),
             TTL_CP = 10,
             temp_cp = 'ng - $CompileProvider',
-            vc = (msos_verbose === 'compile');
+            vc = (msos_verbose === 'compile'),
+			publink_fn_count = 0,
+			nodelink_fn_count = 0,
+			apply_dirs_count = 0;
 
         function parseIsolateBindings(scope, directiveName, isController) {
             var LOCAL_REGEXP = /^([@&]|[=<](\*?))(\??)\s*([\w$]*)$/,
@@ -7506,7 +7531,7 @@ msos.console.time('ng');
             );
 
             if (vc) {
-                msos_debug(temp_cp + ' - parseIsolateBindings -> called, directiveName: ' + directiveName + ', bindings:', bindings);
+                msos_debug(temp_cp + ' - parseIsolateBindings -> called' + msos_indent + 'directiveName: ' + directiveName + msos_indent + 'bindings:', bindings);
             }
 
             return bindings;
@@ -7687,7 +7712,14 @@ msos.console.time('ng');
                 return this;
             }
 
-			var controller = options.controller || noop;
+			componentCache[name] = true;
+
+			var component_ctrl = options.controller || ['$scope', function noop_component_ctrl($scope) {
+					if (msos_verbose) {
+						msos_debug(temp_cp + ' - componenet - noop_component_ctrl -> called' + msos_indent + '$scope: ' + $scope.$$name);
+					}
+					return true;
+				}];
 
             function factory($injector) {
 
@@ -7707,9 +7739,9 @@ msos.console.time('ng');
                 }
 
                 var template = (!options.template && !options.templateUrl ? '' : options.template),
-                    ctrl_match = identifierForController(controller),
+                    ctrl_match = identifierForController(component_ctrl),
                     ddo = {
-                        controller: controller,
+                        controller: (ctrl_match && ctrl_match[1]) || component_ctrl,
                         controllerAs: (ctrl_match && ctrl_match[3]) || options.controllerAs || '$ctrl',
                         template: makeInjectable(template),
                         templateUrl: makeInjectable(options.templateUrl),
@@ -7739,8 +7771,8 @@ msos.console.time('ng');
                     if (key.charAt(0) === '$') {
                         factory[key] = val;
                         // Don't try to copy over annotations to named controller
-                        if (controller !== noop && _.isFunction(controller)) {
-							controller[key] = val;
+                        if (component_ctrl && _.isFunction(component_ctrl)) {
+							component_ctrl[key] = val;
 						}
                     }
                 }
@@ -8058,7 +8090,7 @@ msos.console.time('ng');
                         observer = key,
                         $$observers,
                         nodeName = nodeName_(this.$$element),
-                        db_name_attr = ', node: ' + nodeName + ' attribute: ' + key;
+                        db_name_attr = ', node: ' + nodeName + ' attr: ' + key;
 
                     if (vc) {
                         msos_debug(temp_cp + temp_st + 'start' + db_name_attr);
@@ -8197,7 +8229,7 @@ msos.console.time('ng');
                 return nodeName_(node_dN) !== 'foreignobject' && ngto_string.call(node_dN).match(/SVG/) ? 'svg' : 'html';
             }
 
-            function createBoundTranscludeFn(scope, transcludeFn, previousBoundTranscludeFn) {
+            function createBoundTranscludeFn(scope, transcludeFn_cBT, previousBoundTranscludeFn) {
 
                 function boundTranscludeFn(transcludedScope, cloneFn, controllers_bT, futureParentElement, containingScope) {
 
@@ -8207,7 +8239,11 @@ msos.console.time('ng');
                         transcludedScope.$$transcluded = true;
                     }
 
-                    return transcludeFn(
+					if (vc) {
+						msos_debug(temp_cp + ' - $get - boundTranscludeFn -> called, transcludedScope: ' + transcludedScope.$$name);
+					}
+
+                    return transcludeFn_cBT(
                         transcludedScope,
                         cloneFn,
                         {
@@ -8223,11 +8259,11 @@ msos.console.time('ng');
 
                 // We need to attach the transclusion slots onto the `boundTranscludeFn`
                 // so that they are available inside the `ctrlsBndTransclude` function 
-                for (slotName in transcludeFn.$$slots) {    // Leave as is
-                    if (transcludeFn.$$slots[slotName]) {   // hasOwnProperty() na in transcludeFn.$$slots
+                for (slotName in transcludeFn_cBT.$$slots) {    // Leave as is
+                    if (transcludeFn_cBT.$$slots[slotName]) {   // hasOwnProperty() na in transcludeFn_cBT.$$slots
                         boundSlots[slotName] = createBoundTranscludeFn(
                             scope,
-                            transcludeFn.$$slots[slotName],
+                            transcludeFn_cBT.$$slots[slotName],
                             previousBoundTranscludeFn
                         );
                     } else {
@@ -8241,7 +8277,7 @@ msos.console.time('ng');
             function addDirective(tDirectives, tAdded_directives, name, location, maxPriority, ignoreDirective, startAttrName, endAttrName) {
 
                 var temp_ad = ' - $get - addDirective -> ',
-                    db_out =  ' name: ' + name + ', for: ' + location,
+                    db_out =  ' name: ' + name + msos_indent + 'for: ' + location,
                     flag_match = false,
                     directive,
                     directives,
@@ -8441,8 +8477,8 @@ msos.console.time('ng');
 				);
 			}
 
-            function addAttrInterpolateDirective(node, directives, value, name, isNgAttr) {
-                var temp_ai = ' - $get - addAttrInterpolateDirective -> ',
+            function addAttrInterDir(node, directives, value, name, isNgAttr) {
+                var temp_ai = ' - $get - addAttrInterDir -> ',
 					nodeName = nodeName_(node),
                     trustedContext,
                     mustHaveExpression = !isNgAttr,
@@ -8460,7 +8496,7 @@ msos.console.time('ng');
                 // no interpolation found -> ignore
                 if (!interpolateFn) {
                     if (vc) {
-                        msos_debug(temp_cp + temp_ai + ' done, name: ' + name + ', no interpolation function.');
+                        msos_debug(temp_cp + temp_ai + ' done, name: ' + name + ', no interpolation fn.');
                     }
                     return;
                 }
@@ -8649,7 +8685,7 @@ msos.console.time('ng');
                         if (!validStdHtml[node_norm_name]) { customHtml[node_norm_name] = true; }
 
                         if (vc) {
-                            msos_debug(temp_cp + temp_cd + 'type element, ' + (validStdHtml[node_norm_name] ? '(std html)' : '(custom)') + ' normalized name: ' + node_norm_name);
+                            msos_debug(temp_cp + temp_cd + 'type element, ' + (validStdHtml[node_norm_name] ? '(std html)' : '(custom)') + ' name: ' + node_norm_name);
                         }
 
                         node_attrs_array = node.attributes;
@@ -8765,7 +8801,7 @@ msos.console.time('ng');
                         if (!at_ignore) {
 
                             if (vc) {
-                                msos_debug(temp_cp + temp_cd + 'type element, for: ' + node_norm_name + ', ng attributes:', node_ng_attrs_array);
+                                msos_debug(temp_cp + temp_cd + 'type element: ' + node_norm_name + msos_indent + 'ng attributes:', node_ng_attrs_array);
                             }
 
                             addDirective(
@@ -8797,7 +8833,7 @@ msos.console.time('ng');
 								} else {
 									// isNgAttr is true or false
 									if (node_ng_attrs_array[j].value && node_ng_attrs_array[j].value.length && NOT_EMPTY.test(node_ng_attrs_array[j].value) === true) {
-										addAttrInterpolateDirective(
+										addAttrInterDir(
 											node,
 											node_directives,
 											node_ng_attrs_array[j].value,
@@ -8915,7 +8951,7 @@ msos.console.time('ng');
                         node_directives,
                         function (d_obj) { directive_names.push(d_obj.name || (d_obj.compile ? 'compile' : 'na')); }
                     );
-                    msos_debug(temp_cp + temp_cd + ' done, for: ' + node_name + ', directives:', directive_names);
+                    msos_debug(temp_cp + temp_cd + ' done, for: ' + node_name + msos_indent + 'directives:', directive_names);
                 }
 
                 return node_directives;
@@ -8957,48 +8993,47 @@ msos.console.time('ng');
             }
 
             function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
-                return function groupedElementsLink(scope, element, attrs, controllers_gE, transcludeFn) {
+                return function groupedElementsLink(scope, element, attrs, controllers_gE, transcludeFn_gE) {
                     element = groupScan(element[0], attrStart, attrEnd);
-                    return linkFn(scope, element, attrs, controllers_gE, transcludeFn);
+                    return linkFn(scope, element, attrs, controllers_gE, transcludeFn_gE);
                 };
             }
 
-            function compilationGenerator(eager, $compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext) {
-                var compiled;
+            function compilationGen($compileNodes, transcludeFn_cG, maxPriority, ignoreDirective, previousCompileContext) {
+                var temp_cg = ' - $get - compilationGen',
+					precompiled;
 
-                if (vc) {
-                    msos_debug(temp_cp + ' - $get - compilationGenerator -> called, eager: ', eager);
-                }
+				if (vc) {
+					msos_debug(temp_cp + temp_cg + ' -> start, node: ' + nodeDebugName_($compileNodes, true));
+				}
 
-                if (eager) {
-                    return compile(
-                        $compileNodes,
-                        transcludeFn,
-                        maxPriority,
-                        ignoreDirective,
-                        previousCompileContext
-                    );
-                }
+				precompiled = compile(
+					$compileNodes,
+					transcludeFn_cG,
+					maxPriority,
+					ignoreDirective,
+					previousCompileContext
+				);
 
-                return function lazyCompilation() {
+				if (vc) {
+					msos_debug(temp_cp + temp_cg + ' ->  done, node: ' + nodeDebugName_($compileNodes, true));
+				}
 
-                    if (vc) {
-                        msos_debug(temp_cp + ' - $get - compilationGenerator - lazyCompilation -> called, compiled: ', compiled);
+                return function lazyComp() {
+					var temp_lc = ' - lazyComp -> ',
+						comp_output;
+
+                    if (msos_verbose) {
+                        msos_debug(temp_cp + temp_cg + temp_lc + 'start, node: ' + nodeDebugName_($compileNodes, true));
                     }
 
-                    if (!compiled) {
-                        compiled = compile(
-                            $compileNodes,
-                            transcludeFn,
-                            maxPriority,
-                            ignoreDirective,
-                            previousCompileContext
-                        );
+                    comp_output = precompiled.apply(this, arguments);
 
-                        $compileNodes = transcludeFn = previousCompileContext = null;
+                    if (msos_verbose) {
+                        msos_debug(temp_cp + temp_cg + temp_lc + ' done, compiled: ' + (precompiled.name || 'anonymous'));
                     }
 
-                    return compiled.apply(this, arguments);
+					return comp_output;
                 };
             }
 
@@ -9161,18 +9196,18 @@ msos.console.time('ng');
                 }
             }
 
-            function compileNodes(nodeList, transcludeFn, $rootElement_cN, maxPriority, ignoreDirective, previousCompileContext_cn) {
+            function compileNodesFn(nodeList, transcludeFn_cN, $rootElement_cN, maxPriority, ignoreDirective, previousCompileContext_cn) {
 
                 compile_nodes_cnt += 1;
 
-                var temp_cn = ' - $get - compileNodes -> ',
+                var temp_cn = ' - $get - compileNodesFn ::::> ',
                     debug_cn = [],
                     linkFns = [],
                     notLiveList = _.isArray(nodeList) || (nodeList instanceof jqLite),
                     attrs,
                     directives,
                     nodeLinkFn_cN,
-                    childNodes,
+                    childNodes_cN,
                     childLinkFn_cN,
                     linkFnFound,
                     nodeLinkFnFound,
@@ -9203,7 +9238,7 @@ msos.console.time('ng');
 							directives,
 							nodeList[l],
 							attrs,
-							transcludeFn,
+							transcludeFn_cN,
 							$rootElement_cN,
 							null,
 							[],
@@ -9218,11 +9253,11 @@ msos.console.time('ng');
 						compile.$$addScopeClass(attrs.$$element);
 					}
 
-					childNodes = nodeList[l].childNodes;
+					childNodes_cN = nodeList[l].childNodes;
 
-					childLinkFn_cN = (attrs.$attr.ngIgnore || (nodeLinkFn_cN && nodeLinkFn_cN.terminal) || !childNodes || !childNodes.length) ? null : compileNodes(
-							childNodes,
-							nodeLinkFn_cN ? ((nodeLinkFn_cN.transcludeOnThisElement || !nodeLinkFn_cN.templateOnThisElement) && nodeLinkFn_cN.transclude) : transcludeFn
+					childLinkFn_cN = (attrs.$attr.ngIgnore || (nodeLinkFn_cN && nodeLinkFn_cN.terminal) || !childNodes_cN || !childNodes_cN.length) ? null : compileNodesFn(
+							childNodes_cN,
+							nodeLinkFn_cN ? ((nodeLinkFn_cN.transcludeOnThisElement || !nodeLinkFn_cN.templateOnThisElement) && nodeLinkFn_cN.transclude) : transcludeFn_cN
 						);
 
 					if (nodeLinkFn_cN || childLinkFn_cN) {
@@ -9285,14 +9320,19 @@ msos.console.time('ng');
 
                             if (nodeLinkFn_cLF.transcludeOnThisElement) {
                                 childBoundTranscludeFn = createBoundTranscludeFn(
-                                    scope, nodeLinkFn_cLF.transclude, parentBoundTranscludeFn
+                                    scope,
+									nodeLinkFn_cLF.transclude,
+									parentBoundTranscludeFn
                                 );
 
                             } else if (!nodeLinkFn_cLF.templateOnThisElement && parentBoundTranscludeFn) {
                                 childBoundTranscludeFn = parentBoundTranscludeFn;
 
-                            } else if (!parentBoundTranscludeFn && transcludeFn) {
-                                childBoundTranscludeFn = createBoundTranscludeFn(scope, transcludeFn);
+                            } else if (!parentBoundTranscludeFn && transcludeFn_cN) {
+                                childBoundTranscludeFn = createBoundTranscludeFn(
+									scope,
+									transcludeFn_cN
+								);
 
                             } else {
                                 childBoundTranscludeFn = null;
@@ -9359,7 +9399,7 @@ msos.console.time('ng');
                             scope,
                             beforeTemplateLinkNode,
                             linkRootElement,
-                            boundTranscludeFn,
+                            boundTranscludeFn_suc,
                             linkNode,
                             oldClasses;
 
@@ -9443,7 +9483,7 @@ msos.console.time('ng');
                             }
                         });
 
-                        afterTemplateChildLinkFn = compileNodes(
+                        afterTemplateChildLinkFn = compileNodesFn(
                             $compileNode[0].childNodes,
                             childTranscludeFn
                         );
@@ -9452,7 +9492,7 @@ msos.console.time('ng');
                             scope = linkQueue.shift();
                             beforeTemplateLinkNode = linkQueue.shift();
                             linkRootElement = linkQueue.shift();
-                            boundTranscludeFn = linkQueue.shift();
+                            boundTranscludeFn_suc = linkQueue.shift();
                             linkNode = $compileNode[0];
 
                             if (scope.$$destroyed) { continue; }
@@ -9473,10 +9513,10 @@ msos.console.time('ng');
                                 childBoundTranscludeFn = createBoundTranscludeFn(
                                     scope,
                                     afterTemplateNodeLinkFn.transclude,
-                                    boundTranscludeFn
+                                    boundTranscludeFn_suc
                                 );
                             } else {
-                                childBoundTranscludeFn = boundTranscludeFn;
+                                childBoundTranscludeFn = boundTranscludeFn_suc;
                             }
                             afterTemplateNodeLinkFn(
                                 afterTemplateChildLinkFn,
@@ -9503,8 +9543,8 @@ msos.console.time('ng');
 
                 msos_debug(temp_cp + temp_ct + ' -> done!');
 
-                return function delayedNodeLinkFn(ignoreChildLinkFn_na, scope, node, rootElement, boundTranscludeFn) {
-                    var childBoundTranscludeFn = boundTranscludeFn;
+                return function delayedNodeLinkFn(ignoreChildLinkFn_na, scope, node, rootElement, boundTranscludeFn_del) {
+                    var childBoundTranscludeFn = boundTranscludeFn_del;
 
                     if (scope.$$destroyed) { return; }
 
@@ -9520,7 +9560,7 @@ msos.console.time('ng');
                             childBoundTranscludeFn = createBoundTranscludeFn(
                                 scope,
                                 afterTemplateNodeLinkFn.transclude,
-                                boundTranscludeFn
+                                boundTranscludeFn_del
                             );
                         }
 
@@ -9535,11 +9575,12 @@ msos.console.time('ng');
                 };
             }
 
-            applyDirsNode = function (directives, compileNode, templateAttrs, transcludeFn, jqCollection, originalReplaceDirective, preLinkFns, postLinkFns, previousCompileContext_apply) {
+            applyDirsNode = function (directives, compileNode, templateAttrs, transcludeFn_apply, jqCollection, originalReplaceDirective, preLinkFns, postLinkFns, previousCompileContext_apply) {
 
                 previousCompileContext_apply = previousCompileContext_apply || {};
+				apply_dirs_count += 1;
 
-                var temp_ap = ' - $get - applyDirsNode',
+                var temp_ap = ' - $get - applyDirsNode (' + apply_dirs_count + ')',
                     $compileNode = jqLite(compileNode),
                     nodeLinkFn = null,
                     comp_node_class = compileNode.classList && compileNode.classList.length ? ' (' + compileNode.classList + ')' : '',
@@ -9547,24 +9588,20 @@ msos.console.time('ng');
                     i = 0,
                     ii = 0,
                     terminalPriority = -Number.MAX_VALUE,
-                    newScopeDirective = previousCompileContext_apply.newScopeDirective,
-                    controllerDirectives = previousCompileContext_apply.controllerDirectives,
-                    newIsolateScopeDirective = previousCompileContext_apply.newIsolateScopeDirective,
+                    newScopeDir = previousCompileContext_apply.newScopeDirective,
+                    controllerDirs = previousCompileContext_apply.controllerDirectives,
+                    newIsoScopeDir = previousCompileContext_apply.newIsolateScopeDirective,
                     templateDirective = previousCompileContext_apply.templateDirective,
-                    nonTlbTranscludeDirective = previousCompileContext_apply.nonTlbTranscludeDirective,
-                    hasTranscludeDirective = false,
+                    nonTlbTransDir = previousCompileContext_apply.nonTlbTranscludeDirective,
+					hasElTransDir = previousCompileContext_apply.hasElementTranscludeDirective,
+                    hasTranscludeDir = false,
                     hasTemplate = false,
-                    hasElementTranscludeDirective = previousCompileContext_apply.hasElementTranscludeDirective,
                     directive,
                     directiveName,
                     $template,
                     replaceDirective = originalReplaceDirective,
-                    childTranscludeFn = transcludeFn,
+                    childTranscludeFn = transcludeFn_apply,
                     linkFn,
-                    didScanForMultipleTransclusion = false,
-                    mightHaveMultipleTransclusionError = false,
-                    candidateDirective,
-                    scanningIndex,
                     directiveValue,
                     directive_context,
                     attrStart,
@@ -9578,9 +9615,13 @@ msos.console.time('ng');
                     slotName,
 					slotCompileNodes;
 
-                if (vc) {
-                    msos_debug(temp_cp + temp_ap + ' -> start, node: ' + comp_node_name + msos_indent + 'context:', compileNode, previousCompileContext_apply);
-                }
+				if (msos_verbose) {
+					msos_debug(temp_cp + temp_ap + ' -> start, node: ' + comp_node_name + msos_indent + 'context:', previousCompileContext_apply);
+				}
+
+				if (!$compileNode[0]) {
+					msos.console.error(temp_cp + temp_ap + ' -> error, $compileNode is not a valid element.' );
+				}
 
                 templateAttrs.$$element = $compileNode;
 
@@ -9658,15 +9699,20 @@ msos.console.time('ng');
                     return value || null;
                 }
 
-                function setupControllers($element, attrs, transcludeFn, su_controller_dirs, su_isolated_scope, su_scope, su_new_isolated_scope_dir) {
+                function setupControllers($element, attrs, transcludeFn_sC, su_controller_dirs, su_isolated_scope, su_scope, su_new_isolated_scope_dir) {
                     var elementControllers = createMap(),
                         controllerKey,
                         directive,
                         locals = {},
                         su_controller,
+						su_controller_name = '',
                         su_controllerInstance;
 
-                    msos_debug(temp_cp + temp_ap + ' - setupControllers -> start' + msos_indent + '$element:' +  nodeDebugName_($element));
+                    msos_debug(temp_cp + temp_ap + ' - setupControllers -> start' + msos_indent + '$element: ' +  nodeDebugName_($element, true));
+
+					if (msos_verbose) {
+						msos_debug('     $attr:', vc ? attrs : _.keys(attrs.$attr));
+					}
 
                     for (controllerKey in su_controller_dirs) {   // hasOwnProperty() na in su_controller_dirs
 
@@ -9677,28 +9723,23 @@ msos.console.time('ng');
                             $scope: directive === su_new_isolated_scope_dir || directive.$$isolateScope ? su_isolated_scope : su_scope,
                             $element: $element,
                             $attrs: attrs,
-                            $transclude: transcludeFn
+                            $transclude: transcludeFn_sC
                         };
 
                         if (su_controller === '@') { su_controller = attrs[directive.name]; }
 
-                        // This noop check is experimental
-                        if (su_controller !== noop) {
-                            su_controllerInstance = $controller(su_controller, locals, true, directive);
+						su_controller_name = '$' + directive.name + 'Controller';
 
-                            elementControllers[directive.name] = su_controllerInstance;
-                            $element.data(
-								'$' + directive.name + 'Controller',
-								su_controllerInstance.instance
-							);
+                        su_controllerInstance = $controller(su_controller, locals, true, directive);
 
-                        } else {
-                            msos_debug(temp_cp + temp_ap + ' - setupControllers -> skipped for noop: ' + directive.name + 'Controller');
-                        }
+						elementControllers[directive.name] = su_controllerInstance;
 
-                        if (msos_verbose) {
-                            msos_debug(temp_cp + temp_ap + ' - setupControllers -> for: ' + directive.name + 'Controller');
-                        }
+                        $element.data(
+							su_controller_name,
+							su_controllerInstance.instance
+						);
+
+						msos_debug(temp_cp + temp_ap + ' - setupControllers -> added ctrl instance' + msos_indent + 'for: ' + su_controller_name);
                     }
 
                     msos_debug(temp_cp + temp_ap + ' - setupControllers ->  done!');
@@ -9718,12 +9759,16 @@ msos.console.time('ng');
 
                 // Set up $watches for isolate scope and controller bindings. This process
                 // only occurs for isolate scopes and new scopes with controllerAs.
-                function initializeDirectiveBindings(scope, attrs, destination, bindings, directive) {
+                function initializeDirBindings(scope, attrs, destination, bindings, directive) {
                     var removeWatchCollection = [],
                         initialChanges = {},
                         changes;
 
-                    msos_debug(temp_cp + temp_ap + ' - initializeDirectiveBindings -> start.');
+					if (msos_verbose) {
+						msos_debug(temp_cp + temp_ap + ' - initializeDirBindings -> start,');
+						msos_debug('     $attr:', _.keys(attrs.$attr));
+						msos_debug('     bindings:', bindings);
+					}
 
                     function triggerOnChangesHook() {
                         destination.$onChanges(changes);
@@ -9767,6 +9812,10 @@ msos.console.time('ng');
                             parentValueWatch,
                             removeWatch,
                             isLiteral;
+
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + ' - initializeDirBindings -> scopeName: ' + scopeName + ', mode: ' + mode);
+						}
 
                         switch (mode) {
 
@@ -9839,7 +9888,7 @@ msos.console.time('ng');
                                             directive.name
                                         );
 
-                                        msos.console.warn(temp_cp + temp_ap + ' - initializeDirectiveBindings -> warning: ' + exception);
+                                        msos.console.warn(temp_cp + temp_ap + ' - initializeDirBindings -> warning: ' + exception);
                                     }
                                 };
 
@@ -9942,7 +9991,9 @@ msos.console.time('ng');
                         }
                     });
 
-                    msos_debug(temp_cp + temp_ap + ' - initializeDirectiveBindings ->  done!');
+					if (msos_verbose) {
+						msos_debug(temp_cp + temp_ap + ' - initializeDirBindings ->  done!');
+					}
 
                     return {
                         initialChanges: initialChanges,
@@ -9957,8 +10008,15 @@ msos.console.time('ng');
                     };
                 }
 
-                nodeLinkFn = function (childLinkFn, scope, linkNode, $rootElement_na, boundTranscludeFn) {
-                    var k = 0,
+                nodeLinkFn = function (childLinkFn, scope, linkNode, $rootElement_na, boundTranscludeFn_nLF) {
+
+					nodelink_fn_count += 1;
+
+                    var temp_nl = ' - nodeLinkFn (' + nodelink_fn_count + ')',
+						child_fn_name = childLinkFn ? (childLinkFn.name || 'anonymous') : 'na',
+						link_node_db = nodeDebugName_(linkNode, true),
+						debug_nl = '',
+						k = 0,
                         kk = 0,
                         linkFn_nLF,
                         isolateScope,
@@ -9974,57 +10032,57 @@ msos.console.time('ng');
                         bindings,
                         scopeToChild;
 
+					if (msos_verbose) {
+						msos_debug(temp_cp + temp_ap + temp_nl + ' -> start' + msos_indent + 'scope: ' + scope.$$name + msos_indent + 'childLinkFn: ' + child_fn_name + msos_indent + 'linkNode: ' + link_node_db);
+					}
+
                     // This is the function that is injected as `$transclude`.
                     // Note: all arguments are optional!
-                    function ctrlsBndTransclude(scope, cloneAttachFn, futureParentElement, cbt_slotName) {
-                        var temp_cbt = ' - nodeLinkFn - ctrlsBndTransclude -> ',
+                    function ctrlsBndTransclude(scope, cloneAttachFn, cbt_slotName) {
+                        var temp_cbt = temp_nl + ' - ctrlsBndTransclude -> ',
+							clone_fn_name = cloneAttachFn ? (cloneAttachFn.name || 'anonymous') : 'na',
                             debug_cbt = '',
+							futureParentElement,
                             transcludeControllers,
                             slotTranscludeFn;
 
-                        if (vc) {
-                            msos_debug(temp_cp + temp_ap + temp_cbt + 'start.', scope, cloneAttachFn);
-                        }
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + temp_cbt + 'start' + msos_indent + 'cloneAttachFn: ' + clone_fn_name);
+						}
 
-                        // No scope passed in:
-                        if (!isScope(scope)) {
-                            if (_.isFunction(scope)) {
-                                debug_cbt += msos_indent + 'function input: ' + (scope.name || 'anonymous');
-                            } else {
-                                debug_cbt += msos_indent + 'unknown scope input';
-                            }
-                            cbt_slotName = futureParentElement;
-                            futureParentElement = cloneAttachFn;
-                            cloneAttachFn = scope;
-                            scope = undefined;
-                        } else {
-                            debug_cbt += msos_indent + 'has scope input';
-                        }
+						if (scope === undefined || isScope(scope)) {
+							if (msos_verbose && clone_fn_name === 'anonymous') {
+								msos.console.warn(temp_cp + temp_ap + temp_cbt + 'anonymous cloneAttachFn:', cloneAttachFn);
+							}
+						} else {
+							msos.console.error(temp_cp + temp_ap + temp_cbt + 'error, NgM input scope must be a $scope or undefined.');
+						}
 
-                        if (hasElementTranscludeDirective) {
+						if (isScope(scope)) {
+							debug_cbt = msos_indent + 'scope name: ' + scope.$$name;
+						}
+
+                        if (hasElTransDir) {
                             debug_cbt += msos_indent + 'has el transclude dir';
                             transcludeControllers = elementControllers;
-                        }
+							futureParentElement = $element.parent();
+                        } else {
+							futureParentElement = $element;
+						}
 
-                        if (!futureParentElement) {
-                            debug_cbt += msos_indent + 'set futureParentElement';
-                            futureParentElement = hasElementTranscludeDirective ? $element.parent() : $element;
-                        }
-
-                        if (vc) {
-                            msos_debug(temp_cp + temp_ap + temp_cbt + 'futureParentElement:', futureParentElement);
-                        }
+						debug_cbt += msos_indent + 'futureParentElement: ' + nodeDebugName_(futureParentElement, true);
 
                         if (cbt_slotName) {
-                            // slotTranscludeFn can be one of three things:
-                            //  * a transclude function - a filled slot, `null` - an optional slot that was not filled, `undefined` - a slot that was not declared (i.e. invalid)
-                            slotTranscludeFn = boundTranscludeFn.$$slots[cbt_slotName];
+
+                            slotTranscludeFn = boundTranscludeFn_nLF.$$slots[cbt_slotName];
 
                             if (slotTranscludeFn) {
-                                if (vc) {
-                                    debug_cbt += msos_indent + 'slotTranscludeFn';
-                                    msos_debug(temp_cp + temp_ap + temp_cbt + ' done' + msos_indent + 'slotName: ' + cbt_slotName + debug_cbt);
-                                }
+
+                                debug_cbt += msos_indent + 'slotTranscludeFn';
+								if (msos_verbose) {
+									msos_debug(temp_cp + temp_ap + temp_cbt + ' done' + msos_indent + 'slotName: ' + cbt_slotName + debug_cbt);
+								}
+
                                 return slotTranscludeFn(
                                         scope,
                                         cloneAttachFn,
@@ -10044,12 +10102,13 @@ msos.console.time('ng');
                             }
                         }
 
-                        if (vc) {
-                            debug_cbt += msos_indent + 'boundTranscludeFn';
-                            msos_debug(temp_cp + temp_ap + temp_cbt + ' done' + debug_cbt);
-                        }
+                        debug_cbt += msos_indent + 'boundTranscludeFn_nLF';
 
-                        return boundTranscludeFn(
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + temp_cbt + ' done' + debug_cbt);
+						}
+                        
+                        return boundTranscludeFn_nLF(
                             scope,
                             cloneAttachFn,
                             transcludeControllers,
@@ -10061,57 +10120,64 @@ msos.console.time('ng');
                     if (compileNode === linkNode) {
                         attrs = templateAttrs;
                         $element = templateAttrs.$$element;
+						debug_nl += msos_indent + 'compileNode === linkNode';
                     } else {
                         $element = jqLite(linkNode);
                         attrs = new Attributes($element, templateAttrs);
                     }
 
+					debug_nl += msos_indent + '$element: ' + nodeDebugName_($element, true);
+
                     controllerScope = scope;
 
-                    if (newIsolateScopeDirective) {
+                    if (newIsoScopeDir) {
                         isolateScope = scope.$new(true);
                         isolateScope.$$name += '_nodelink' + isolateScope.$id;
-                    } else if (newScopeDirective) {
+						debug_nl += msos_indent + 'newIsoScopeDir: ' + isolateScope.$$name;
+                    } else if (newScopeDir) {
                         controllerScope = scope.$parent;
                     }
 
-                    if (boundTranscludeFn) {
+                    if (boundTranscludeFn_nLF) {
                         // track `boundTranscludeFn` so it can be unwrapped if `transcludeFn`
                         // is later passed as `parentBoundTranscludeFn` to `publicLinkFn`
                         transcludeFn_nLF = ctrlsBndTransclude;
-                        transcludeFn_nLF.$$boundTransclude = boundTranscludeFn;
+                        transcludeFn_nLF.$$boundTransclude = boundTranscludeFn_nLF;
                         // expose the slots on the `$transclude` function
                         transcludeFn_nLF.isSlotFilled = function (nLF_slotName) {
-                            return !!boundTranscludeFn.$$slots[nLF_slotName];
+                            return !!boundTranscludeFn_nLF.$$slots[nLF_slotName];
                         };
+
+						debug_nl += msos_indent + 'has boundTranscludeFn_nLF';
                     }
 
-                    if (controllerDirectives) {
+                    if (controllerDirs) {
                         elementControllers = setupControllers(
                             $element,
                             attrs,
                             transcludeFn_nLF,
-                            controllerDirectives,
+                            controllerDirs,
                             isolateScope,
                             scope,
-                            newIsolateScopeDirective
+                            newIsoScopeDir
                         );
+						debug_nl += msos_indent + 'has controllerDirs';
                     }
 
-                    if (newIsolateScopeDirective) {
+                    if (newIsoScopeDir) {
                         // Initialize isolate scope bindings for new isolate scope directive.
-                        compile.$$addScopeInfo($element, isolateScope, true, !(templateDirective && (templateDirective === newIsolateScopeDirective || templateDirective === newIsolateScopeDirective.$$originalDirective)));
+                        compile.$$addScopeInfo($element, isolateScope, true, !(templateDirective && (templateDirective === newIsoScopeDir || templateDirective === newIsoScopeDir.$$originalDirective)));
 
                         compile.$$addScopeClass($element, true);
 
-                        isolateScope.$$isolateBindings = newIsolateScopeDirective.$$isolateBindings;
+                        isolateScope.$$isolateBindings = newIsoScopeDir.$$isolateBindings;
 
-                        scopeBindingInfo = initializeDirectiveBindings(
+                        scopeBindingInfo = initializeDirBindings(
                             scope,
                             attrs,
                             isolateScope,
                             isolateScope.$$isolateBindings,
-                            newIsolateScopeDirective
+                            newIsoScopeDir
                         );
 
                         if (scopeBindingInfo.removeWatches) {
@@ -10120,12 +10186,14 @@ msos.console.time('ng');
 								scopeBindingInfo.removeWatches
 							);
                         }
+
+						debug_nl += msos_indent + 'has newIsoScopeDir';
                     }
 
                     // Initialize bindToController bindings
                     for (ctrlr_key in elementControllers) {     // hasOwnProperty() na in elementControllers
 
-                        controllerDirective = controllerDirectives[ctrlr_key];
+                        controllerDirective = controllerDirs[ctrlr_key];
                         controller = elementControllers[ctrlr_key];
                         bindings = controllerDirective.$$bindings.bindToController;
 
@@ -10136,7 +10204,7 @@ msos.console.time('ng');
 							controller.instance
 						);
 
-						controller.bindingInfo = initializeDirectiveBindings(
+						controller.bindingInfo = initializeDirBindings(
 							controllerScope,
 							attrs,
 							controller.instance,
@@ -10147,7 +10215,7 @@ msos.console.time('ng');
 
                     // Bind the required controllers to the controller, if `require` is an object and `bindToController` is truthy
                     forEach(
-                        controllerDirectives,
+                        controllerDirs,
                         function (controllerDirective, name) {
                             var require = controllerDirective.require;
 
@@ -10163,7 +10231,7 @@ msos.console.time('ng');
                     // Handle the init and destroy lifecycle hooks on all controllers that have them
                     forEach(
                         elementControllers,
-                        function (controller) {
+                        function lifecycleHooks(controller) {
                             var ctrl_instance = controller.instance || {};
 
                             if (_.isFunction(ctrl_instance.$onChanges)) {
@@ -10193,7 +10261,7 @@ msos.console.time('ng');
                     );
 
                     if (vc) {
-                        msos_debug(temp_cp + temp_ap + ' -> pre-linking begins, count: ' + preLinkFns.length);
+                        msos_debug(temp_cp + temp_ap + temp_nl + ' -> pre-linking begins, count: ' + preLinkFns.length);
                     }
 
                     // PRELINKING
@@ -10201,7 +10269,7 @@ msos.console.time('ng');
                         linkFn_nLF = preLinkFns[k];
 
                         if (msos_verbose) {
-                            msos_debug(temp_cp + temp_ap + ' -> pre-linking directive: ' + (linkFn_nLF.directiveName || 'na'));
+                            msos_debug(temp_cp + temp_ap + temp_nl + ' -> pre-linking directive: ' + (linkFn_nLF.directiveName || 'na'));
                         }
 
                         linkFn_nLF(
@@ -10219,7 +10287,7 @@ msos.console.time('ng');
                     }
 
                     if (vc) {
-                        msos_debug(temp_cp + temp_ap + ' -> pre-linking ends.');
+                        msos_debug(temp_cp + temp_ap + temp_nl + ' -> pre-linking ends.');
                     }
 
                     // RECURSION
@@ -10227,16 +10295,23 @@ msos.console.time('ng');
                     // otherwise the child elements do not belong to the isolate directive.
                     scopeToChild = scope;
 
-                    if (newIsolateScopeDirective && (newIsolateScopeDirective.template || newIsolateScopeDirective.templateUrl === null)) {
+                    if (newIsoScopeDir && (newIsoScopeDir.template || newIsoScopeDir.templateUrl === null)) {
                         scopeToChild = isolateScope;
                     }
 
                     if (childLinkFn) {
-                        childLinkFn(scopeToChild, linkNode.childNodes, undefined, boundTranscludeFn);
+                        childLinkFn(
+							scopeToChild,
+							linkNode.childNodes,
+							undefined,
+							boundTranscludeFn_nLF
+						);
+
+						debug_nl += msos_indent + 'has childLinkFn';
                     }
 
                     if (vc) {
-                        msos_debug(temp_cp + temp_ap + ' -> post-linking begins, count: ' + postLinkFns.length);
+                        msos_debug(temp_cp + temp_ap + temp_nl + ' -> post-linking begins, count: ' + postLinkFns.length);
                     }
 
                     // POSTLINKING
@@ -10244,7 +10319,7 @@ msos.console.time('ng');
                         linkFn_nLF = postLinkFns[k];
 
                         if (vc) {
-                            msos_debug(temp_cp + temp_ap + ' -> post-linking directive' + msos_indent + 'directive: ' + (linkFn_nLF.directiveName || linkFn_nLF.name || 'na'));
+                            msos_debug(temp_cp + temp_ap + temp_nl + ' -> post-linking directive' + msos_indent + 'directive: ' + (linkFn_nLF.directiveName || linkFn_nLF.name || 'na'));
                         }
 
                         linkFn_nLF(
@@ -10262,7 +10337,7 @@ msos.console.time('ng');
                     }
 
                     if (vc) {
-                        msos_debug(temp_cp + temp_ap + ' -> post-linking ends.');
+                        msos_debug(temp_cp + temp_ap + temp_nl + ' -> post-linking ends.');
                     }
 
                     // Trigger $postLink lifecycle hooks
@@ -10276,6 +10351,10 @@ msos.console.time('ng');
                             }
                         }
                     );
+
+					if (msos_verbose) {
+						msos_debug(temp_cp + temp_ap + temp_nl + ' ->  done' + msos_indent + 'scope: ' + scope.$$name + msos_indent + 'scopeToChild: ' + scopeToChild.$$name + debug_nl);
+					}
                 };
 
                 function addLinkFns(pre, post, attrStart, attrEnd) {
@@ -10283,7 +10362,7 @@ msos.console.time('ng');
                         if (attrStart) { pre = groupElementsLinkFnWrapper(pre, attrStart, attrEnd); }
                         pre.require = directive.require;
                         pre.directiveName = directiveName;
-                        if (newIsolateScopeDirective === directive || directive.$$isolateScope) {
+                        if (newIsoScopeDir === directive || directive.$$isolateScope) {
                             pre = cloneAndAnnotateFn(pre, {
                                 isolateScope: true
                             });
@@ -10295,7 +10374,7 @@ msos.console.time('ng');
                         if (attrStart) { post = groupElementsLinkFnWrapper(post, attrStart, attrEnd); }
                         post.require = directive.require;
                         post.directiveName = directiveName;
-                        if (newIsolateScopeDirective === directive || directive.$$isolateScope) {
+                        if (newIsoScopeDir === directive || directive.$$isolateScope) {
                             post = cloneAndAnnotateFn(post, {
                                 isolateScope: true
                             });
@@ -10327,6 +10406,8 @@ msos.console.time('ng');
                 }
 
                 function add_matching_elements(node) {
+					if (node.nodeType !== NODE_TYPE_ELEMENT) { return; }
+
                     var cnc_slot_name = slotMap[directiveNormalize(nodeName_(node))];
 
                     if (cnc_slot_name) {
@@ -10339,8 +10420,9 @@ msos.console.time('ng');
                 }
                 // End: defining functions for applyDirsNode
 
-                // Start: for loop for applyDirsNode
+                // Start: for loop, applyDirsNode
                 for (i = 0; i < ii; i += 1) {
+
                     directive = directives[i];
                     attrStart = directive.$$start;
                     attrEnd = directive.$$end;
@@ -10349,6 +10431,10 @@ msos.console.time('ng');
                     if (attrStart) {
                         $compileNode = groupScan(compileNode, attrStart, attrEnd);
                     }
+
+					if (!$compileNode[0]) {
+						msos.console.error(temp_cp + temp_ap + ' -> error, $compileNode after groupScan is not a valid element.' );
+					}
 
                     $template = undefined;
 
@@ -10361,102 +10447,109 @@ msos.console.time('ng');
                     if (directiveValue) {
                         // skip the check for directives with async templates, we'll check the derived sync
                         // directive when the template arrives
-                        msos_debug(temp_cp + temp_ap + ' -> processing directive value.');
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + ' -> processing directive value.');
+						}
 
                         if (!directive.templateUrl) {
                             if (_.isObject(directiveValue)) {
                                 // This directive is trying to add an isolated scope.
                                 // Check that there is no scope of any kind already
-                                assertNoDuplicate('new/isolated scope (object)', newIsolateScopeDirective || newScopeDirective, directive, $compileNode);
-                                newIsolateScopeDirective = directive;
+                                assertNoDuplicate(
+									'new/isolated scope (object)',
+									newIsoScopeDir || newScopeDir,
+									directive,
+									$compileNode
+								);
+
+                                newIsoScopeDir = directive;
                             } else {
                                 // This directive is trying to add a child scope.
                                 // Check that there is no isolated scope already
-                                assertNoDuplicate('new/isolated scope (value)', newIsolateScopeDirective, directive, $compileNode);
+                                assertNoDuplicate(
+									'new/isolated scope (value)',
+									newIsoScopeDir,
+									directive,
+									$compileNode
+								);
                             }
                         }
 
-                        newScopeDirective = newScopeDirective || directive;
+                        newScopeDir = newScopeDir || directive;
                     }
 
                     directiveName = directive.name;
 
-                    if (!didScanForMultipleTransclusion && ((directive.replace && (directive.templateUrl || directive.template)) || (directive.transclude && !directive.$$tlb))) {
-
-                        for (scanningIndex = i + 1; scanningIndex < directives.length; scanningIndex += 1) {
-                            candidateDirective = directives[scanningIndex];
-
-                            if ((candidateDirective.transclude && !candidateDirective.$$tlb) || (candidateDirective.replace && (candidateDirective.templateUrl || candidateDirective.template))) {
-                                mightHaveMultipleTransclusionError = true;
-                                break;
-                            }
-                        }
-
-                        didScanForMultipleTransclusion = true;
-                    }
-
                     if (!directive.templateUrl && directive.controller) {
 
-                        controllerDirectives = controllerDirectives || createMap();
+                        controllerDirs = controllerDirs || createMap();
 
                         msos_debug(temp_cp + temp_ap + ' -> waiting for template, controller ready' + msos_indent + 'directive: ' + directiveName);
 
                         assertNoDuplicate(
-                            directiveName + ' controller',
-                            controllerDirectives[directiveName],
+                            directiveName + ' (controller)',
+                            controllerDirs[directiveName],
                             directive,
                             $compileNode
                         );
 
-                        controllerDirectives[directiveName] = directive;
+                        controllerDirs[directiveName] = directive;
                     }
 
                     directiveValue = directive.transclude;
 
                     if (directiveValue) {
 
-                        hasTranscludeDirective = true;
+                        hasTranscludeDir = true;
 
-                        msos_debug(temp_cp + temp_ap + ' -> processing transclusion' + msos_indent + 'directive: ' + directiveName);
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + ' -> processing transclusion' + msos_indent + 'directive: ' + directiveName);
+						}
 
                         if (!directive.$$tlb) {
 
-                            msos_debug(temp_cp + temp_ap + ' -> processing $$tlb (false)' + msos_indent + 'directive: ' + directiveName);
+							if (msos_verbose) {
+								msos_debug(temp_cp + temp_ap + ' -> processing $$tlb (false)' + msos_indent + 'directive: ' + directiveName);
+							}
 
                             assertNoDuplicate(
                                 'transclusion $$tlb (false)',
-                                nonTlbTranscludeDirective,
+                                nonTlbTransDir,
                                 directive,
                                 $compileNode
                             );
-                            nonTlbTranscludeDirective = directive;
+
+                            nonTlbTransDir = directive;
                         }
 
                         if (directiveValue === 'element') {
-                            hasElementTranscludeDirective = true;
+                            hasElTransDir = true;
                             terminalPriority = directive.priority;
                             $template = $compileNode;
                             $compileNode = templateAttrs.$$element = jqLite(compile.$$createComment(directiveName, templateAttrs[directiveName]));
                             compileNode = $compileNode[0];
                             replaceWith(jqCollection, sliceArgs($template), compileNode);
 
-                            msos_debug(temp_cp + temp_ap + ' -> processing template (element)' + msos_indent + 'directive: ' + directiveName);
+							if (msos_verbose) {
+								msos_debug(temp_cp + temp_ap + ' -> processing template (element)' + msos_indent + 'directive: ' + directiveName);
+							}
 
-                            childTranscludeFn = compilationGenerator(
-                                mightHaveMultipleTransclusionError,
+                            childTranscludeFn = compilationGen(
                                 $template,
-                                transcludeFn,
+                                transcludeFn_apply,
                                 terminalPriority,
                                 replaceDirective && replaceDirective.name,
-                                { nonTlbTranscludeDirective: nonTlbTranscludeDirective }
+                                { nonTlbTranscludeDirective: nonTlbTransDir }
                             );
 
                         } else {
 
-                            msos_debug(temp_cp + temp_ap + ' -> processing template (contents)' + msos_indent + 'directive: ' + directiveName);
+							if (msos_verbose) {
+								msos_debug(temp_cp + temp_ap + ' -> processing template (contents)' + msos_indent + 'directive: ' + directiveName);
+							}
 
                             if (!isObject(directiveValue)) {
-                                $template = jqLite(jqLiteClone(compileNode)).contents();
+                                $template = jQuery(jqLiteClone(compileNode)).contents();
                             } else {
                                 // We have transclusion slots, collect them up, compile them and store their transclusion functions
                                 $template = window.document.createDocumentFragment();
@@ -10484,37 +10577,41 @@ msos.console.time('ng');
                                         // Only define a transclusion function if the slot was filled
 										slotCompileNodes = jqLite(slots[slotName].childNodes);
 
-										slots[slotName] = compilationGenerator(
-											mightHaveMultipleTransclusionError,
+										slots[slotName] = compilationGen(
 											slotCompileNodes,
-											transcludeFn
+											transcludeFn_apply
 										);
 
                                     }
                                 }
 
-								$template = jqLite($template.childNodes);
+								$template = jQuery($template.childNodes);
                             }
 
-                            $compileNode.empty();   // clear contents
+							if (!$template[0]) {
+								msos.console.error(temp_cp + temp_ap + ' -> processing template (contents), problem with $template:', $template);
+							}
 
-                            childTranscludeFn = compilationGenerator(
-                                mightHaveMultipleTransclusionError,
+                            childTranscludeFn = compilationGen(
                                 $template,
-                                transcludeFn,
+                                transcludeFn_apply,
                                 undefined,
                                 undefined,
                                 { needsNewScope: directive.$$isolateScope || directive.$$newScope }
                             );
 
                             childTranscludeFn.$$slots = slots;
+
+							$compileNode.empty();   // clear contents
                         }
                     }
 
                     if (directive.template) {
                         hasTemplate = true;
 
-                        msos_debug(temp_cp + temp_ap + ' -> processing template (script)' + msos_indent + 'directive: ' + directiveName);
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + ' -> processing template (script)' + msos_indent + 'directive: ' + directiveName);
+						}
 
                         if (!assertNoDuplicate('template (script)', templateDirective, directive, $compileNode)) {
                             templateDirective = directive;
@@ -10553,15 +10650,17 @@ msos.console.time('ng');
 
                             templateDirectives = collectDirectives(compileNode, [], newTemplateAttrs);
 
-                            msos_debug(temp_cp + temp_ap + ' -> template directives:', templateDirectives);
+							if (msos_verbose) {
+								msos_debug(temp_cp + temp_ap + ' -> template directives:', templateDirectives);
+							}
 
                             unprocessedDirectives = directives.splice(i + 1, directives.length - (i + 1));
 
-                            if (newIsolateScopeDirective || newScopeDirective) {
+                            if (newIsoScopeDir || newScopeDir) {
                                 markDirectiveScope(
                                     templateDirectives,
-                                    newIsolateScopeDirective,
-                                    newScopeDirective
+                                    newIsoScopeDir,
+                                    newScopeDir
                                 );
                             }
 
@@ -10579,7 +10678,9 @@ msos.console.time('ng');
 
                         hasTemplate = true;
 
-                        msos_debug(temp_cp + temp_ap + ' -> processing template (url)' + msos_indent + 'directive: ' + directiveName);
+						if (msos_verbose) {
+							msos_debug(temp_cp + temp_ap + ' -> processing template (url)' + msos_indent + 'directive: ' + directiveName);
+						}
 
                         assertNoDuplicate('template (url)', templateDirective, directive, $compileNode);
 
@@ -10594,15 +10695,15 @@ msos.console.time('ng');
                             $compileNode,
                             templateAttrs,
                             jqCollection,
-                            hasTranscludeDirective && childTranscludeFn,
+                            hasTranscludeDir && childTranscludeFn,
                             preLinkFns,
                             postLinkFns,
                             {
-                                controllerDirectives:       controllerDirectives,
-                                newScopeDirective:          (newScopeDirective !== directive) && newScopeDirective,
-                                newIsolateScopeDirective:   newIsolateScopeDirective,
+                                controllerDirectives:       controllerDirs,
+                                newScopeDirective:          (newScopeDir !== directive) && newScopeDir,
+                                newIsolateScopeDirective:   newIsoScopeDir,
                                 templateDirective:          templateDirective,
-                                nonTlbTranscludeDirective:  nonTlbTranscludeDirective
+                                nonTlbTranscludeDirective:  nonTlbTransDir
                             }
                         );
 
@@ -10630,23 +10731,23 @@ msos.console.time('ng');
                 }
                 // End: for loop for applyDirsNode
 
-                nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope === true;
-                nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;
+                nodeLinkFn.scope = newScopeDir && newScopeDir.scope === true;
+                nodeLinkFn.transcludeOnThisElement = hasTranscludeDir;
                 nodeLinkFn.templateOnThisElement = hasTemplate;
                 nodeLinkFn.transclude = childTranscludeFn;
 
-                previousCompileContext_apply.hasElementTranscludeDirective = hasElementTranscludeDirective;
+                previousCompileContext_apply.hasElementTranscludeDirective = hasElTransDir;
 
-                if (vc) {
-                    msos_debug(temp_cp + temp_ap + ' ->  done, node: ' + comp_node_name);
-                }
+				if (msos_verbose) {
+					msos_debug(temp_cp + temp_ap + ' ->  done, node: ' + comp_node_name);
+				}
 
                 return nodeLinkFn;
             };
 
-            compile = function ($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext_compile) {
-                var temp_c = ' - $get - compile -> ',
-                    compositeLinkFn_cpl,
+            compile = function ($compileNodes, transcludeFn_compile, maxPriority, ignoreDirective, previousCompileContext_compile) {
+                var temp_c = ' - $get - compile',
+					compositeLinkFn_cpl,
                     namespace = null,
                     prev_repl = previousCompileContext_compile ? _.keys(previousCompileContext_compile) : [],
                     ng_assigned,
@@ -10657,27 +10758,16 @@ msos.console.time('ng');
                     $compileNodes = jqLite($compileNodes);
                 }
 
-				if (vc) {
-					msos_debug(temp_cp + temp_c + 'start' + (prev_repl.length ? msos_indent + 'previous: ' + prev_repl.join(', ') : '') + msos_indent + '$compileNodes:', $compileNodes);
+				if (vc && !$compileNodes[0]) {
+					msos.console.warn(temp_cp + temp_c + ' -> no actionable $compileNodes node:' , $compileNodes);
 				}
 
-                // This is the only one which passes previous context
-                compositeLinkFn_cpl = compileNodes(
-                    $compileNodes,
-                    transcludeFn,
-                    $compileNodes,
-                    maxPriority,
-                    ignoreDirective,
-                    previousCompileContext_compile
-                );
-
-                compile.$$addScopeClass($compileNodes);
-
-                if (vc) {
-                    msos_debug(temp_cp + temp_c + 'custom Html:', customHtml);
-                    msos_debug(temp_cp + temp_c + 'custom Attr:', customAttr);
-                    msos_debug(temp_cp + temp_c + 'hasDirectives:', hasDirectives);
-                    msos_debug(temp_cp + temp_c + 'hasBindings:', hasBindings);
+				if (vc) {
+					msos_debug(temp_cp + temp_c + ' -> start' + (prev_repl.length ? msos_indent + 'previous: ' + prev_repl.join(', ') : '') + msos_indent + '$compileNodes: ' + nodeDebugName_($compileNodes, true));
+                    msos_debug('     custom Html:', _.keys(customHtml));
+                    msos_debug('     custom Attr:', _.keys(customAttr));
+                    msos_debug('     hasDirectives:', _.keys(hasDirectives));
+                    msos_debug('     hasBindings:', _.keys(hasBindings));
                 }
 
                 // This is expensive, so only do it at debugging (no account for specific scope)
@@ -10689,65 +10779,68 @@ msos.console.time('ng');
                     ng_difference = _.difference(ng_assigned, ng_available);
 
                     if (ng_difference.length) {
-                        msos.console.warn(temp_cp + temp_c + 'unregistered directive(s):', ng_difference);
+                        msos.console.warn(temp_cp + temp_c + ' -> unregistered directive(s):', ng_difference);
                     }
                 }
 
-				if (vc) {
-					msos_debug(temp_cp + temp_c + 'done!');
-				}
+				// This is the only one which passes previous context
+				compositeLinkFn_cpl = compileNodesFn(
+					$compileNodes,
+					transcludeFn_compile,
+					$compileNodes,
+					maxPriority,
+					ignoreDirective,
+					previousCompileContext_compile
+				);
 
-                return function publicLinkFn(scope, cloneConnectFn, options) {
+				compile.$$addScopeClass($compileNodes);
 
-                    if (!$compileNodes) {
-                        throw $compileMinErr(
-                            'multilink',
-                            'This element has already been linked.'
-                        );
-                    }
+                function publicLinkFn(scope, cloneConnectFn, options) {
+
+					options = options || {};
+					publink_fn_count += 1;
+
+					var temp_pl = ' - publicLinkFn (' + publink_fn_count + ') -> ',
+						db_notes = '',
+						parentBoundTranscludeFn = options.parentBoundTranscludeFn,
+                        transcludeControllers = options.transcludeControllers,
+                        futureParentElement = options.futureParentElement,
+                        $linkNode,
+                        controllerName;
+
+					msos_debug(temp_cp + temp_c + temp_pl + 'start' + msos_indent + 'scope: ' + scope.$$name);
 
                     assertArg(scope, 'scope');
 
                     if (previousCompileContext_compile && previousCompileContext_compile.needsNewScope) {
                         scope = scope.$parent.$new();
                         scope.$$name += '_publink' + scope.$id;
+						db_notes += msos_indent + 'new parent scope: ' + scope.$$name;
                     }
 
-                    options = options || {};
-
-                    var parentBoundTranscludeFn = options.parentBoundTranscludeFn,
-                        transcludeControllers = options.transcludeControllers,
-                        futureParentElement = options.futureParentElement,
-                        $linkNode,
-                        controllerName;
-
-                    // When `parentBoundTranscludeFn` is passed, it is a
-                    // `ctrlsBndTransclude` function (it was previously passed
-                    // as `transclude` to directive.link) so we must unwrap it to get
-                    // its `boundTranscludeFn`
                     if (parentBoundTranscludeFn && parentBoundTranscludeFn.$$boundTransclude) {
                         parentBoundTranscludeFn = parentBoundTranscludeFn.$$boundTransclude;
+						db_notes += msos_indent + 'assign $$boundTransclude';
                     }
 
                     if (!namespace) {
                         namespace = detectNamespaceForChildElements(futureParentElement);
+						db_notes += msos_indent + 'namespace: ' + namespace;
                     }
 
                     if (namespace !== 'html') {
                         $linkNode = jqLite(
-                            wrapTemplate(namespace, jqLite('<div></div>').append($compileNodes).html())
+                            wrapTemplate(namespace, jqLite('<div class="linknode"></div>').append($compileNodes).html())
                         );
-
-                    } else if (cloneConnectFn && cloneConnectFn !== noop) {     // cloneConnectFn !== noop, experimental
-                        // was JQLitePrototype.clone.call($compileNodes), experimental
-                        $linkNode = jQuery($compileNodes).clone();
-
+                    } else if (cloneConnectFn) {
+                        $linkNode = $compileNodes.clone(true);
+						db_notes += msos_indent + '$linkNode cloned, cloneConnectFn: ' + (cloneConnectFn.name || 'anonymous');
                     } else {
-						if (vc && cloneConnectFn && cloneConnectFn === noop) {
-							msos.console.warn(temp_cp + temp_c + 'experimental, skipped cloning $compileNodes');
-						}
                         $linkNode = $compileNodes;
+						db_notes += msos_indent + '$linkNode === $compileNodes';
                     }
+
+					db_notes += msos_indent + '$linkNode: ' + nodeDebugName_($linkNode, true);
 
                     if (transcludeControllers) {
                         for (controllerName in transcludeControllers) {     // hasOwnProperty() na in transcludeControllers
@@ -10756,60 +10849,76 @@ msos.console.time('ng');
 								transcludeControllers[controllerName].instance
 							);
                         }
+						db_notes += msos_indent + 'has transcludeControllers';
                     }
 
                     compile.$$addScopeInfo($linkNode, scope);
 
-                    if (cloneConnectFn && cloneConnectFn !== noop) {        // experimental
-                        cloneConnectFn($linkNode, scope);
+                    if (cloneConnectFn) {
+                        if (cloneConnectFn !== noop) {
+							db_notes += msos_indent + 'executed cloneConnectFn';
+							cloneConnectFn($linkNode, scope);
+						} else {
+							db_notes += msos_indent + 'skipped for cloneConnectFn === noop';
+						}
                     }
 
-                    if (compositeLinkFn_cpl) { compositeLinkFn_cpl(scope, $linkNode, $linkNode, parentBoundTranscludeFn); }
+                    if (compositeLinkFn_cpl) {
+						compositeLinkFn_cpl(
+							scope,
+							$linkNode,
+							$linkNode,
+							parentBoundTranscludeFn
+						);
+						db_notes += msos_indent + 'executed compositeLinkFn_cpl';
+					}
 
-                    if (!cloneConnectFn || cloneConnectFn === noop) {        // experimental
+                    if (!cloneConnectFn) {
                         $compileNodes = compositeLinkFn_cpl = null;
-                        if (msos_verbose && cloneConnectFn === noop) {
-                            msos.console.warn(temp_cp + temp_c + 'publicLinkFn (experimental), set $compileNodes = compositeLinkFn_cpl = null for noop!');
-                        }
                     }
 
+					msos_debug(temp_cp + temp_c + temp_pl + ' done' + msos_indent + 'scope: ' + scope.$$name + db_notes);
                     return $linkNode;
-                };
+                }
+
+				if (vc) { msos_debug(temp_cp + temp_c + ' ->  done!'); }
+				return publicLinkFn;
             };
 
-            compile.$$addBindingClass = msos.config.debug ? function $$addBindingClass($element) { $element.addClass('ng-binding'); } : noop;
+            compile.$$addBindingClass = function $$addBindingClass($element) { $element.addClass('ng-binding'); };
 
-            compile.$$addScopeInfo = msos.config.debug ? function $$addScopeInfo($element, scope, isolated, noTemplate) {
-                    var dataName = isolated ? (noTemplate ? '$isolateScopeNoTemplate' : '$isolateScope') : '$scope';
+            compile.$$addScopeInfo = function $$addScopeInfo($element, scope, isolated, noTemplate) {
+				var dataName = isolated ? (noTemplate ? '$isolateScopeNoTemplate' : '$isolateScope') : '$scope';
 
-                    $element.each(
-                        function () {
-                            var $elem = jqLite(this);
+				if (vc) {
+					$element.each(
+						function () {
+							var $elem = jqLite(this);
 
-                            $elem.attr('data-debug', nodeName_($elem) + nextElemUid() + '_' + scope.$$name + '_' + dataName);
-                        }
-                    );
-                }
-                : noop;
+							$elem.attr('data-debug', nodeName_($elem) + nextElemUid() + '_' + scope.$$name + '_' + dataName);
+						}
+					);
+				}
+			};
 
-            compile.$$addScopeClass = msos.config.debug? function $$addScopeClass($element, isolated) {
-                    $element.addClass(isolated ? 'ng-isolate-scope' : 'ng-scope');
-                } : noop;
+            compile.$$addScopeClass = function $$addScopeClass($element, isolated) {
+				$element.addClass(isolated ? 'ng-isolate-scope' : 'ng-scope');
+            };
 
             compile.$$createComment = function (directive_name, comment) {
                 var content = '';
 
-                if (msos.config.debug) {
-                    content = ' ' + (directive_name || '') + ': ';
-                    if (comment) { content += comment + ' '; }
-                }
+                content = ' ' + (directive_name || '') + ': ';
+                if (comment) { content += comment + ' '; }
 
-				if (vc) {
-					msos_debug(temp_cp + '- $get - compile.$$createComment -> called, content: ' + content);
+				if (msos_verbose) {
+					msos_debug(temp_cp + '- $get - $$createComment -> called' + msos_indent + 'for: ' + content);
 				}
 
                 return window.document.createComment(content);
             };
+
+			compile.$$parseDirectiveBindings = parseDirectiveBindings;
 
             msos_debug(temp_cp + ' - $get -> done!');
 
@@ -10945,11 +11054,12 @@ msos.console.time('ng');
                         expression = controllers.hasOwnProperty(cnstr) ? controllers[cnstr] : getter(locals.$scope, cnstr, true) || undefined;
 
                         if (!expression) {
-                            msos.console.error(temp_cp + temp_ci + ' -> failed for cnstr: "' + cnstr + '" with ctrlAs: "' + ctrlAs + '" in controllers: ', controllers);
+                            msos.console.warn(temp_cp + temp_ci + ' -> failed for cnstr: "' + cnstr + '" in available controllers: ', controllers);
+							expression = noop;
                         }
 
                     } else {
-                        msos.console.error(temp_cp + temp_ci + ' -> unable to evaluate expression:', expression);
+                        msos.console.error(temp_cp + temp_ci + ' -> unable to evaluate expression:' + expression);
                         expression = noop;
                     }
 
@@ -10968,8 +11078,8 @@ msos.console.time('ng');
                 }
 
                 if (vcp) {
-                    debug_ci += (cnstr  ? msos_indent + 'cnstr: ' + cnstr     : '') +
-                                (ctrlAs ? msos_indent + 'ctrlAs: ' + ctrlAs    : '') + msos_indent + 'later: ' +
+                    debug_ci += (cnstr  ? msos_indent + 'cnstr: ' + cnstr : '') +
+                                (ctrlAs ? msos_indent + 'ctrlAs: ' + ctrlAs : '') + msos_indent + 'later: ' +
                                 (later ? 'true' : 'false');
                     msos_debug(temp_cp + temp_ci + ' -> debugging' + debug_ci);
                 }
@@ -11382,7 +11492,8 @@ msos.console.time('ng');
                         config,
                         requestInterceptors = [],
                         responseInterceptors = [],
-                        promise_$http;
+                        promise_$http,
+						ps;
 
                     if (!_.isObject(requestConfig)) {
                         throw minErr('$http')(
@@ -11802,7 +11913,9 @@ msos.console.time('ng');
                         throw new Error(temp_hp + temp_tt + ' -> $http.error is gone!');
                     };
 
-                    msos_debug(temp_hp + temp_tt + ' ->  done: ' + promise_$http.$$prom_state.name);
+					ps = promise_$http.$$prom_state;
+                    msos_debug(temp_hp + temp_tt + ' ->  done' + msos_indent + 'state: ' + ps.name + msos_indent + 'id: ' + ps.id);
+
                     return promise_$http;
                 }
 
@@ -11814,15 +11927,16 @@ msos.console.time('ng');
 							}
 
                             var $http_out = $http(
-                                extend(
-                                    {},
-                                    config || {},
-                                    { method: name, url: url }
-                                )
-                            );
+									extend(
+										{},
+										config || {},
+										{ method: name, url: url }
+									)
+								),
+								ps = $http_out.$$prom_state;
 
 							if (vh) {
-								msos_debug(temp_hp + ' - $get - $http.' + name + ' ->  done: ' + $http_out.$$prom_state.name);
+								msos_debug(temp_hp + ' - $get - $http.' + name + ' ->  done, state: ', ps);
 							}
                             return $http_out;
                         };
@@ -11837,15 +11951,16 @@ msos.console.time('ng');
 							}
 
                             var $http_out = $http(
-                                extend(
-                                    {},
-                                    config || {},
-                                    { method: name, url: url, data: data }
-                                )
-                            );
+									extend(
+										{},
+										config || {},
+										{ method: name, url: url, data: data }
+									)
+								),
+								ps = $http_out.$$prom_state;
 
 							if (vh) {
-								msos_debug(temp_hp + ' - $get - $http.' + name + ' ->  done: ' + $http_out.$$prom_state.name);
+								msos_debug(temp_hp + ' - $get - $http.' + name + ' ->  done, state: ', ps);
 							}
                             return $http_out;
                         };
@@ -12226,14 +12341,22 @@ msos.console.time('ng');
 					singleExpression,
 					interceptor,
                     compute = function (values) {
-                        var i = 0;
+                        var i = 0,
+							concat_output;
+
                         for (i = 0; i < expressions.length; i += 1) {
                             if (allOrNothing && _.isUndefined(values[i])) { return undefined; }
                             int_concat[expressionPositions[i]] = values[i];
                         }
 
 						if (contextAllowsConcatenation) {
-							return $sce.getTrusted(trustedContext, singleExpression ? int_concat[0] : int_concat.join(''));
+							concat_output = singleExpression ? int_concat[0] : int_concat.join('');
+							if (concat_output === null || _.isUndefined(concat_output) || concat_output === '') {
+								return concat_output;
+							} else {
+								// Don't bother unless there is real, possiblely unsafe input
+								return $sce.getTrusted(trustedContext, concat_output);
+							}
 						} else if (trustedContext && int_concat.length > 1) {
 							$interpolateMinErr.throwNoconcat(text);
 						}
@@ -12597,14 +12720,6 @@ msos.console.time('ng');
 		return path + (search ? '?' + search : '') + hash;
 	}
 
-	function parseAbsoluteUrl(absoluteUrl, locationObj) {
-		var parsedUrl = urlResolve(absoluteUrl);
-
-		locationObj.$$protocol = parsedUrl.protocol;
-		locationObj.$$host = parsedUrl.hostname;
-		locationObj.$$port = parseInt(parsedUrl.port, 10) || DEFAULT_PORTS[parsedUrl.protocol] || null;
-	}
-
     function parseAppUrl(url, locationObj, html5Mode) {
         var temp_pa = 'ng - parseAppUrl -> ',
             prefixed = (url.charAt(0) !== '/'),
@@ -12757,7 +12872,9 @@ msos.console.time('ng');
 
         msos_debug(temp_hb + ' -> start' + msos_indent + 'app base: ' + appBase + (hashPrefix ? ', hash prefix: ' + hashPrefix : ''));
 
-		parseAbsoluteUrl(appBase, this);
+        this.$$protocol = originUrl.protocol;
+        this.$$host = originUrl.hostname;
+        this.$$port = parseInt(originUrl.port, 10) || DEFAULT_PORTS[originUrl.protocol] || null;
 
         this.$$parse = function (url) {
 
@@ -13303,7 +13420,11 @@ msos.console.time('ng');
                         }
                     );
 
-                    if (!$rootScope.$$phase) { $rootScope.$digest(); }
+                    if (!$rootScope.$$phase) {
+						if ($rootScope.$digest !== noop) {
+							$rootScope.$digest();
+						}
+					}
 
                     msos_debug(temp_lp + temp_bo + ' ->  done!');
                 }
@@ -13346,8 +13467,8 @@ msos.console.time('ng');
                             initializing = false;
     
                             $rootScope.$evalAsync(
-                                function location_watch_rootScope() {
-                                    var temp_ea = temp_lp + temp_lw + ' - location_watch_rootScope_evalAsync -> ',
+                                function loc_watch_rootScope() {
+                                    var temp_ea = temp_lp + temp_lw + ' - loc_watch_rootScope -> ',
                                         newUrl = $location_LP.absUrl(),
                                         defaultPrevented = $rootScope.$broadcast(
                                             '$locationChangeStart',
@@ -15117,21 +15238,22 @@ msos.console.time('ng');
             all_qf,
             race_qf;
 
-        function Promise(org) {
+        function Promise(origin_name) {
 
             count += 1;
-            org = org || 'ng_Promise';      // Highlights missing origin
+            origin_name = origin_name || 'ng_Promise';      // Highlights missing origin
 
             this.$$prom_state = {
                 status: 0,
-                name: org + ':' + count,
+				id: count,
+                name: origin_name,
                 processScheduled: false,
                 pending: [],
                 pur: false
             };
 
             if (vip) {
-                msos_debug(temp_qf + ' - Promise ++++> created' + msos_indent + 'state: ' + this.$$prom_state.name);
+                msos_debug(temp_qf + ' - Promise ++++> created' + msos_indent + 'state: ' + this.$$prom_state.name + msos_indent + 'id: ' + this.$$prom_state.id);
             }
         }
 
@@ -15164,17 +15286,18 @@ msos.console.time('ng');
 
             if (vip) { msos_debug(temp_qf + temp_rj + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
 
-            promise.$$prom_state.value = reason;
-            promise.$$prom_state.status = 2;
-            schedulePQueue_qF(promise.$$prom_state);
+            ps.value = reason;
+            ps.status = 2;
+            schedulePQueue_qF(ps);
 
             if (vip) { msos_debug(temp_qf + temp_rj + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
         }
 
         function notifyPromise_qF(promise, progress) {
-            var callbacks = promise.$$prom_state.pending;
+            var callbacks = promise.$$prom_state.pending,
+				ps = promise.$$prom_state;
 
-            if ((promise.$$prom_state.status <= 0) && callbacks && callbacks.length) {
+            if ((ps.status <= 0) && callbacks && callbacks.length) {
                 next_tick(
                     function notifyPromise_qF_next_tick() {
                         var callback,
@@ -15188,24 +15311,24 @@ msos.console.time('ng');
                             try {
                                 notifyPromise_qF(result, _.isFunction(callback) ? callback(progress) : progress);
                             } catch (e) {
-                                msos.console.error(temp_qf + ' - notifyPromise_qF -> error, for ' + promise.$$prom_state.name, e);
+                                msos.console.error(temp_qf + ' - notifyPromise_qF -> error, for ' + ps.name, e);
                             }
                         }
                     },
-                    promise.$$prom_state.name
+                    ps.name
                 );
             }
         }
 
         function $$resolve_qF(promise, val) {
-            var temp_rs = ' - $$resolve_qF -> ',
+            var temp_rs = ' - $$resolve_qF &&&&&> ',
                 type_val = typeof val,
                 ps = promise.$$prom_state,
                 then,
                 done = false;
 
             if (vip) {
-                msos_debug(temp_qf + temp_rs + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status + msos_indent + 'val type:' + type_val);
+                msos_debug(temp_qf + temp_rs + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'id: ' + ps.id + msos_indent + 'status: ' + ps.status + msos_indent + 'val type: ' + type_val);
             }
 
             function doResolve(val) {
@@ -15250,19 +15373,23 @@ msos.console.time('ng');
 
             }
 
-            if (vip) { msos_debug(temp_qf + temp_rs + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
+            if (vip) {
+				type_val = typeof val;
+				msos_debug(temp_qf + temp_rs + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'id: ' + ps.id + msos_indent + 'status: ' + ps.status + msos_indent + 'val type: ' + type_val);
+			}
         }
 
         function resolvePromise_qF(promise, val) {
-            var temp_rp = ' - resolvePromise_qF -> ',
-                ps = promise.$$prom_state;
+            var temp_rp = ' - resolvePromise_qF :::::> ',
+                ps = promise.$$prom_state,
+				db_out = msos_indent + 'state: ' + ps.name + msos_indent + 'id: ' + ps.id + msos_indent + 'status: ' + ps.status;
 
             if (vip) {
-                msos_debug(temp_qf + temp_rp + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status);
+                msos_debug(temp_qf + temp_rp + 'start' + db_out);
             }
 
             if (ps.status) {
-                msos_debug(temp_qf + temp_rp + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status + ' (skipped)');
+                msos_debug(temp_qf + temp_rp + ' done' + db_out + ' (skipped)');
                 return;
             }
 
@@ -15280,26 +15407,27 @@ msos.console.time('ng');
             }
 
             if (vip) {
-                msos_debug(temp_qf + temp_rp + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status);
+                msos_debug(temp_qf + temp_rp + ' done' + db_out);
             }
         }
 
         function rejectPromise_qF(promise, reason) {
             var temp_rj = ' - rejectPromise_qF -> ',
-                ps = promise.$$prom_state;
+                ps = promise.$$prom_state,
+				db_out = msos_indent + 'state: ' + ps.name + msos_indent + 'id: ' + ps.id + msos_indent + 'status: ' + ps.status;
 
-            if (vip) { msos_debug(temp_qf + temp_rj + 'start' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status); }
+            if (vip) { msos_debug(temp_qf + temp_rj + 'start' + db_out); }
     
-            if (promise.$$prom_state.status) {
+            if (ps.status) {
 
-                if (vip) { msos_debug(temp_qf + temp_rj + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status + ' (skipped)'); }
+                if (vip) { msos_debug(temp_qf + temp_rj + ' done' + db_out + ' (skipped)'); }
                 return;
             }
 
             $$reject_qF(promise, reason);
 
             if (vip) {
-                msos_debug(temp_qf + temp_rj + ' done' + msos_indent + 'state: ' + ps.name + msos_indent + 'status: ' + ps.status);
+                msos_debug(temp_qf + temp_rj + ' done' + db_out);
             }
         }
 
@@ -15313,7 +15441,7 @@ msos.console.time('ng');
                 pq_debug = '';
 
             if (vip) {
-                msos_debug(temp_pq + 'start, state: ', state);
+                msos_debug(temp_pq + 'start' + msos_indent + 'state: ', state);
             }
 
             pq_cnt += 1;
@@ -15357,7 +15485,7 @@ msos.console.time('ng');
                 if (error_on_unhandled_rejects && queueSize === 0) {
 
                     if (vip) {
-                        msos_debug(temp_pq + 'run finally, state: ', state);
+                        msos_debug(temp_pq + 'run finally' + msos_indent + 'state: ', state);
                     }
 
                     next_tick(
@@ -15376,9 +15504,9 @@ msos.console.time('ng');
 
         schedulePQueue_qF = function (state) {
             var temp_sp = temp_qf + ' - schedulePQueue_qF',
-                debug_out = msos_indent + 'name: ' + state.name + msos_indent + 'status: ' + state.status;
+                debug_out = msos_indent + 'name: ' + state.name + msos_indent + 'id: ' + state.id;
 
-            if (vip) { msos_debug(temp_sp + ' -> start' + debug_out); }
+            if (vip) { msos_debug(temp_sp + ' :::::> start' + debug_out); }
 
             if (error_on_unhandled_rejects && !state.pending && state.status === 2 && !isStateExceptionHandled(state)) {
                 if (queueSize === 0 && checkQueue.length === 0) {
@@ -15391,7 +15519,12 @@ msos.console.time('ng');
             }
 
             if (state.processScheduled || !state.pending) {
-                if (vip) { msos_debug(temp_sp + ' ->  done' + debug_out + ' >> is already scheduled!'); }
+                if (vip) { msos_debug(temp_sp + ' :::::>  done >> is already scheduled' + debug_out); }
+                return;
+            }
+
+            if (!state.pending.length) {
+                if (vip) { msos_debug(temp_sp + ' :::::>  done >> nothing to process' + debug_out); }
                 return;
             }
 
@@ -15399,16 +15532,11 @@ msos.console.time('ng');
             queueSize += 1;
 
             next_tick(
-                function s_schedule_qF_next_tick() {
-					// Only need this when verbose !== 'promise'
-					if (msos_verbose && !vip) { msos_debug(temp_sp + ' - s_schedule_qF_next_tick -> start' + debug_out); }
-					processQueue_qF(state);
-					if (msos_verbose && !vip) { msos_debug(temp_sp + ' - s_schedule_qF_next_tick ->  done!'); }
-				},
+                function s_schedule_qF_next_tick() { processQueue_qF(state); },
                 state.name
             );
 
-            if (vip) { msos_debug(temp_sp + ' ->  done' + debug_out + ' next_tick called!'); }
+            if (vip) { msos_debug(temp_sp + ' :::::>  done, next_tick called' + debug_out); }
         };
 
         extend(
@@ -15417,7 +15545,7 @@ msos.console.time('ng');
                 'set': false,
                 'then': function (onFulfilled, onRejected, progressBack) {
                     var temp_t = ' - Promise.then ++++> ',
-                        t_name = this.$$prom_state.name,
+                        t_name = this.$$prom_state.name + '_then' + this.$$prom_state.id,
                         result;
 
                     if (vip) {
@@ -15433,11 +15561,11 @@ msos.console.time('ng');
                         msos_debug(temp_qf + temp_t + ' checked' + msos_indent + 'state: ' + t_name + msos_indent + 'onFulfilled: ' + (onFulfilled && onFulfilled.name || 'na') + msos_indent + 'onRejected: ' + (onRejected && onRejected.name || 'na') + msos_indent + 'progressBack: ' + (progressBack && progressBack.name || 'na'));
                     }
 
-                    result = new Promise(t_name);
+					result = new Promise(t_name);
 
-                    this.set = true;
-                    this.$$prom_state.pending = this.$$prom_state.pending || [];
-                    this.$$prom_state.pending.push([result, onFulfilled, onRejected, progressBack]);
+					this.set = true;
+					this.$$prom_state.pending = this.$$prom_state.pending || [];
+					this.$$prom_state.pending.push([result, onFulfilled, onRejected, progressBack]);
 
                     if (this.$$prom_state.status > 0) { schedulePQueue_qF(this.$$prom_state); }
 
@@ -15451,17 +15579,17 @@ msos.console.time('ng');
                     return this.then(null, callback);
                 },
                 'finally': function (callback, progressBack) {
-                    var t_name = this.$$prom_state.name;
+                    var t_name = this.$$prom_state.name + '_finally';
 
                     function resolve(value) {
-                        var result = new Promise('finally_resolve_' + t_name);
+                        var result = new Promise(t_name + '_resolve');
 
                         resolvePromise_qF(result, value);
                         return result;
                     }
 
                     function reject(reason) {
-                        var result = new Promise('finally_reject_' + t_name);
+                        var result = new Promise(t_name + '_reject');
 
                         rejectPromise_qF(result, reason);
                         return result;
@@ -15556,7 +15684,7 @@ msos.console.time('ng');
             var ps = d.promise.$$prom_state,
                 d_prom_out;
 
-            if (vip) { msos_debug(temp_qf + ' - when_qf -> start, name: ' + ps.name); }
+            if (vip) { msos_debug(temp_qf + ' - when_qf -> start, name: ' + ps.name + ', id: ' + ps.id); }
 
             resolvePromise_qF(d.promise, value);
 
@@ -15567,7 +15695,7 @@ msos.console.time('ng');
                 d_prom_out = d.promise;
             }
 
-            if (vip) { msos_debug(temp_qf + ' - when_qf ->  done, name: ' + ps.name); }
+            if (vip) { msos_debug(temp_qf + ' - when_qf ->  done, name: ' + ps.name + ', id: ' + ps.id); }
 
             return d_prom_out;
         };
@@ -15660,7 +15788,8 @@ msos.console.time('ng');
                 );
             }
 
-            var promise = new Promise(org);
+            var promise = new Promise(org),
+				ps = promise.$$prom_state;
 
             function resolveFn_Q(value) {
                 resolvePromise_qF(promise, value);
@@ -15672,7 +15801,7 @@ msos.console.time('ng');
 
             q_resolver(resolveFn_Q, rejectFn_Q);
 
-            msos_debug(temp_qf + ' - $Q ->  done: ' + promise.$$prom_state.name);
+            msos_debug(temp_qf + ' - $Q ->  done' + msos_indent + 'state: ' + ps.name + msos_indent + 'id: ' + ps.id);
             return promise;
         }
 
@@ -15878,7 +16007,7 @@ msos.console.time('ng');
 
                 var temp_dl = temp_rsp + '$get - decrementListenerCount -> ';
 
-                msos_debug(temp_dl + 'called' + msos_indent + 'event: ' + ev_name + ', increment: ' + increment + ', scope: ' + current.$$name);
+                msos_debug(temp_dl + 'start' + msos_indent + 'event: ' + ev_name + msos_indent + 'increment: ' + increment);
 
                 do {
 
@@ -15886,12 +16015,14 @@ msos.console.time('ng');
 
                     if (current.$$listenerCount[ev_name] === 0) {
                         delete current.$$listenerCount[ev_name];
-                        msos_debug(temp_dl + 'done, scope: ' + current.$$name);
+                        msos_debug(temp_dl + 'finished, scope: ' + current.$$name);
                     }
 
                     current = current.$parent;
 
                 } while (current);
+
+				msos_debug(temp_dl + ' done' + msos_indent + 'event: ' + ev_name);
             }
 
 			function initWatchVal() { msos_debug(temp_rsp + '$get - initWatchVal -> noop function called.'); }
@@ -16303,11 +16434,13 @@ msos.console.time('ng');
 
                 $digest: function () {
                     var temp_dg = '$get - Scope.$digest ~~~~~> ',
+						_this = this,
                         db_note = '',
                         watch,
                         value,
                         last,
                         fn,
+						fn_name,
                         get,
                         watchers,
                         processed = 0,
@@ -16315,7 +16448,7 @@ msos.console.time('ng');
                         ttl = TTL_RP,
                         next,
                         current,
-                        target = asyncQueue.length ? $rootScope_P : this,
+                        target = asyncQueue.length ? $rootScope_P : _this,
                         watchLog = [],
                         logIdx,
                         asyncTask;
@@ -16356,8 +16489,13 @@ msos.console.time('ng');
                                 try {
 
                                     fn = asyncTask.fn;
+									fn_name = fn.name || fn.ng_name || 'anonymous';
 
-                                    msos_debug(temp_rsp + temp_dg + 'run: ' + fn.name);
+									if (msos_verbose === 'digest' && fn_name === 'anonymous'){
+										msos_debug(temp_rsp + temp_dg + 'run: ', fn);
+									} else {
+										msos_debug(temp_rsp + temp_dg + 'run: ' + fn_name);
+									}
 
                                     fn(asyncTask.scope, asyncTask.locals);
 
@@ -16700,7 +16838,7 @@ msos.console.time('ng');
 
                     // Run, if $digest is set
                     if ($rootScope_P.$digest !== noop) {
-                        $rootScope_P.$digest();
+						$rootScope_P.$digest();
                     }
 
                     msos.console.info(temp_rsp + temp_ap + ' done!');
@@ -16949,7 +17087,7 @@ msos.console.time('ng');
         this.$get = function () {
             return function sanitizeUri(uri, isMediaUrl) {
 
-                msos_debug(temp_su + ' - $get - sanitizeUri -> start, uri: ' + uri);
+                msos_debug(temp_su + ' - $get - sanitizeUri -> start' + msos_indent + 'uri: ' + uri);
 
                 var regex = isMediaUrl ? imgSrcSanitizationWhitelist : aHrefSanitizationWhitelist,
                     normalizedVal = urlResolve(uri && uri.trim(), '$$SanitizeUriProvider - $get').href;
@@ -16959,7 +17097,7 @@ msos.console.time('ng');
                     return 'unsafe:' + normalizedVal;
                 }
 
-                msos_debug(temp_su + ' - $get - sanitizeUri ->  done, uri: ' + uri);
+                msos_debug(temp_su + ' - $get - sanitizeUri ->  done' + msos_indent + 'uri: ' + uri);
                 return uri;
             };
         };
@@ -17147,7 +17285,7 @@ msos.console.time('ng');
                 var temp_gt = ' - $get - getTrusted -> ',
                     constructor;
 
-                msos_debug(temp_sd + temp_gt + 'start' + msos_indent + 'type: ' + type + (maybeTrusted ? ', context: ' + maybeTrusted : ''));
+                msos_debug(temp_sd + temp_gt + 'start' + msos_indent + 'type: ' + type + (maybeTrusted ? msos_indent + 'context: ' + maybeTrusted : ''));
 
                 if (maybeTrusted === null || _.isUndefined(maybeTrusted) || maybeTrusted === '') {
                     msos_debug(temp_sd + temp_gt + 'done, for: ' + (maybeTrusted === null ? 'null' : 'undefined'));
@@ -19015,16 +19153,16 @@ msos.console.time('ng');
 
                                 formElement[0].addEventListener('submit', handleFormSubmission);
 
-                                // unregister the preventDefault listener so that we don't not leak memory but in a
+                                // unregister the preventDefault listener so that we don't leak memory but in a
                                 // way that will achieve the prevention of the default action.
                                 formElement.on(
                                     '$destroy',
                                     function ng_ngFormCompile_on_1() {
                                         $timeout(
-                                            function () {
+                                            function ng_ngFormCompile_on_1_to() {
                                                 formElement[0].removeEventListener('submit', handleFormSubmission);
                                             },
-                                            0,
+                                            10,
                                             false
                                         );
                                     }
@@ -21107,7 +21245,7 @@ msos.console.time('ng');
 		return {
 			restrict: 'A',
 			compile: function ($element_na, attr) {
-				var temp_ev = 'ng - ' + eventName + ' - createEventDirective - compile',
+				var temp_ev = 'ng - createEventDirective (ng-' + eventName + ') - compile',
 					fn = $parse(attr[directiveName]);
 
 				if (vb) {
@@ -21184,44 +21322,73 @@ msos.console.time('ng');
             restrict: 'A',
             $$tlb: true,
             link: function ($scope, $element, $attr, ctrl_na, $transclude) {
-                var block, childScope, previousElements;
-                $scope.$watch($attr.ngIf, function ngIfWatchAction(value) {
+                var temp_ni = 'ng - ngIf - ngIfWatchAction',
+					vni = msos_verbose === 'ngif' || msos_verbose === 'ngrepeat',
+					block,
+					childScope,
+					previousElements;
 
-                    if (value) {
-                        if (!childScope) {
-                            $transclude(function (clone, newScope) {
-                                childScope = newScope;
-                                clone[clone.length] = $compile.$$createComment('end ngIf', $attr.ngIf);
-                                clone.length += 1;
+                $scope.$watch(
+					$attr.ngIf,
+					function ngIfWatchAction(value) {
+						var debug_note = '';
 
-                                block = {
-                                    clone: clone
-                                };
-                                $animate.enter(clone, $element.parent(), $element);
-                            });
-                        }
-                    } else {
-                        if (previousElements) {
-                            previousElements.remove();
-                            previousElements = null;
-                        }
-                        if (childScope) {
-                            childScope.$destroy();
-                            childScope = null;
-                        }
-                        if (block) {
-                            previousElements = getBlockNodes(block.clone);
+						if (vni) {
+							msos_debug(temp_ni + ' -> start, value: ' + String(value));
+						}
 
-                            $animate.leave(previousElements).done(
-                                function (response) {
-                                    if (response !== false) { previousElements = null; }
-                                }
-                            );
+						if (value) {
+							if (!childScope) {
+								debug_note += ', added $transclude';
+								$transclude(
+									undefined,		// no scope
+									function ngIfTranscludeFn(clone, newScope) {
+										msos_debug(temp_ni + ' - ngIfTranscludeFn -> start' + msos_indent + 'newScope: ' + newScope.$$name + msos_indent + 'clone:' + nodeDebugName_(clone, true));
 
-                            block = null;
-                        }
-                    }
-                });
+										childScope = newScope;
+
+										clone[clone.length] = $compile.$$createComment('end ngIf', $attr.ngIf);
+										clone.length += 1;
+
+										block = { clone: clone };
+
+										$animate.enter(clone, $element.parent(), $element);
+										msos_debug(temp_ni + ' - ngIfTranscludeFn ->  done' + msos_indent + 'newScope: ' + newScope.$$name);
+									}
+								);
+							} else {
+								debug_note += ', has childScope';
+							}
+						} else {
+							if (previousElements) {
+								debug_note += ', remove previous el(s)';
+								previousElements.remove();
+								previousElements = null;
+							}
+							if (childScope) {
+								debug_note += ', destroy childScope';
+								childScope.$destroy();
+								childScope = null;
+							}
+							if (block) {
+								debug_note += ', set block null';
+								previousElements = getBlockNodes(block.clone);
+
+								$animate.leave(previousElements).done(
+									function (response) {
+										if (response !== false) { previousElements = null; }
+									}
+								);
+
+								block = null;
+							}
+						}
+
+						if (vni) {
+							msos_debug(temp_ni + ' ->  done' + debug_note + '.');
+						}
+					}
+				);
             }
         };
     }
@@ -21301,7 +21468,7 @@ msos.console.time('ng');
 
                                     clone = $transclude(
                                         newScope,
-                                        function (clone) {
+                                        function ngIncludeTransclude(clone) {
                                             cleanupLastIncludeContent();
                                             $animate.enter(clone, null, $element).done(afterAnimation);
                                         }
@@ -21525,11 +21692,16 @@ msos.console.time('ng');
 
 	ngRefDirective = ['$parse', ng_ref_dir];
 
-
     function ng_repeat_dir($parse, $animate, $compile) {
-        var NG_REMOVED = '$$NG_REMOVED',
+		var temp_rd = 'ng - ngRepeatDirective',
+			vr = msos_verbose === 'ngrepeat',
+			NG_REMOVED = '$$NG_REMOVED',
             ngRepeatMinErr = minErr('ngRepeat'),
             updateScope = function (scope, index, valueIdentifier, value, keyIdentifier, key, arrayLength) {
+
+				if (vr) {
+					msos_debug(temp_rd + ' - updateScope -> called, index: ' + index + ', key: ' + key);
+				}
 
                 scope[valueIdentifier] = value;
 
@@ -21540,10 +21712,7 @@ msos.console.time('ng');
                 scope.$last = (index === (arrayLength - 1));
                 scope.$middle = !(scope.$first || scope.$last);
 
-                // jshint bitwise: false
-                scope.$even = (index & 1);
-                scope.$odd = (scope.$even !== 0);
-                // jshint bitwise: true
+				scope.$odd = !(scope.$even = (index & 1) === 0);
             },
             getBlockStart = function (block) {
                 return block.clone[0];
@@ -21561,7 +21730,9 @@ msos.console.time('ng');
             $$tlb: true,
             compile: function ngRepeatCompile($element_na, $attr) {
 
-                var expression = $attr.ngRepeat,
+                var temp_rc = ' - Compile',
+					db_note = '',
+					expression = $attr.ngRepeat,
                     ngRepeatEndComment,
                     match,
                     lhs,
@@ -21592,6 +21763,10 @@ msos.console.time('ng');
                 aliasAs = match[3];
                 trackByExp = match[4];
 
+				if (vr) {
+					msos_debug(temp_rd + temp_rc + ' -> start' + msos_indent + 'expression: ' + expression);
+				}
+
                 match = lhs.match(/^(?:(\s*[$\w]+)|\(\s*([$\w]+)\s*,\s*([$\w]+)\s*\))$/);
 
                 if (!match) {
@@ -21601,6 +21776,10 @@ msos.console.time('ng');
                         lhs
                     );
                 }
+
+				if (vr) {
+					msos_debug(temp_rd + temp_rc + ' -> lhs match:', match);
+				}
 
                 valueIdentifier = match[3] || match[1];
                 keyIdentifier = match[2];
@@ -21618,8 +21797,10 @@ msos.console.time('ng');
                 };
 
                 if (trackByExp) {
+					db_note = 'trackByExp';
                     trackByExpGetter = $parse(trackByExp);
                 } else {
+					db_note = 'trackByIdArrayFn & trackByIdObjFn';
                     trackByIdArrayFn = function (key_na, value) {
                         return hashKey(value);
                     };
@@ -21628,42 +21809,64 @@ msos.console.time('ng');
                     };
                 }
 
+				if (vr) {
+					msos_debug(temp_rd + temp_rc + ' ->  done, ' + db_note);
+				}
+
                 return function ngRepeatLink($scope, $element, $attr_na, ctrl_na, $transclude) {
 
+					var lastBlockMap = createMap(),
+						dbn = '!';
+
+					if (vr) {
+						msos_debug(temp_rd + temp_rc + ' - Link -> start, $transclude: ' + ($transclude.name || 'anonymous'));
+					}
+
                     if (trackByExpGetter) {
+						dbn = ', using trackByExpGetter.';
                         trackByIdExpFn = function (key, value, index) {
+							var output;
                             // assign key, value, and $index to the locals so that they can be used in hash functions
                             if (keyIdentifier) { hashFnLocals[keyIdentifier] = key; }
                             hashFnLocals[valueIdentifier] = value;
                             hashFnLocals.$index = index;
-                            return trackByExpGetter($scope, hashFnLocals);
+
+							output = trackByExpGetter($scope, hashFnLocals);
+							//console.log('trackByExpGetter', output);
+                            return output;
                         };
                     }
 
-                    var lastBlockMap = createMap();
-
                     // watch props
                     $scope.$watchCollection(rhs, function ngRepeatAction(collection) {
-                        var index,
+                        var debug = '',
+							index,
 							length,
 							previousNode = $element[0],
                             nextNode,
                             nextBlockMap = createMap(),
-                            collectionLength, key, value, // key/value of iteration
-                            trackById, trackByIdFn, collectionKeys, block, // last object information {scope, element, id}
+                            collectionLength,
+							key, value, // key/value of iteration
+                            trackById,
+							trackByIdFn,
+							collectionKeys,
+							block,		// last object information {scope, element, id}
                             nextBlockOrder,
                             elementsToRemove,
                             itemKey,
                             blockKey;
 
                         if (aliasAs) {
+							debug += ', aliasAs: ' + aliasAs;
                             $scope[aliasAs] = collection;
                         }
 
                         if (isArrayLike(collection)) {
+							debug += ', isArrayLike';
                             collectionKeys = collection;
                             trackByIdFn = trackByIdExpFn || trackByIdArrayFn;
                         } else {
+							debug += ', using fn';
                             trackByIdFn = trackByIdExpFn || trackByIdObjFn;
                             // if object, extract keys, in enumeration order, unsorted
                             collectionKeys = [];
@@ -21674,17 +21877,20 @@ msos.console.time('ng');
                             }
                         }
 
+						if (vr) {
+							msos_debug(temp_rd + temp_rc + ' - Link - Action -> start' + msos_indent + 'collectionKeys:', collectionKeys);
+						}
+
                         collectionLength = collectionKeys.length;
+                        nextBlockOrder = new Array(collectionLength);   // New array with preset length 'collectionLength'
 
-                        nextBlockOrder = [];
-                        nextBlockOrder.length = collectionLength;   // New array with preset length 'collectionLength'
-
-						function on_collision(block) {
-							if (block && block.scope) { lastBlockMap[block.id] = block; }
+						function on_collision(cblock) {
+							if (cblock && cblock.scope) { lastBlockMap[cblock.id] = cblock; }
 						}
 
                         // locate existing items
                         for (index = 0; index < collectionLength; index += 1) {
+
                             key = (collection === collectionKeys) ? index : collectionKeys[index];
                             value = collection[key];
                             trackById = trackByIdFn(key, value, index);
@@ -21695,25 +21901,25 @@ msos.console.time('ng');
                                 delete lastBlockMap[trackById];
                                 nextBlockMap[trackById] = block;
                                 nextBlockOrder[index] = block;
-                            } else {
-                                if (nextBlockMap[trackById]) {
-                                    // if collision detected. restore lastBlockMap and throw an error
-                                    forEach(
-										nextBlockOrder,
-										on_collision
-									);
+                            } else if (nextBlockMap[trackById]) {
+								// if collision detected. restore lastBlockMap and throw an error
+								forEach(
+									nextBlockOrder,
+									on_collision
+								);
 
-                                    msos.console.warn(
-										'ng - ng_repeat_dir - ngRepeatAction -> ' + 
-										ngRepeatMinErr(
-											'dupes',
-											'duplicates are not allowed' + msos_indent + 'use \'track by\' expression to specify unique keys' + msos_indent + 'expression: {0}' + msos_indent + 'key: {1}' + msos_indent + 'value: {2}',
-											expression,
-											trackById,
-											value
-										)
-									);
-                                }
+								msos.console.warn(
+									temp_rd + temp_rc + ' - Link - Action -> ' + 
+									ngRepeatMinErr(
+										'dupes',
+										'duplicates are not allowed' + msos_indent + 'use \'track by\' expression to specify unique keys' + msos_indent + 'expression: {0}' + msos_indent + 'key: {1}' + msos_indent + 'value: {2}',
+										expression,
+										trackById,
+										value
+									)
+								);
+
+							} else {
                                 // new never before seen block
                                 nextBlockOrder[index] = {
                                     id: trackById,
@@ -21721,7 +21927,11 @@ msos.console.time('ng');
                                     clone: undefined
                                 };
 
-                                nextBlockMap[trackById] = true;
+								nextBlockMap[trackById] = true;
+
+								if (vr) {
+									msos_debug(temp_rd + temp_rc + ' - Link - Action -> trackById: ' + trackById);
+								}
                             }
                         }
 
@@ -21743,21 +21953,22 @@ msos.console.time('ng');
                             block.scope.$destroy();
                         }
 
-						function make_repeat_transclude_fn(key_in, value_in, block_in) {
+						function make_repeat_transclude_fn(key_in, value_in, block_in, index_in) {
 
-							return function (clone, scope) {
+							return function repeatTranscludeFn(clone, scope) {
+
 								block_in.scope = scope;
-								// http://jsperf.com/clone-vs-createcomment
+
 								var endNode = ngRepeatEndComment.cloneNode(false);
 
 								clone[clone.length] = endNode;
-								clone.length += 1;   // Faster than .push(), with pre-defined array growth.
+								clone.length += 1;
 
 								$animate.enter(clone, null, previousNode);
 								previousNode = endNode;
 								block_in.clone = clone;
 								nextBlockMap[block_in.id] = block_in;
-								updateScope(block_in.scope, index, valueIdentifier, value_in, keyIdentifier, key_in, collectionLength);
+								updateScope(block_in.scope, index_in, valueIdentifier, value_in, keyIdentifier, key_in, collectionLength);
 							};
 						}
 
@@ -21769,17 +21980,15 @@ msos.console.time('ng');
                             block = nextBlockOrder[index];
 
                             if (block.scope) {
-                                // if we have already seen this object, then we need to reuse the
-                                // associated scope/element
+								debug += msos_indent + 'block.scope for key: ' + key;
+
                                 nextNode = previousNode;
 
-                                // skip nodes that are already pending removal via leave animation
                                 do {
                                     nextNode = nextNode.nextSibling;
                                 } while (nextNode && nextNode[NG_REMOVED]);
 
                                 if (getBlockStart(block) !== nextNode) {
-                                    // existing item which got moved
                                     $animate.move(getBlockNodes(block.clone), null, previousNode);
                                 }
 
@@ -21789,12 +21998,29 @@ msos.console.time('ng');
 
                             } else {
 
-                                $transclude(make_repeat_transclude_fn(key, value, block));
+								debug += msos_indent + 'using $transclude for key: ' + key;
+                                $transclude(
+									undefined,		// no scope
+									make_repeat_transclude_fn(
+										key,
+										value,
+										block,
+										index
+									)
+								);
 							}
                         }
 
                         lastBlockMap = nextBlockMap;
+
+						if (vr) {
+							msos_debug(temp_rd + temp_rc + ' - Link - Action ->  done' + debug);
+						}
                     });
+
+					if (vr) {
+						msos_debug(temp_rd + temp_rc + ' - Link ->  done' + dbn);
+					}
                 };
             }
         };
@@ -21940,6 +22166,7 @@ msos.console.time('ng');
                                 selectedTranscludes,
                                 function (selectedTransclude) {
                                     selectedTransclude.transclude(
+										undefined,		// no scope
                                         function (caseElement, selectedScope) {
                                             selectedScopes.push(selectedScope);
 
@@ -22017,38 +22244,45 @@ msos.console.time('ng');
     ngTranscludeMinErr = minErr('ngTransclude');
 
     function ng_transclude_dir($compile) {
+
         return {
             restrict: 'EAC',
             compile: function ngTranscludeCompile(tElement) {
+				var temp_tc = 'ng - ngTranscludeCompile',
+					tElement_contents,
+					fallbackLinkFn,
+					fallbackLinkFired = false;
+
+				msos_debug(temp_tc + ' -> start, tElement: ' + nodeDebugName_(tElement, true));
 
                 // Remove and cache any original content to act as a fallback
-                var fallbackLinkFn = $compile(tElement.contents()),
-                    slotName;
+                tElement_contents = tElement.contents();
+				fallbackLinkFn = tElement_contents[0] ? $compile(tElement_contents) : noop;
 
                 tElement.empty();
 
-                return function ngTranscludePostLink($scope, $element, $attrs, controller_na, $transclude) {
+				msos_debug(temp_tc + ' ->  done, for contents: ' + nodeDebugName_(tElement_contents, true));
 
-                    if (!$transclude) {
-                        throw ngTranscludeMinErr(
-                            'orphan',
-                            'Illegal use: ngTransclude dir. (template)! NA parent dir. that requires a transclusion, in element: {0}',
-                            startingTag($element)
-                        );
-                    }
+                return function ngTranscludePostLink($scope, $element, $attrs, controller_na, $transclude) {
+					var temp_nt = temp_tc + ' - ngTranscludePostLink',
+						slotName;
 
                     function useFallbackContent() {
-                        fallbackLinkFn(
-                            $scope,
-                            function (clone) { $element.append(clone); }
-                        );
+						if (!fallbackLinkFired) {
+							fallbackLinkFired = true;
+							fallbackLinkFn(
+								$scope,
+								function (fb_clone) { $element.append(fb_clone); }
+							);
+						}
                     }
 
                     function notWhitespace(nodes) {
                         var i = 0,
+							ii = nodes.length,
                             node;
 
-                        for (i = 0; i < nodes.length; i += 1) {
+                        for (i = 0; i < ii; i += 1) {
                             node = nodes[i];
 
                             if (node.nodeType !== NODE_TYPE_TEXT || node.nodeValue.trim()) {
@@ -22060,13 +22294,18 @@ msos.console.time('ng');
                     }
 
                     function ngTranscludeCloneAttachFn(clone, transcludedScope) {
+						var debug_stuff = '';
 
                         if (clone.length && notWhitespace(clone)) {
                             $element.append(clone);
+							debug_stuff = 'using appended clone';
                         } else {
-                            useFallbackContent();
-                            transcludedScope.$destroy();
+                            if (fallbackLinkFn !== noop) { useFallbackContent(); }
+							transcludedScope.$destroy();
+							debug_stuff = 'using fallback fn';
                         }
+
+						msos_debug(temp_nt + ' - ngTranscludeCloneAttachFn -> called' + msos_indent + 'slotName: ' + (slotName || 'na') + msos_indent + debug_stuff);
                     }
 
                     // If the attribute is of the form: `ng-transclude="ng-transclude"` then treat it like the default
@@ -22076,11 +22315,28 @@ msos.console.time('ng');
 
                     slotName = $attrs.ngTransclude || $attrs.ngTranscludeSlot;
 
-                    $transclude(ngTranscludeCloneAttachFn, null, slotName);
+					msos_debug(temp_nt + ' -> start, slotName: ' + (slotName || 'na'));
 
-                    if (slotName && !$transclude.isSlotFilled(slotName)) {
-                        useFallbackContent();
+                    if (!$transclude) {
+                        throw ngTranscludeMinErr(
+                            'orphan',
+                            'Illegal use: ngTransclude dir. (template)! NA parent dir. that requires a transclusion, in element: {0}',
+                            startingTag($element)
+                        );
                     }
+
+                    $transclude(
+						undefined,		// no scope
+						ngTranscludeCloneAttachFn,
+						slotName
+					);
+
+                    if (slotName && fallbackLinkFn !== noop && !$transclude.isSlotFilled(slotName)) {
+                        useFallbackContent();
+						msos_debug(temp_nt + ' -> using fallback fn for slot not filled.');
+                    }
+
+					msos_debug(temp_nt + ' ->  done, slotName: ' + (slotName || 'na'));
                 };
             }
         };
@@ -22433,7 +22689,7 @@ msos.console.time('ng');
                     if (!options) return;
 
                     var selectedOption = selectElement[0].options[selectElement[0].selectedIndex],
-                        option = options.getOptionFromViewValue(value);
+                        option = value ? options.getOptionFromViewValue(value) : undefined;
 
                     // Make sure to remove the selected attribute from the previously selected option
                     // Otherwise, screen readers might get confused
@@ -23467,69 +23723,81 @@ msos.console.time('ng');
 	).provider(
         '$postload',
         ['$injectorProvider', function ($injectorProvider) {
-			var temp_pl = 'ng.postloader';
 
-			this.$get = [
-				'$rootScope', '$q',
-				function ($rootScope, $q) {
+			this.$get = ['$q', function ($q) {
 
-					msos_debug(temp_pl + ' -> called.');
+				msos_debug('ng.postloader -> called.');
 
-					return {
-						run_registration: function () {
-							var temp_rr = temp_pl + ' - run_registration',
-								defer = $q.defer('ng_postload_run');
+				return {
+					inject: function inject(new_modules) {
+						var deferred_inj = $q.defer('ng_postload_inject_defer');
 
-							msos_debug(temp_rr + ' -> start.');
+						msos.onload_func_done.push(
+							function () {
+								$injectorProvider.$get().loadNewModules(new_modules);
+								deferred_inj.resolve('injected');
+							}
+						);
 
-							msos.onload_func_post.push(
-								function () {
+						return deferred_inj.promise;
+					},
+					load: function () {
+						var self = this,
+							temp_ld = 'ng.postloader - load',
+							deferred_ld = $q.defer('ng_postload_load_defer');
 
-									var curr_modules = _.keys(msos.registered_modules),
-										diff_modules = _.difference(curr_modules, msos_prev_modules),
-										angl_modules = [];
+						if (msos_verbose) {
+							msos_debug(temp_ld + ' -> start.');
+						}
 
-									msos_debug(temp_rr + ' (onload_func_post) -> start.');
+						msos.onload_functions.push(
+							function () {
 
-									jQuery.each(
-										diff_modules,
-										function (index_na, module_key) {
-											var module_name = module_key.replace(/_/g, '.');    // MSOS encoded naming
-											// Screen away non-AngularJS modules
-											if (_.indexOf(angular.registered_modules, module_name) !== -1) {
-												if (!angular.all_loaded_modules.get(module_name)) {
-													angl_modules.push(module_name);
-												}
+								var curr_modules = _.keys(msos.registered_modules),
+									diff_modules = _.difference(curr_modules, msos_prev_modules),
+									angl_modules = [];
+
+								msos_debug(temp_ld + ' (onload_functions) -> start.');
+
+								jQuery.each(
+									diff_modules,
+									function (index_na, module_key) {
+										var module_name = module_key.replace(/_/g, '.');    // MSOS encoded naming
+										// Screen away non-AngularJS modules
+										if (_.indexOf(angular.registered_modules, module_name) !== -1) {
+											if (!angular.all_loaded_modules.get(module_name)) {
+												angl_modules.push(module_name);
 											}
 										}
-									);
-
-									// Skip if no new modules
-									if (angl_modules.length > 0) {
-										// Load and ready our newly received modules
-										$injectorProvider.$get().loadNewModules(_.uniq(angl_modules));
 									}
+								);
 
-									defer.resolve();
-									$rootScope.$apply();
-
-									// Reset for next round...
-									msos_prev_modules = curr_modules;
-
-									msos_debug(temp_rr + ' (onload_func_post) ->  done!');
+								// Skip if no new modules
+								if (angl_modules.length > 0) {
+									self.inject(_.uniq(angl_modules)).then(
+										function (res) { deferred_ld.resolve(res); }
+									);
+								} else {
+									deferred_ld.resolve();
 								}
-							);
 
-							// Runs MSOS script checking and module loading
-							msos.check_deferred_scripts();
+								// Reset for next round...
+								msos_prev_modules = curr_modules;
 
-							msos_debug(temp_rr + ' ->  done!');
+								msos_debug(temp_ld + ' (onload_functions) ->  done!');
+							}
+						);
 
-							return defer.promise;
+						// Runs MSOS script checking and module loading
+						msos.check_deferred_scripts();
+
+						if (msos_verbose) {
+							msos_debug(temp_ld + ' ->  done!');
 						}
-					};
-				}
-			];
+						return deferred_ld.promise;
+					}
+				};
+			}];
         }]
     ).run(
         function () {
@@ -23540,7 +23808,7 @@ msos.console.time('ng');
     );
 
     /**
-     * @license AngularJS original v1.5.3, updated to v1.7.2
+     * @license AngularJS original v1.5.3, updated to v1.7.5
      * (c) 2010-2016 Google, Inc. http://angularjs.org
      * License: MIT
      * 
@@ -23551,7 +23819,8 @@ msos.console.time('ng');
      */
     (function (_swin, _sdoc) {
 
-        var $sanitizeMinErr = minErr('$sanitize'),
+        var temp_san = 'ng.sanitize',
+			$sanitizeMinErr = minErr('$sanitize'),
             getInertBodyElement = null,
             nodeContains = _swin.Node.prototype.contains || function (arg) {
                 // eslint-disable-next-line no-bitwise
@@ -23965,6 +24234,10 @@ msos.console.time('ng');
 				svgEnabled = false,
                 mediaEnabled = false;
 
+			if (msos_verbose) {
+				msos_debug(temp_san + ' -> start.');
+			}
+
             this.enableSvg = function (enableSvg) {
                 if (isDefined(enableSvg)) {
                     svgEnabled = enableSvg;
@@ -24010,6 +24283,8 @@ msos.console.time('ng');
 
             this.$get = ['$$sanitizeUri', function ($$sanitizeUri) {
 
+				msos_debug(temp_san + ' - $get -> start.');
+
 				hasBeenInstantiated = true;
 
                 if (svgEnabled) {
@@ -24020,6 +24295,8 @@ msos.console.time('ng');
                     extend(blockElements, mediaElements);
                     extend(validElements, mediaElements);
                 }
+
+				msos_debug(temp_san + ' - $get ->  done!');
 
                 return function (html) {
                     var buf = [];
@@ -24037,6 +24314,10 @@ msos.console.time('ng');
                     return buf.join('');
                 };
             }];
+
+			if (msos_verbose) {
+				msos_debug(temp_san + ' ->  done!');
+			}
         }
 
         function sanitizeText(chars) {

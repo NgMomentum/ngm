@@ -689,17 +689,18 @@ if (msos.config.browser.fastclick === false) {
 						function uiIfWatchAction(value) {
 							if (value) {
 								if (!childScope) {
-									$transclude(function (clone, newScope) {
-										childScope = newScope;
-										clone[clone.length++] = document.createComment(' end uiIf: ' + $attr.uiIf + ' ');
-										// Note: We only need the first/last node of the cloned nodes.
-										// However, we need to keep the reference to the jqlite wrapper as it might be changed later
-										// by a directive with templateUrl when its template arrives.
-										block = {
-											clone: clone
-										};
-										$animate.enter(clone, $element.parent(), $element);
-									});
+									$transclude(
+										undefined,		// no scope
+										function ngMobileUiIfTransclude(clone, newScope) {
+											childScope = newScope;
+											clone[clone.length++] = document.createComment(' end uiIf: ' + $attr.uiIf + ' ');
+											// Note: We only need the first/last node of the cloned nodes.
+											// However, we need to keep the reference to the jqlite wrapper as it might be changed later
+											// by a directive with templateUrl when its template arrives.
+											block = { clone: clone };
+											$animate.enter(clone, $element.parent(), $element);
+										}
+									);
 								}
 							} else {
 								if (previousElements) {

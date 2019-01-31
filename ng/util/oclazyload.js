@@ -14,7 +14,7 @@
 
 msos.provide("ng.util.oclazyload");
 
-ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
+ng.util.oclazyload.version = new msos.set_version(18, 12, 3);
 
 
 (function (angular) {
@@ -247,7 +247,7 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 							deferred = $q.defer('oclazyload_get_defer_inject'),
 							res;
 
-						msos.console.debug(temp_oc + ' - inject -> called, with localParams/real:', localParams, real);
+						msos.console.debug(temp_oc + ' - inject -> start, with localParams/real:', localParams, real);
 
 						if (angular.isDefined(moduleName) && moduleName !== null) {
 
@@ -262,6 +262,7 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 									}
 								);
 
+								msos.console.debug(temp_oc + ' - inject -> done, with promises list:');
 								return $q.all($q.defer('oclazyload_get_all_inject'), promisesList);
 
 							} else if (!angular.all_loaded_modules.get(moduleName)) {
@@ -314,6 +315,7 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 							deferred.resolve();
 						}
 
+						msos.console.debug(temp_oc + ' - inject -> done!');
 						return deferred.promise;
 					},
 					filesLoader: function (config) {
@@ -442,16 +444,18 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 							deferred = $q.defer('oclazyload_load'),
 							errText,
 							module = angular.copy(originalModule),
-							params = angular.copy(originalParams);
+							params = angular.copy(originalParams),
+							moduleName,
+							localParams;
+
+						msos.console.debug(temp_oc + ' - load -> start.');
 
 						// If module is an array, break it down
 						if (angular.isArray(module)) {
 							// Resubmit each entry as a single module
 							angular.forEach(
 								module,
-								function (m) {
-									deferredList.push(self.load(m, params));
-								}
+								function (m) { deferredList.push(self.load(m, params)); }
 							);
 
 							// Resolve the promise once everything has loaded
@@ -464,6 +468,7 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 								}
 							);
 
+							msos.console.debug(temp_oc + ' - load ->  done, for input array.');
 							return deferred.promise;
 						}
 
@@ -471,9 +476,11 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 							if (!angular.isString(moduleName)) {
 								throw new Error('You need to give the name of the module to get');
 							}
+
 							if (!modules[moduleName]) {
 								return null;
 							}
+
 							return angular.copy(modules[moduleName]);
 						}
 
@@ -481,37 +488,35 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 						if (angular.isString(module)) {
 							config = getModuleConfig(module);
 							if (!config) {
-								config = {
-									files: [module]
-								};
+								config = { files: [module] };
 							}
 						} else if (angular.isObject(module)) {
 							// case {type: 'js', path: lazyLoadUrl + 'testModule.fakejs'}
 							if (angular.isDefined(module.path) && angular.isDefined(module.type)) {
-								config = {
-									files: [module]
-								};
+								config = { files: [module] };
 							} else {
 								config = self.setModuleConfig(module);
 							}
 						}
-		
+
 						if (config === null) {
-							var moduleName = getModuleName(module);
+							moduleName = getModuleName(module);
 
 							errText = 'Module "' + (moduleName || 'unknown') + '" is not configured, cannot load.';
 							$log.error(errText);
 							deferred.reject(new Error(errText));
 
+							msos.console.debug(temp_oc + ' - load ->  done, config === null.');
 							return deferred.promise;
 						}
-		
-						var localParams = angular.extend({}, params, config);
-		
+
+						localParams = angular.extend({}, params, config);
+
 						 if (angular.isUndefined(config.files) && angular.isDefined(config.name) && getModule(config.name)) {
+							msos.console.debug(temp_oc + ' - load ->  done, inject.');
 							return self.inject(config.name, localParams, true);
 						}
-		
+
 						self.filesLoader(config, localParams).then(function () {
 							self.inject(null, localParams).then(function (res) {
 								deferred.resolve(res);
@@ -521,7 +526,8 @@ ng.util.oclazyload.version = new msos.set_version(18, 3, 11);
 						}, function (err) {
 							deferred.reject(err);
 						});
-		
+
+						msos.console.debug(temp_oc + ' - load ->  done!');
 						return deferred.promise;
 					},
 					cssLoader: function (paths, callback, params) {

@@ -1,14 +1,14 @@
 
 msos.provide("ng.google.chart.beforedraw");
 
-ng.google.chart.beforedraw.version = new msos.set_version(16, 5, 6);
+ng.google.chart.beforedraw.version = new msos.set_version(19, 1, 19);
 
 
-(function(){
+(function (){
     angular.module('ng.google.chart.beforedraw')
-        .directive('agcBeforeDraw', onReadyDirective);
+        .directive('agcBeforeDraw', beforeDrawDirective);
         
-    function onReadyDirective(){
+    function beforeDrawDirective() {
         return {
             restrict: 'A',
             scope: false,
@@ -24,4 +24,4 @@ ng.google.chart.beforedraw.version = new msos.set_version(16, 5, 6);
             }
         };
     }
-})();
+}());

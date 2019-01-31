@@ -16,6 +16,12 @@ ng.material.core.ripple.DURATION = 450;
 ng.material.core.ripple.css = new msos.loader();
 ng.material.core.ripple.css.load(msos.resource_url('ng', 'material/css/ui/ripple.css'));
 
+ng.material.core.ripple.noop = function no_ink_noop() {
+    "use strict";
+
+	msos.console.debug('ng.material.core.ripple.noop -> called.');
+    return undefined;
+};
 
 function InkRippleCtrl($scope, $element, rippleOptions, $window, $timeout, $mdUtil, $mdColorUtil) {
     "use strict";
@@ -43,14 +49,14 @@ function InkRippleCtrl($scope, $element, rippleOptions, $window, $timeout, $mdUt
     this.bindEvents();
 }
 
-function autoCleanup(self, cleanupFn) {
+ng.material.core.ripple.autoCleanup = function (self, cleanupFn) {
     "use strict";
 
     if (self.mousedown || self.lastRipple) {
         self.mousedown = false;
         self.$mdUtil.nextTick(angular.bind(self, cleanupFn), false);
     }
-}
+};
 
 InkRippleCtrl.prototype.color = function (value) {
     "use strict";
@@ -139,11 +145,11 @@ InkRippleCtrl.prototype.handleMousedown = function (event) {
 InkRippleCtrl.prototype.handleMouseup = function () {
     "use strict";
 
-    autoCleanup(this, this.clearRipples);
+    ng.material.core.ripple.autoCleanup(this, this.clearRipples);
 
 	this.$timeout(
 		function md_inkripple_mouseup() {
-			autoCleanup(this, this.clearRipples);
+			ng.material.core.ripple.autoCleanup(this, this.clearRipples);
 		}.bind(this),
 		10,
 		false
@@ -153,13 +159,13 @@ InkRippleCtrl.prototype.handleMouseup = function () {
 InkRippleCtrl.prototype.handleMouseleave = function () {
     "use strict";
 
-    autoCleanup(this, this.clearRipples);
+    ng.material.core.ripple.autoCleanup(this, this.clearRipples);
 };
 
 InkRippleCtrl.prototype.handleTouchmove = function () {
     "use strict";
 
-    autoCleanup(this, this.deleteRipples);
+    ng.material.core.ripple.autoCleanup(this, this.deleteRipples);
 };
 
 InkRippleCtrl.prototype.deleteRipples = function () {
@@ -359,7 +365,7 @@ function InkRippleProvider() {
         $get: ["$injector", function ($injector) {
 
             function attach(scope, element, options) {
-                if (isDisabledGlobally || element.controller('mdNoInk')) { return angular.noop; }
+                if (isDisabledGlobally || element.controller('mdNoInk')) { return ng.material.core.ripple.noop; }
 
                 return $injector.instantiate(
 					['$scope', '$element', 'rippleOptions', '$window', '$timeout', '$mdUtil', '$mdColorUtil', InkRippleCtrl],
@@ -457,7 +463,7 @@ function attrNoDirective() {
     "use strict";
 
     return {
-        controller: angular.noop
+        controller: ng.material.core.ripple.noop
     };
 }
 
