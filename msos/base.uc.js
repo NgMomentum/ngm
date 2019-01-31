@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					base.js
-//			Copyright©2012-2017 - OpenSiteMobile
+//			Copyright©2012-2019 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensitemobile.com
@@ -1704,8 +1704,6 @@
 }());
 
 
-
-
 /*!
  * modernizr v3.2.0
  *
@@ -2772,7 +2770,9 @@ var msos = {
 
 	onorientationchange_functions: [],
     onresize_functions: [],
+	onerror_functions: [],
 
+	notify_delay: 4000,
 	pending_file_loads: [],
     record_times: {},
 
@@ -3390,8 +3390,7 @@ msos.config.query = msos.parse_query();
 				name = args[0] && typeof args[0] === 'string' ? args[0].replace(/\W/g, '_') : 'missing name or input',
 				console_org = console_win[method] || console_win.log,
 				log_output = [],
-				out_args = [],
-				message;
+				out_args = [];
 
 			if (method === 'debug' && cfg.verbose && filter && /^[0-9a-zA-Z.]+$/.test(filter)) {
 				filter = new RegExp('^' + filter.replace('.', "\."));
@@ -3426,19 +3425,14 @@ msos.config.query = msos.parse_query();
 				}
 			}
 
-			if (console_win) {
-
-				if (console_org.apply) {
-					// Do this for normal browsers (msos.console output to window.console by type)
-					console_org.apply(console_win, out_args);
-
-				} else {
-					// Do msos.console output to very simple console)
-					message = msos.obj_stringify(args, true);
-					console_org(message);
-				}
+			if (Function.prototype.bind) {
+				console_obj[method] = Function.prototype.bind.call(console_org, console_win);
+			} else {
+				console_obj[method] = function () { 
+					Function.prototype.apply.call(console_org, console_win, arguments);
+				};
 			}
-		};
+		}; 
 	}
 
 	while (idx >= 0) {
@@ -3561,6 +3555,22 @@ msos.obj_stringify = function (o, simple) {
 	return json;
 };
 
+msos._defineProperty = function (obj, key, value) {
+	"use strict";
+
+    if (key in obj) {
+        Object.defineProperty(obj, key, {
+            value: value,
+            enumerable: true,
+            configurable: true,
+            writable: true
+        });
+    } else {
+        obj[key] = value;
+    }
+    return obj;
+};
+
 msos._createClass = function () {
 	"use strict";
 
@@ -3588,13 +3598,42 @@ msos._createClass = function () {
 
 }();
 
+msos._extends = (undefined && undefined.__extends) || (function () {
+	"use strict";
+	return function (d, b) {
+		Object.setPrototypeOf(d, b);
+		var __ = function () { this.constructor = d; };
+
+		d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+}());
+
+msos._defaults = function (obj, defaults) {
+	"use strict";
+	var keys = Object.getOwnPropertyNames(defaults),
+		i = 0,
+		key,
+		value;
+
+	for (i = 0; i < keys.length; i += 1) {
+		key = keys[i];
+		value = Object.getOwnPropertyDescriptor(defaults, key);
+
+		if (value && value.configurable && obj[key] === undefined) {
+			Object.defineProperty(obj, key, value);
+		}
+	}
+	return obj;
+};
+
 msos._inherits = function (subClass, superClass) {
+	"use strict";
 
-    if (typeof superClass !== "function" && superClass !== null) {
-        throw new TypeError("msos._inherits -> super expression must either be null or a function, not " + typeof superClass);
-    }
+	if (typeof superClass !== "function" && superClass !== null) {
+		throw new TypeError("msos._inherits -> super expression must either be null or a function, not " + typeof superClass);
+	}
 
-    subClass.prototype = Object.create(
+	subClass.prototype = Object.create(
 		superClass && superClass.prototype,
 		{
 			constructor: {
@@ -3606,9 +3645,13 @@ msos._inherits = function (subClass, superClass) {
 		}
 	);
 
-    if (superClass) {
-		Object.setPrototypeOf(subClass, superClass);
-    }
+	if (superClass) {
+		if (Object.setPrototypeOf) {
+			Object.setPrototypeOf(subClass, superClass);
+		} else {
+			msos._defaults(subClass, superClass);
+		}
+	}
 };
 
 msos._classCallCheck = function (instance, Constructor) {
@@ -3619,9 +3662,11 @@ msos._classCallCheck = function (instance, Constructor) {
     }
 };
 
-msos._constructCallCheck = function (self, call) {
+msos._constructorReturn = function (self, call) {
+	"use strict";
+
     if (!self) {
-        throw new ReferenceError("msos._constructCallCheck -> this hasn't been initialised - super() hasn't been called");
+        throw new ReferenceError("msos._constructorReturn -> this hasn't been initialised - super() hasn't been called");
     }
 
     return call && (typeof call === "object" || typeof call === "function") ? call : self;
@@ -4449,102 +4494,6 @@ msos.browser_orientation = function () {
     return orient_ref;
 };
 
-msos.browser_ok = function () {
-    "use strict";
-
-    var temp_txt = 'msos.browser_ok -> ',
-		failed = [];
-
-	// Absolute minimum requirements...
-    if (!window.focus)              { failed.push('window.focus'); }
-    if (!document.images)           { failed.push('document.images'); }
-    if (!document.styleSheets)      { failed.push('document.styleSheets'); }
-    if (!document.open)             { failed.push('document.open'); }
-    if (!document.close)            { failed.push('document.close'); }
-    if (!window.document.write)     { failed.push('document.write'); }
-	if (!document.addEventListener) { failed.push('document.addEventListener'); }	// Looking at you IE...
-
-    if (failed.length === 0) {
-        msos.console.debug(temp_txt + 'browser is ok');
-		msos.config.browser.ok = true;
-        return;
-    }
-
-    msos.console.error(temp_txt + 'browser failed, does not support: ' + failed.join(', '));
-    msos.config.browser.ok = false;
-};
-
-msos.browser_current = function () {
-    "use strict";
-
-    var temp_txt = 'msos.browser_current -> ',
-		failed = [],
-		isOldBrowser;
-
-	// Hoped for features
-	if (!Array.prototype.indexOf)	{ failed.push('Array.indexOf'); }
-    if (!Array.prototype.forEach)	{ failed.push('Array.forEach'); }
-	if (!String.prototype.indexOf)	{ failed.push('String.indexOf'); }
-    if (!String.prototype.trim)		{ failed.push('String.trim'); }                
-    if (!Function.prototype.bind)	{ failed.push('Function.bind'); }
-    if (!Object.keys)				{ failed.push('Object.keys'); }
-    if (!Object.create)				{ failed.push('Object.create'); }
-    if (!JSON || !JSON.stringify || !JSON.stringify.length || JSON.stringify.length < 3) {
-		failed.push('JSON.stringify');
-	}
-
-	(function () {
-
-		var supportsFile = (window.File && window.FileReader && window.FileList && window.Blob),
-			url,
-			svg,
-			objectUrl,
-			img_el;
-
-		function failback() { isOldBrowser = true; }
-
-		/**
-		 * Based on:
-		 *   Blob Feature Check v1.1.0
-		 *   https://github.com/ssorallen/blob-feature-check/
-		 *   License: Public domain (http://unlicense.org)
-		 */
-		url = window.URL;
-		svg = new Blob(
-				['<svg xmlns=\'http://www.w3.org/2000/svg\'></svg>'],
-				{ type: 'image/svg+xml;charset=utf-8' }
-			);
-		objectUrl = url.createObjectURL(svg);
-
-		if (/^blob:/.exec(objectUrl) === null || !supportsFile) {
-			failback();
-		} else {
-			img_el = document.createElement('img');
-			img_el.onload = function () { isOldBrowser = false; };
-			img_el.onerror = failback;
-			img_el.src = objectUrl;
-		}
-
-	}());
-
-	if (isOldBrowser) { failed.push('Blob check'); }
-
-    if (failed.length === 0) {
-        msos.console.debug(temp_txt + 'browser is current');
-		msos.config.browser.current = true;
-        return;
-    }
-
-    msos.console.warn(temp_txt + 'browser does not support: ' + failed.join(', ') + ' -> for doctype ' + msos.config.doctype);
-    if (msos.config.doctype === 'xhtml5' && failed[2] === 'document.write') {
-		msos.config.browser.current = true;
-		return;
-	}
-
-    msos.console.error(temp_txt + 'browser is not current');
-    msos.config.browser.current = false;
-};
-
 msos.browser_touch = function () {
     "use strict";
 
@@ -4734,12 +4683,13 @@ msos.get_head = function (win) {
 
     var d = win.document,
 		de = d.documentElement,
-		hd = d.head || d.getElementsByTagName('head')[0];
+		hd = d.head || d.getElementsByTagName('head');
 
     if (!hd) {
 		hd = d.createElement('head');
 		de.insertBefore(hd, de.firstChild);
     }
+
     return hd;
 };
 
@@ -5082,8 +5032,6 @@ msos.set_environment = function () {
 	st_obj.site_bdwd.value = msos.basil.get(st_obj.site_bdwd.name);
 
     // Get some browser capabilities
-	msos.browser_ok();
-    msos.browser_current();
     msos.browser_advanced();
     msos.browser_editable();
     msos.browser_orientation();
@@ -5251,53 +5199,11 @@ msos.script_prefetcher = function (url_array) {
 		loader_obj.load(script_url, 'prefetch');
 	}
 
+	url_array = [];
+	
 	msos.console.debug(temp_spf + ' ->  done!');
 };
 
-msos.check_prefetch_dependent = function (prefetch_fragment_array, redirect) {
-	"use strict";
-
-	var temp_cp = 'msos.check_prefetch_dependent -> ',
-		mrg = msos.registered_globals,
-		purl = msos.base_site_purl,
-		i = 0,
-		fragment = (purl.attr('fragment')).split('/'),
-		found = false,
-		global,
-		ready = false,
-		out_url;
-
-	for (i = 0; i < prefetch_fragment_array.length; i += 1) {
-		if (prefetch_fragment_array[i] === fragment[1]) { found = true; }
-	}
-
-	if (found) {
-
-		for (global in mrg) {
-			if (mrg[global] !== true) { ready = false; }
-		}
-
-		msos.console.debug(temp_cp + 'found fragment: ' + fragment[1]);
-
-		if (ready === false) {
-
-			out_url =
-				purl.attr('protocol') + '://' +
-				purl.attr('host') + purl.attr('path') +
-			   (purl.attr('query') ? '?' + purl.attr('query') : '') +
-			   '#' + fragment[0] + '/' + (redirect ? redirect : '');
-
-			msos.console.debug(temp_cp + ',\n     redirect url: ' + out_url);
-			return out_url;
-		}
-	}
-
-	if (msos.config.verbose) {
-		msos.console.debug(temp_cp + 'current available globals: ', mrg);
-	}
-
-	return undefined;
-};
 
 // *******************************************
 // Establish base MSOS environment

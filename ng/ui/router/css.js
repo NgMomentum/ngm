@@ -262,7 +262,7 @@ ng.ui.router.css.themes = new msos.loader();
 
 			$transitions.onBefore(
 				{},
-				function (transition) {
+				function ng_ui_rt_css_onbefore(transition) {
 					transition.addResolvable({
 						token: '@css',
 						resolveFn: function () {
@@ -274,7 +274,7 @@ ng.ui.router.css.themes = new msos.loader();
 
 			$transitions.onSuccess(
 				{},
-				function () { loadStylesForStateComplete(); }
+				function ng_ui_rt_css_onsuccess() { loadStylesForStateComplete(); }
 			);
 		}]
 	).service(
@@ -289,7 +289,7 @@ ng.ui.router.css.themes = new msos.loader();
 
 				// Immediately inject the stylesheets at the next tick
 				$timeout(
-					function () {
+					function ng_ui_rt_css_hlUiRouterCss_to() {
 						if (vcss) {
 							msos.console.debug('ng.ui.router.css - hlUiRouterCss -> loading...');
 						}

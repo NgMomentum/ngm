@@ -233,16 +233,19 @@ angular.module(
             var tab = scope.$eval(attrs.uibTabContentTransclude).tab;
             //Now our tab is ready to be transcluded: both the tab heading area
             //and the tab content area are loaded.  Transclude 'em both.
-            tab.$transcludeFn(tab.$parent, function (contents) {
-                angular.forEach(contents, function (node) {
-                    if (isTabHeading(node)) {
-                        // Let tabHeadingTransclude know.
-                        tab.headingElement = angular.element(node).html();
-                    } else {
-                        elm.append(node);
-                    }
-                });
-            });
+            tab.$transcludeFn(
+				tab.$parent,
+				function ngBsUiTabContTransclude(contents) {
+					angular.forEach(contents, function (node) {
+						if (isTabHeading(node)) {
+							// Let tabHeadingTransclude know.
+							tab.headingElement = angular.element(node).html();
+						} else {
+							elm.append(node);
+						}
+					});
+				}
+			);
         }
     };
 

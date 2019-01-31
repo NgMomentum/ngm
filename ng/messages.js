@@ -72,25 +72,27 @@ ng.messages.version = new msos.set_version(18, 10, 25);
 							},
 							attach: function () {
 								if (!currentElement) {
-									$transclude(function (elm, newScope) {
-	
-										$animate.enter(elm, null, element);
-										currentElement = elm;
-	
-										var $$attachId = currentElement.$$attachId = ngMessagesCtrl.getAttachId();
-	
-										currentElement.on(
-											'$destroy',
-											function () {
-												if (currentElement && currentElement.$$attachId === $$attachId) {
-													ngMessagesCtrl.deregister(commentNode, isDefault);
-													messageCtrl.detach();
+									$transclude(
+										undefined,		// no scope
+										function ngMessagesTransclude(elm, newScope) {
+											$animate.enter(elm, null, element);
+											currentElement = elm;
+
+											var $$attachId = currentElement.$$attachId = ngMessagesCtrl.getAttachId();
+
+											currentElement.on(
+												'$destroy',
+												function () {
+													if (currentElement && currentElement.$$attachId === $$attachId) {
+														ngMessagesCtrl.deregister(commentNode, isDefault);
+														messageCtrl.detach();
+													}
+
+													newScope.$destroy();
 												}
-	
-												newScope.$destroy();
-											}
-										);
-									});
+											);
+										}
+									);
 								}
 							},
 							detach: function () {

@@ -563,7 +563,7 @@ ng.route.version = new msos.set_version(18, 7, 4);
 
                         clone = $transclude(
                             newScope,
-                            function (clone) {
+                            function ngRouteViewTransclude(clone) {
                                 $animate.enter(
                                     clone,
                                     null,

@@ -436,7 +436,13 @@ function VirtualRepeatDirective($parse) {
                 extraName = $attrs.mdExtraName && $parse($attrs.mdExtraName);
 
             function VirtualRepeatLink($scope_na, $element_na, $attrs_na, ctrl, $transclude) {
-                ctrl[0].link_(ctrl[1], $transclude, repeatName, repeatListExpression, extraName);
+                ctrl[0].link_(
+					ctrl[1],
+					$transclude,
+					repeatName,
+					repeatListExpression,
+					extraName
+				);
             }
 
             return VirtualRepeatLink;
@@ -666,9 +672,10 @@ VirtualRepeatController.prototype.getBlock_ = function (index) {
     var block;
 
     this.transclude(
+		undefined,		// no scope
         angular.bind(
             this,
-            function (clone, scope) {
+            function ngMdVirtRepeatTransclude(clone, scope) {
                 block = {
                     'element': clone,
                     'new': true,

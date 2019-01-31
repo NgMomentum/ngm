@@ -17,7 +17,7 @@
     _: false
 */
 
-msos.console.info('msos/core -> start, (/mobilesiteos/msos/core.uc.js file), ' + (new msos.set_version(17, 6, 26)));
+msos.console.info('msos/core -> start, (/mobilesiteos/msos/core.uc.js file), ' + (new msos.set_version(18, 12, 15)));
 msos.console.time('core');
 
 // *******************************************
@@ -707,7 +707,7 @@ msos.notify = {
 			self = msos.notify,
 			base_obj = {
 				type: type,
-				delay: delay || 4000,		// default (minimum) is 4 sec.
+				delay: delay || msos.notify_delay,
 				auto_delay: 0,
 				icon_el: null,
 				butt_el: jQuery("<button class='btn btn-danger btn-small fa fa-times'></button>"),
@@ -898,7 +898,7 @@ msos.check_deferred_scripts = function () {
 			msos.run_onload();
 
 			if (msos.config.verbose) {
-				msos.console.debug(temp_cds + 'called, available globals:', msos.registered_globals);
+				msos.console.debug(temp_cds + 'called,\n     globals:', msos.registered_globals);
 			}
 
 		} else {
@@ -1151,6 +1151,9 @@ msos.run_final = function () {
 // *******************************************
 
 msos.run_onload_incr = 1;
+msos.onerror_functions.push(msos.check_resources);
+msos.onerror_functions.push(msos.run_debugging_output);
+
 msos.run_onload = function () {
     "use strict";
 
@@ -1173,7 +1176,7 @@ msos.run_onload = function () {
 		msos.console.time('run_onload');
 
 		if (cfg.verbose) {
-			msos.console.debug(run_txt + 'start.', cfg);
+			msos.console.debug(run_txt + 'start,\n     msos base:', cfg);
 		} else {
 			msos.console.debug(run_txt + 'start.');
 		}
@@ -1245,14 +1248,10 @@ msos.run_onload = function () {
 		// All normal cached functions have run, so run cleanup/end functions
 		msos.run_function_array('onload_func_done');
 
+		msos.console.debug(run_txt + 'done!');
 		if (cfg.verbose) {
-			msos.console.debug(
-				run_txt + 'done, modules and templates: ',
-				msos.registered_modules,
-				msos.registered_templates
-			);
-		} else {
-			msos.console.debug(run_txt + 'done!');
+			msos.console.debug('     modules:', _.keys(msos.registered_modules));
+			msos.console.debug('     templates:', _.keys(msos.registered_templates));
 		}
 
 		// Reset flags
@@ -1266,17 +1265,25 @@ msos.run_onload = function () {
 
     } else {
 
-		if (_.indexOf([10, 20, 40, 80, 100, 100], msos.require_attempts) !== -1) {
+		if (_.indexOf([10, 20, 30, 40, 50], msos.require_attempts) !== -1) {
 			msos.console.warn(run_txt + 'waited: ' + (msos.require_attempts * to_secs) + ' secs.');
-		} else if (msos.require_attempts > 100) {
+		} else if (msos.require_attempts > 50) {
 			report_stop = function () {
+				var m = 0;
+
 				msos.console.error(run_txt + 'failed, module queue: ' + msos.require_queue + ', i18n queue: ' + msos.i18n_queue + ', pending file loading:', msos.pending_file_loads);
 				msos.notify.warning(jQuery('title').text(), 'Page Timed Out');
-				msos.check_resources();
 
-				// Report debugging info where possible
-				msos.run_debugging_output();
+				for (m = 0; m < msos.onerror_functions.length; m += 1) {
+					msos.onerror_functions[m]();
+				}
+
+				// Reset for another try...
+				msos.require_attempts = 0;
+				msos.pending_file_loads = [];
 			};
+
+
 
 			// Let any 'thrown errors' settle, then report script stop
 			setTimeout(report_stop, 400);

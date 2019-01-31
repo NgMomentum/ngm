@@ -2,14 +2,13 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define("ui-router-visualizer", [], factory);
+		define("@uirouter/visualizer", [], factory);
 	else if(typeof exports === 'object')
-		exports["ui-router-visualizer"] = factory();
+		exports["@uirouter/visualizer"] = factory();
 	else
-		root["ui-router-visualizer"] = factory();
+		root["@uirouter/visualizer"] = factory();
 })(this, function() {
-// https://unpkg.com/@uirouter/visualizer@5.1.3/_bundles/
-return /******/ (function(modules) { // webpackBootstrap
+return /******/ (function(modules) { // webpackBootstrap ref. https://unpkg.com/@uirouter/visualizer@6.0.0/_bundles/
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -203,9 +202,17 @@ var IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/
 var items = [];
 
 function enqueueRender(component) {
-	if (!component._dirty && (component._dirty = true) && items.push(component) == 1) {
-		(options.debounceRendering || defer)(rerender);
+	if (component) {
+		if (!component._dirty && (component._dirty = true) && items.push(component) == 1) {
+			(options.debounceRendering || defer)(rerender);
+		}
+	} else {
+		if (msos.config.debug) {
+			msos.console.warn('ng/ui/router/visualizer - enqueueRender -> no component passed in.');
+		}
+		
 	}
+
 }
 
 function rerender() {
@@ -1845,11 +1852,9 @@ exports.SLANTED_TEXT = SLANTED_TEXT;
 function RADIAL_EDGE(node, renderer) {
     var strokeWidth = renderer.baseStrokeWidth * renderer.zoom;
     var makeLinkPath = function (node) {
+//		console.log('RADIAL_EDGE - makeLinkPath -> node:', node);
         var s = { x: node.animX, y: node.animY }; // statevisnode
-        var p = {
-			x: node._parent ? node._parent.animX : node.animX,
-			y: node._parent ? node._parent.animY : node.animY
-		}; // parent
+        var p = node._parent ? { x: node._parent.animX, y: node._parent.animY } : { x: 0, y: 0 }; // parent
         return "M" + [s.x, s.y]
             // + "C"  + [s.x, (s.y + p.y) / 2.5]
             // + " "  + [p.x, (s.y + p.y) / 2.5]
@@ -1862,11 +1867,9 @@ exports.RADIAL_EDGE = RADIAL_EDGE;
 function TREE_EDGE(node, renderer) {
     var strokeWidth = renderer.baseStrokeWidth * renderer.zoom;
     var makeLinkPath = function (node) {
+//		console.log('TREE_EDGE - makeLinkPath -> node:', node);
         var s = { x: node.animX, y: node.animY }; // statevisnode
-        var p = {
-			x: node._parent ? node._parent.animX : node.animX,
-			y: node._parent ? node._parent.animY : node.animY
-		}; // parent
+        var p = node._parent ? { x: node._parent.animX, y: node._parent.animY } : { x: 0, y: 0 }; // parent
         var yAvg = (s.y + p.y) / 2;
         return "M " + s.x + " " + s.y + " C " + s.x + " " + yAvg + ", " + p.x + " " + yAvg + ", " + p.x + " " + p.y;
     };
@@ -2156,7 +2159,7 @@ var StateSelector = /** @class */ (function (_super) {
         var updateStates = function () {
             return _this.setState({ states: router.stateRegistry.get().map(function (state) { return state.name; }) });
         };
-        var updateCurrent = function (trans) {
+        var updateCurrent = function vis_stateselector_componentDidMount(trans) {
             return _this.setState({ current: trans.to().name });
         };
         if (router.stateRegistry.onStatesChanged) {
@@ -2310,10 +2313,7 @@ var StateTree = /** @class */ (function (_super) {
             _this.cancelCurrentAnimation = animatepath_1.animatePath(targetCoords, currentCoords, 500, animationFrame, function () { return null; }, easing_1.easing.easeInOutExpo);
         };
         _this.nodeForState = function (nodes, state) {
-			var out_node;
-			msos.console.debug('ng/ui/visualizer - StateTree - nodeForState -> state: "' + state.name + '"');
-			out_node = nodes.filter(function (node) { return node.name === state.name; })[0];
-            return out_node;
+            return nodes.filter(function (node) { return node.name === state.name; })[0];
         };
         _this.updateStates = function () {
             var router = _this.props.router;
@@ -2330,12 +2330,17 @@ var StateTree = /** @class */ (function (_super) {
                 // Rebuild each node's children array
                 nodes.forEach(function (n) { return n._children = []; });
                 nodes.forEach(function (n) {
-                    if (!n || !n.parent) { return; }
-                    var parentNode = _this.nodeForState(nodes, n.parent);
-                    if (!parentNode) { return; }
-                    parentNode._children.push(n);
-                    n._parent = parentNode;
-                });
+					var parentNode;
+
+					if (n && n.parent) {
+						parentNode = _this.nodeForState(nodes, n.parent);
+
+						if (parentNode) {
+							parentNode._children.push(n);
+							n._parent = parentNode;
+						}
+					}
+				});
                 nodes.forEach(function (n) { return n.future = !!n.lazyLoad; });
             }
             if (!_this.unmounted && !_this.deregisterStateListenerFn) {
@@ -2366,6 +2371,7 @@ var StateTree = /** @class */ (function (_super) {
         if (!element) {
             element = document.createElement("div");
             element.id = "uirStateTree";
+			element.setAttribute('data-ng-ignore', 'true');
         }
         var initialProps = __assign({}, props, { router: router });
         var _render = function () {
@@ -2390,7 +2396,7 @@ var StateTree = /** @class */ (function (_super) {
         }
         this.updateStates();
         // Register onSuccess transition hook to toggle the SVG classes
-        this.deregisterHookFn = $transitions.onSuccess({}, function (trans) { return _this.updateNodes(trans); });
+        this.deregisterHookFn = $transitions.onSuccess({}, function vis_statetree_componentDidMount(trans) { return _this.updateNodes(trans); });
         this.updateNodes();
         var lastSuccessful = this.props.router.globals.successfulTransitions.peekTail();
         if (lastSuccessful) {
@@ -6054,7 +6060,7 @@ if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
 
-var options = {"hmr":false}
+var options = {"hmr":false,"attrs":{"nonce":"uiroutervisualizer"}}
 options.transform = transform
 // add the styles to the DOM
 var update = __webpack_require__(33)(content, options);
@@ -6299,7 +6305,7 @@ var TransitionVisualizer = /** @class */ (function (_super) {
     };
     TransitionVisualizer.prototype.componentDidMount = function () {
         var _this = this;
-        var dereg = this.props.router.transitionService.onBefore({}, function (trans) {
+        var dereg = this.props.router.transitionService.onBefore({}, function vis_transvis_componentDidMount(trans) {
             _this.setState({ transitions: _this.state.transitions.concat(trans) });
             var duration = 750, el = _this._div.children[0];
             var scrollToRight = function () {
@@ -6400,11 +6406,11 @@ var TransitionView = /** @class */ (function (_super) {
         };
         var statename = function (state) { return state.name || "(root)"; };
         var fns = [];
-        fns.push(trans.onStart({}, function () { return setMessage("Starting..."); }, { priority: 10000 }));
-        fns.push(trans.onExit({}, function (t, state) { return setMessage("Exiting " + statename(state)); }, { priority: 10000 }));
-        fns.push(trans.onRetain({}, function (t, state) { return setMessage("Retained " + statename(state)); }, { priority: 10000 }));
-        fns.push(trans.onEnter({}, function (t, state) { return setMessage("Entering " + statename(state)); }, { priority: 10000 }));
-        fns.push(trans.onFinish({}, function () { return setMessage("Finishing..."); }));
+        fns.push(trans.onStart({}, function vis_comp_did_mount_start() { return setMessage("Starting..."); }, { priority: 10000 }));
+        fns.push(trans.onExit({}, function vis_comp_did_mount_exit(t, state) { return setMessage("Exiting " + statename(state)); }, { priority: 10000 }));
+        fns.push(trans.onRetain({}, function vis_comp_did_mount_retain(t, state) { return setMessage("Retained " + statename(state)); }, { priority: 10000 }));
+        fns.push(trans.onEnter({}, function vis_comp_did_mount_enter(t, state) { return setMessage("Entering " + statename(state)); }, { priority: 10000 }));
+        fns.push(trans.onFinish({}, function vis_comp_did_mount_finish() { return setMessage("Finishing..."); }));
         this.setState({ deregisterFunctions: fns });
         var success = function () { return _this.setState({ status: "success", message: null }); };
         var error = function (err) {
@@ -6987,7 +6993,7 @@ if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
 
-var options = {"hmr":false}
+var options = {"hmr":false,"attrs":{"nonce":"uiroutervisualizer"}}
 options.transform = transform
 // add the styles to the DOM
 var update = __webpack_require__(33)(content, options);
