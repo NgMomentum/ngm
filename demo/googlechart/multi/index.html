@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>NgM Google Fat Chart</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../../site.css">
+	<link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../../msos/base.uc.js"></script>
+	<script src="../../config.js"></script>
+
+</head>
+<body>
+
+	<noscript data-ng-ignore>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div class="ng-cloak container" ng-controller="demo.googlechart.controllers.multi.ctrl">
+
+		<div class="col-xs-12">
+			<h2>NgMomentum - AngularJS Google Chart</h2>
+			<h3>Multi-Chart Demo</h3>
+		</div>
+	
+		<div class="col-xs-5">
+			<form class="form-horizontal" role="form">
+				<div class="form-group ">
+					<label class="control-label"
+						   for="chart-data-rows-1-3-v">February server sale units</label>
+	
+					<input class="form-control" type="number" min="0" max="100" ng-model="chart.data.rows[1].c[3].v"
+						   id="chart-data-rows-1-3-v"/>
+				</div>
+				<div class="form-group">
+					<label class="control-label"
+						   for="chart-options-vAxis-gridlines-count">Number of grid lines</label>
+		
+					<input class="form-control" type="number" min="0" max="100" ng-model="chart.options.vAxis.gridlines.count"
+						   id="chart-options-vAxis-gridlines-count"/>
+				</div>
+	
+				<div class="form-group">
+					<label for="chartType">Chart type</label>
+	
+					<select class="form-control" id="chartType" ng-model="chart.type" ng-change="chartSelectionChange()">
+						<option value="AreaChart">AreaChart</option>
+						<option value="PieChart">PieChart</option>
+						<option value="ColumnChart">ColumnChart</option>
+						<option value="LineChart">LineChart</option>
+						<option value="Table">Table</option>
+						<option value="BarChart">BarChart</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<div class="checkbox">
+						<label for="hideServer">
+							<input id="hideServer" type="checkbox" ng-model="hideServer"
+								   ng-change="selectionChange()"/> Hide Server
+						</label>
+					</div>
+				</div>
+	
+				<div class="form-group">
+					<div class="checkbox">
+						<label for="htmlTooltip" ng-show="chart.type!='Table'">
+							<input id="htmlTooltip" type="checkbox" ng-model="chart.options.tooltip.isHtml"
+								   ng-change="htmlTooltip()"/>
+							HTML Tooltip
+						</label>
+					</div>
+				</div>
+	
+				<div class="form-group" ng-show="chart.type=='Table'">
+					<label for="chartType">Format</label>
+	
+					<ul class="inputs-list">
+						<li ng-repeat="format in formatCollection">
+							<button class="btn primary" ng-click="toggleFormat(format)">{{format.name}}</button>
+						</li>
+					</ul>
+				</div>
+			</form>
+		</div>
+
+		<div class="col-xs-7">
+			<div google-chart chart="chart" style="{{cssStyle}}" on-ready="chartReady()"></div>
+		</div>
+
+	</div>
+
+	<script data-ng-ignore>
+
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.require("demo.googlechart.controllers.multi");
+			}
+		);
+
+		msos.onload_func_done.push(
+			function () {
+				"use strict";
+
+				angular.bootstrap('body', ['demo.googlechart.controllers.multi']);
+			}
+		);
+
+	</script>   
+
+</body>
+</html>
