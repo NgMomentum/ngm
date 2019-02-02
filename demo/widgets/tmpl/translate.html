@@ -1,0 +1,27 @@
+
+	<div ng-controller="demo.widgets.controllers.translate.ctrl">
+
+		<p>
+			<button ng-click="setLang('en_US')" translate="load.partial.root.english">English</button> |
+			<button ng-click="setLang('de_DE')" translate="load.partial.root.german">German</button>
+		</p>
+
+		<h1>{{ 'load.partial.root.HEADER' | translate }}</h1>
+
+		<h2 translate>load.partial.root.SUBHEADER</h2>
+
+		<h2>Module A
+			<button ng-click="loadModule($event, 'moduleA')">Load module</button> /
+			<button ng-click="unloadModule($event, 'moduleA')">Unload module</button>
+		</h2>
+
+		<p translate>load.partial.moduleA.text</p>
+
+		<h2>Module B
+			<button ng-click="loadModule($event, 'moduleB')">Load module</button> /
+			<button ng-click="unloadModule($event, 'moduleB')">Unload module</button>
+		</h2>
+
+		<p translate>load.partial.moduleB.text</p>
+
+	</div>

@@ -1,0 +1,9 @@
+
+	<li class="dropdown" data-uib-dropdown>
+		<a role="button" class="dropdown-toggle" data-uib-dropdown-toggle>
+			Material-Design <b class="caret"></b>
+		</a>
+		<ul class="dropdown-menu" ng-controller="materialDropdownCtrl">
+			<li ng-repeat="rte in material_ctrls"><a data-ui-sref="{{rte.page}}">{{rte.desc}}</a></li>
+		</ul>
+	</li>

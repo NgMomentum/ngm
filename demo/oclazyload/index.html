@@ -12,7 +12,7 @@
 	<title>NgM $ocLazyLoad Demo</title>
 
 	<!-- NgMomentum initial page setup -->
-	<link rel="stylesheet" type="text/css" href="../../css/site.css">
+	<link rel="stylesheet" type="text/css" href="../site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
 	<!-- NgMomentum scripts -->
@@ -31,13 +31,13 @@
 	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
 	<div id="body" data-ng-controller="demo.oclazyload.start.ctrl" class="ng-cloak container">
 
-		<h2 data-ng-ignore>$ocLazyLoad via NgMomentum</h2>
+		<h2 data-ng-ignore>NgMomentum $ocLazyLoad Demo</h2>
 
 		<p data-ng-ignore>
 			With ocLazyLoad you can lazy load js / css / templates with a service and/or a directive.<br/>
 		</p>
 
-		<div ui-view="lazyLoadView"></div>
+		<div ui-view="lazyLoadView">ui-view not populated (no state is activated)</div>
 	</div>
 
 	<script>

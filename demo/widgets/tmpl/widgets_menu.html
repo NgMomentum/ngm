@@ -2,18 +2,8 @@
 	<div class="row">
 		<div class="col-md-12">
 			<section class="bs-sidebar visible-xs">
-				<ul class="nav bs-sidenav">
-					<li><a data-ui-sref="widgets">Overview</a></li>
-					<li><a data-ui-sref="culture">i18n</a></li>
-					<li><a data-ui-sref="smarttable">SmartTable</a></li>
-					<li><a data-ui-sref="ngreacttable">NgReact Table</a></li>
-					<li><a data-ui-sref="tictactoe">NgReact TicTacToe</a></li>
-					<li><a data-ui-sref="localstorage">Localstorage</a></li>
-					<li><a data-ui-sref="masonry">Masonry</a></li>
-					<li><a data-ui-sref="editor">Editor Demo</a></li>
-					<li><a data-ui-sref="editor2">Editor 2nd Demo</a></li>
-					<li><a data-ui-sref="editor3">Editor 3rd Demo</a></li>
-					<li><a data-ui-sref="visualizer">UI-Router Visualizer</a></li>
+				<ul class="nav bs-sidenav" ng-controller="widgetsDropdownCtrl">
+					<li ng-repeat="rte in widget_ctrls"><a data-ui-sref="{{rte.page}}">{{rte.desc}}</a></li>
 				</ul>
 			</section>
 		</div>

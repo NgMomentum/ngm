@@ -1,62 +1,83 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>NgM w/React Demo</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+
+	<script>
+		// We need React & ReactDom immediately
+		msos.script_loader(msos.prefetch_scripts);
+	</script>
 </head>
-<body id="body">
-    <div ng-controller="ctrl">
+<body>
 
-		<div>
-			<input ng-model="name" />
+	<noscript data-ng-ignore>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+    <style data-ng-ignore>
+      .done-true{
+        text-decoration: line-through;
+      }
+      .done-false{
+        text-decoration: none;
+      }
+      .angular-part{
+        background-color: lightskyblue
+      }
+      .react-part{
+        background-color: cornflowerblue
+      }
+      .list-item{
+        cursor: pointer
+      }
+    </style>
+
+	<div class="ng-cloak" ng-controller="TodoCtrl">
+		<div class="angular-part container">
+			<h1>Angular TO-DO</h1>
+
+			<span>{{remaining()}} of {{todos.length}} remaining</span>
+			<ul class="unstyled">
+				<li ng-repeat="todo in todos">
+					<span class="done-{{todo.done}}">{{todo.text}}</span>
+				</li>
+			</ul>
+
+			<form ng-submit="addTodo()">
+				<input type="text" ng-model="todoText"  size="30" placeholder="add new todo here">
+				<input class="btn-primary" type="submit" value="add">
+			</form>
+
+			<div>&nbsp;</div>
+
 		</div>
-		ReactJS:
-		<hello name="name"></hello>
-		<hr />
-		<div>
-			AngularJs:
+		<div class="react-part container">
+			<react-to-do todos="todos" mark-complete="markItemCompleted(text)"></react-to-do>
+
+			<div>&nbsp;</div>
 		</div>
-		Hello, {{name}}
-    </div>
+		
+	</div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
-    <script src=" https://fb.me/react-0.14.6.js"></script>
-    <script src="https://fb.me/react-dom-0.14.6.js"></script>
-
-    <script>
-        var HelloWorld = React.createClass({
-            displayName: 'Hello World',
-            render: function() {
-                return React.DOM.div(null, "Hello, ", this.props.name1);
-            }
-        });
-    </script>
-
-    <script>
-        angular.module('app', []).controller('ctrl', ['$scope', function($scope) {
-            $scope.name = 'World!';
-        }]).directive('hello', function() {
-            return {
-                restrict: 'E',
-                scope: {
-                    name: '='
-                },
-                link: function(scope, el) {
-                    scope.$watch('name', function(newValue) {
-                        var MyComponent = React.createFactory(HelloWorld);
-                        ReactDOM.render(
-                            MyComponent({
-                                name1: newValue
-                            }),
-                            el[0]
-                        );
-                    });
-                }
-            };
-        });
-
-		angular.bootstrap(document.getElementById('body'), ['app']);
-    </script>
+	<script data-ng-ignore src="./start.js"></script>   
 
 </body>
 </html>

@@ -22,8 +22,6 @@
 msos.console.info('config -> start, (/ngm/demo/config.js file).');
 msos.console.time('config');
 
-// Set specific config flags (w/ boolean true/false)
-msos.site_specific({ run_onerror: true });
 
 // --------------------------
 // Stylesheets to load (CSS injection)
@@ -65,20 +63,16 @@ if (msos.config.debug_script) {
 		msos.resource_url('ng', 'ui/router/v1020_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
 		msos.resource_url('ng', 'material/v1110_msos.uc.js'),
-		msos.resource_url('ng', 'translate/v2170_msos.uc.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.uc.js')
 	];
 
 	// Files not requires by first content page load
 	msos.prefetch_scripts = [
-		msos.resource_url('firebase', 'v480.min.js'),		// Full script is na
-		msos.resource_url('ng', 'firebase/v230_msos.uc.js'),
-		msos.resource_url('react', 'v1620_msos.uc.js'),
-		msos.resource_url('react', 'v1620_msos_dom.uc.js'),
+		msos.resource_url('react', 'v1670.uc.js'),
+		msos.resource_url('react', 'v1670_dom.uc.js'),
 		msos.resource_url('react', 'prop_types/v1560.uc.js'),
-		msos.resource_url('react', 'create_react_class/v1562.uc.js'),
-		msos.resource_url('hello', 'v1151.uc.js')
+		msos.resource_url('react', 'create_react_class/v1563.uc.js'),
 	];
 
 } else {
@@ -90,27 +84,25 @@ if (msos.config.debug_script) {
 		msos.resource_url('ng', 'ui/router/v1020_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
 		msos.resource_url('ng', 'material/v1110_msos.min.js'),
-		msos.resource_url('ng', 'translate/v2170_msos.min.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
 	];
 
 	// Files not requires by first content page load
 	msos.prefetch_scripts = [
-		msos.resource_url('firebase', 'v480.min.js'),
-		msos.resource_url('ng', 'firebase/v230_msos.min.js'),
-		msos.resource_url('react', 'v1620_msos.min.js'),
-		msos.resource_url('react', 'v1620_msos_dom.min.js'),
+		msos.resource_url('react', 'v1670.min.js'),
+		msos.resource_url('react', 'v1670_dom.min.js'),
 		msos.resource_url('react', 'prop_types/v1560.min.js'),
-		msos.resource_url('react', 'create_react_class/v1562.min.js'),
-		msos.resource_url('hello', 'v1151.min.js')
+		msos.resource_url('react', 'create_react_class/v1563.min.js'),
 	];
 }
 
 
 // Google Analytics
 var _gaq = [],
-    ___gcfg = {};
+    ___gcfg;
+
+___gcfg = {};
 
 _gaq.push(['_setAccount', 'UA-24170958-1']);
 _gaq.push(['_trackPageview']);
@@ -149,16 +141,20 @@ msos.css_loader(msos.deferred_css);
 msos.script_loader(msos.deferred_scripts);
 
 // Prefetch large secondary scripts (after MSOS modules have loaded)
-msos.onload_functions.push(
+msos.onload_func_start.push(
 	function config_run_prefetch() {
-		msos.script_prefetcher(msos.prefetch_scripts);
+		if (msos.prefetch_scripts.length) {
+			msos.script_prefetcher(msos.prefetch_scripts);
+		}
 	}
 );
 
 // Now, initialize prefetched scripts after current page functions are done
 msos.onload_func_post.push(
 	function config_init_prefetch() {
-		msos.script_loader(msos.prefetch_scripts);
+		if (msos.prefetch_scripts.length) {
+			msos.script_loader(msos.prefetch_scripts);
+		}
 	}
 );
 

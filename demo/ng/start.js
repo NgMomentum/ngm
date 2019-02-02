@@ -96,6 +96,8 @@ msos.onload_functions.push(
 
 							scpe.html = html_in;
 							jQuery('textarea').text(html_in);	// Had to go with this due to IE
+
+							pge.done = true;
 						},
 						function (response) {
 							scpe.html = 'Unable to load code: ' + response.status;
@@ -225,7 +227,7 @@ msos.onload_functions.push(
                     {
                         title: 'NgM, Simple Routing',
                         url: '',
-                        href: '../route/index.html',
+                        href: '../simple/route/index.html',
 						icon: 'fa-external-link'
                     },
                     {
@@ -248,8 +250,8 @@ msos.onload_functions.push(
                         document.location = page.href;	// Load new page
                     }
 
-					if (page.script)	{ get_script($scope, page); }
-					else				{ get_template($scope, page); }
+					if (page.script && !page.done)	{ get_script($scope, page); }
+					else							{ get_template($scope, page); }
                 };
             }]
         );

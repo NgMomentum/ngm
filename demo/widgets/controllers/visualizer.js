@@ -13,7 +13,7 @@ demo.widgets.controllers.visualizer.version = new msos.set_version(18, 1, 29);
 
 // Load the very large Visualizer file
 demo.widgets.controllers.visualizer.vis = new msos.loader();
-demo.widgets.controllers.visualizer.vis.load(msos.resource_url('ng', 'ui/router/visualizer.min.js'));
+demo.widgets.controllers.visualizer.vis.load(msos.resource_url('ng', 'ui/router/visualizer/v600_msos.uc.js'));
 
 
 var HomeController = function () {

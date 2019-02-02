@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+
+    <title>Bubble Chart</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<script type="text/javascript" src="../../chartjs/v273.min.js"></script>
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+
+</head>
+
+<body>
+
+    <div class="container" ng-controller="demo.chartjs.bubble.ctrl">
+        <canvas class="chart chart-bubble" chart-data="data" chart-colors="colors" chart-options="options"></canvas>
+    </div>
+
+	<script data-ng-ignore>
+
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.require("demo.chartjs.bubble");
+			}
+		);
+
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="handheldfriendly" content="true" />
+    <meta name="mobileoptimized" content="width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Open source software for the mobile web!" />
+    <meta name="author" content="Dwight Vietzke" />
+
+    <title>UI-Router w/Sticky States via NgM Demo</title>
+
+    <link rel="stylesheet" type="text/css" href="../../site.css">
+    <link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+    <script src="../../../msos/base.uc.js"></script>
+    <script src="../../config.js"></script>
+
+    <style>
+		.menu {
+		  list-style: none;
+		  border-bottom: 0.1em solid black;
+		  margin-bottom: 2em;
+		  padding: 0 0 0.5em;
+		}
+
+		.menu:before {
+		  content: "[";
+		}
+
+		.menu:after {
+		  content: "]";
+		}
+
+		.menu > li {
+		  display: inline;
+		}
+
+		.menu > li:before {
+		  content: "|";
+		  padding-right: 0.3em;
+		}
+
+		.menu > li:nth-child(1):before {
+		  content: "";
+		  padding: 0;
+		}
+    </style>
+</head>
+<body>
+    <noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+    <div id='body' class="ng-cloak container">
+
+		<h1 ng-ignore>NgM UI-Router Sticky State Demo</h1>
+
+		<ul class="menu">
+			<li><a ui-sref="group.overview">Overview</a></li>
+			<li><a ui-sref="group.projects">Projects</a></li>
+			<li><a ui-sref="group.tasks">Tasks</a></li>
+			<li><a ui-sref="group.discussions">Discussions</a></li>
+			<li><a ui-sref="group.members">Members</a></li>
+		</ul>
+
+		<div ui-view>ui-view not populated (no state is activated)</div>
+    </div>
+
+    <script>
+        msos.onload_func_pre.push(
+            function() {
+                "use strict";
+
+                msos.console.info('Page index.html loaded!');
+
+                msos.require("demo.uirouter.sticky.start");
+            }
+        );
+    </script>
+</body>
+</html>

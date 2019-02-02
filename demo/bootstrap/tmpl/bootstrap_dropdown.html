@@ -1,0 +1,9 @@
+
+	<li class="dropdown" data-uib-dropdown>
+		<a role="button" class="dropdown-uib-toggle" data-uib-dropdown-toggle>
+			UI-Bootstrap <b class="caret"></b>
+		</a>
+		<ul class="dropdown-menu" ng-controller="bootstrapDropdownCtrl">
+			<li ng-repeat="rte in bootstrap_ctrls"><a data-ui-sref="{{rte.page}}">{{rte.desc}}</a></li>
+		</ul>
+	</li>

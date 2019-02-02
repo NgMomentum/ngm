@@ -67,7 +67,7 @@ msos.onload_func_done.push(
 							msos.require('ng.mobile.ui.modals');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
                 });
@@ -89,7 +89,7 @@ msos.onload_func_done.push(
 							msos.require('demo.mobile.controller.touch');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
                 });
@@ -107,7 +107,7 @@ msos.onload_func_done.push(
 							msos.require('demo.mobile.controller.drag');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
                 });
@@ -121,7 +121,7 @@ msos.onload_func_done.push(
 							msos.require('demo.mobile.controller.drag2');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
                 });
@@ -135,7 +135,7 @@ msos.onload_func_done.push(
 							msos.require('demo.mobile.controller.carousel');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
                 }).otherwise({
