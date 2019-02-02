@@ -13,7 +13,8 @@ demo.bootstrap.controllers.datepicker.version = new msos.set_version(17, 9, 11);
 
 
 angular.module(
-    'demo.bootstrap.controllers.datepicker', []
+    'demo.bootstrap.controllers.datepicker',
+	['ng']
 ).controller(
     'demo.bootstrap.controllers.datepicker.ctrl',
     [

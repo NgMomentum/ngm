@@ -1,0 +1,8 @@
+
+<div class="folderlist">
+	<ul class="selectlist list-unstyled">
+		<li class="folder" ui-sref-active="selected" ng-repeat="folder in $ctrl.folders" >
+			<a ui-sref=".messagelist({folderId: folder._id})"><i class="fa"></i>{{folder._id}}</a>
+		</li>
+	</ul>
+</div>

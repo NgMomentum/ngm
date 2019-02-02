@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="handheldfriendly" content="true" />
+    <meta name="mobileoptimized" content="width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Open source software for the mobile web!" />
+    <meta name="author" content="Dwight Vietzke" />
+
+    <title>NgM - Simple Vue Demo</title>
+
+    <!-- NgMomentum initial page setup -->
+    <link rel="stylesheet" type="text/css" href="../../site.css">
+    <link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+    <!-- NgMomentum scripts -->
+    <script src="../../../vue/v2522.uc.js"></script>
+    <script src="../../../msos/base.uc.js"></script>
+    <script src="../../config.js"></script>
+
+    <style>
+        [ng-non-bindable] {
+            background-color: #e5e5e5;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        input {
+            margin: 0 5px;
+            width: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+    <!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+    <div id='body' class="ng-cloak container">
+
+        <h1 data-ng-ignore>NgM - Simple Vue Demo</h1>
+
+        <div counter-wrapper>
+            <div ng-non-bindable>
+                <!-- This part is managed by Vuejs-->
+                <counter :initial-count-value="initialCountValue"
+					v-on:increment="updateCountValue"
+					v-on:decrement="updateCountValue"
+					v-on:countupdated="updateCountValue"></counter>
+            </div>
+
+            <br /><br />
+            <!-- This part is managed by Angular-->
+            Counter value: {{countValue}} <br />
+            <button ng-click="decrementCount()" type="button">Decrement by 10</button>
+            <button ng-click="incrementCount()" type="button">Increment by 10</button>
+        </div>
+
+		<br />
+		<div class="well" ng-ignore>
+			<ul>
+				<li><a href="?debug=true">Debugging</a></li>
+				<li><a href="?verbose=true">Verbose Debugging</a></li>
+				<li><a href="?verbose=module">Verbose w/ Extended Module Output</a></li>
+				<li><a href="?verbose=browser">Verbose w/ Extended Browser Output</a></li>
+				<li><a href="?verbose=http">Verbose w/ Extended Http Output</a></li>
+				<li><a href="?verbose=promise">Verbose w/ Extended Promise Output</a></li>
+				<li><a href="?verbose=injector">Verbose w/ Extended Injection Output</a></li>
+				<li><a href="?verbose=compile">Verbose w/ Extended Compile Output</a></li>
+				<li><a href="?verbose=scope">Verbose w/ Extended Scope/Watch Output</a></li>
+				<li><a href="?verbose=animate">Verbose w/ Extended Animation Output</a></li>
+				<li><a href="?verbose=annotate">Verbose w/ Annotate Function Output</a></li>
+				<li><a href="?verbose=events">Verbose w/ UI Events Directive's Output</a></li>
+				<li><a href="?verbose=debounce">Verbose w/ ngModel Debounce View</a></li>
+				<li><a href="?verbose=route">Verbose w/ ngRoute Enhanced Debugging</a></li>
+				<li><a href="?verbose=router">Verbose w/ UI-Router Enhanced Debugging</a></li>
+			</ul>
+		</div>
+    </div>
+
+    <script>
+        msos.onload_func_pre.push(
+            function () {
+                "use strict";
+
+                msos.console.info('Page index.html loaded!');
+
+                msos.require("demo.vue.simple.start");
+            }
+        );
+    </script>
+</body>
+</html>

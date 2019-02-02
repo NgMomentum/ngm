@@ -129,6 +129,38 @@ msos.site.auto_init = function () {
 	msos.console.debug(temp_ai + 'done!');
 };
 
+msos.site.are_prefetched_ready = function (prefetch_fragment_array) {
+	"use strict";
+
+	var temp_cp = 'msos.site.are_prefetched_ready -> ',
+		mrg = msos.registered_globals,
+		purl = msos.base_site_purl,
+		i = 0,
+		fragment = (purl.attr('fragment')).split('/'),
+		found = false,
+		ready = true,
+		global;
+
+	for (i = 0; i < prefetch_fragment_array.length; i += 1) {
+		if (prefetch_fragment_array[i] === fragment[1]) { found = true; }
+	}
+
+	msos.console.debug(temp_cp + 'start, found fragment: ' + fragment[1]);
+
+	if (found) {
+		for (global in mrg) {
+			if (mrg[global] !== true) { ready = false; }
+		}
+	}
+
+	if (msos.config.verbose) {
+		msos.console.debug(temp_cp + 'current available globals: ', mrg);
+	}
+
+	msos.console.debug(temp_cp + ' done, all prefetched are ready: ' + ready);
+	return ready;
+};
+
 
 // Load site specific setup code
 msos.onload_func_pre.push(msos.site.auto_init);

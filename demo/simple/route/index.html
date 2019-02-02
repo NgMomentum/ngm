@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+    <title>NgMomentum Route</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../../site.css">
+	<link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../../msos/base.uc.js"></script>
+	<script src="../../config.js"></script>
+
+</head>
+<body>
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id="body" class="ng-cloak container">
+		<nav data-ng-ignore class="navbar navbar-default">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/">NgM Routing Example</a>
+			</div>
+
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="#home"><i class="fa fa-home"></i> Home</a></li>
+				<li><a href="#about"><i class="fa fa-user"></i> About</a></li>
+				<li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
+			</ul>
+		</nav>
+
+		<h3 style="text-align: center;" data-ng-ignore>A Simple Routing Example Using NgMomentum</h3>
+
+		<div data-ng-view></div>
+
+		<div class="well" data-ng-ignore>
+			<ul>
+				<li><a href="?debug_script=true&debug=true">Debugging</a></li>
+				<li><a href="?debug_script=true&verbose=true">Verbose Debugging</a></li>
+				<li><a href="?debug_script=true&verbose=module">Verbose w/ Extended Module Output</a></li>
+				<li><a href="?debug_script=true&verbose=browser">Verbose w/ Extended Browser Output</a></li>
+				<li><a href="?debug_script=true&verbose=http">Verbose w/ Extended Http Output</a></li>
+				<li><a href="?debug_script=true&verbose=promise">Verbose w/ Extended Promise Output</a></li>
+				<li><a href="?debug_script=true&verbose=injector">Verbose w/ Extended Injection Output</a></li>
+				<li><a href="?debug_script=true&verbose=compile">Verbose w/ Extended Compile Output</a></li>
+				<li><a href="?debug_script=true&verbose=scope">Verbose w/ Extended Scope/Watch Output</a></li>
+				<li><a href="?debug_script=true&verbose=animate">Verbose w/ Extended Animation Output</a></li>
+				<li><a href="?debug_script=true&verbose=annotate">Verbose w/ Annotate Function Output</a></li>
+				<li><a href="?debug_script=true&verbose=events">Verbose w/ UI Events Directive's Output</a></li>
+				<li><a href="?debug_script=true&verbose=debounce">Verbose w/ ngModel Debounce View</a></li>
+				<li><a href="?debug_script=true&verbose=route">Verbose w/ ngRoute Enhanced Debugging</a></li>
+				<li><a href="?debug_script=true&verbose=router">Verbose w/ UI-Router Enhanced Debugging</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<script>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.simple.route.start");
+			}
+		);
+	</script>
+</body>
+</html>

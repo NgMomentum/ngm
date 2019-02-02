@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>UI-Router via NgM Demo</title>
+
+	<link rel="stylesheet" type="text/css" href="../../site.css">
+	<link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+	<script src="../../../msos/base.uc.js"></script>
+	<script src="../../config.js"></script>
+
+	<style>
+		.active {
+			color: red;
+			font-weight: bold
+		}
+		.statevis {
+			position: fixed;
+			right: 2em;
+			top: 2em;
+			z-index: -1;
+			height: 5em;
+		}
+	</style>
+</head>
+<body>
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div id='body' class="ng-cloak container">
+		<h1 ng-ignore>NgM UI-Router Simple Demo</h1>
+
+		<button ui-sref="hello" ui-sref-active="active">Hello</button>
+		<button ui-sref="about" ui-sref-active="active">About</button>
+		<button ui-sref="people" ui-sref-active="active">People</button>
+
+		<div ui-view>ui-view not populated (no state is activated)</div>
+
+	</div>
+
+	<script>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+				
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.uirouter.simple.start");
+			}
+		);
+	</script>
+</body>
+</html>

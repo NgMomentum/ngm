@@ -1,0 +1,31 @@
+
+	<div data-ng-controller="demo.widgets.controllers.dynamicI18n.ctrl">
+
+		<div class="jumbotron" data-ng-ignore>
+			<h1>Dynamic Locale via NgM</h1>
+			<p>A library to change the locale at runtime. It changes the underlying <code>$locale</code> object, so changing the locale will change the formatting of all elements that use <code>$locale</code></p>
+			<p>
+				<a href="https://raw.githubusercontent.com/lgalfaso/angular-dynamic-locale/master/src/tmhDynamicLocale.js" class="btn btn-primary btn-lg">
+					<i class="glyphicon glyphicon-download"></i>&nbsp;&nbsp;Download
+				</a>
+				<a href="https://github.com/lgalfaso/angular-dynamic-locale" class="btn btn-default btn-lg">
+					<i class="glyphicon glyphicon-share"></i>&nbsp;&nbsp;View on GitHub
+				</a>
+			</p>
+		</div>
+
+		<div class="container" data-ng-ignore>
+			<h4>What is this?</h4>
+			<p>This angular module makes it possible to programmatically change the current locale.</p>
+		</div>
+
+		<div class="container">
+			<h4>Example</h4>
+			<p>Pick a locale <select ng-model="model.selectedLocale" ng-options="key as value for (key, value) in availableLocales" ng-change="changeLocale(model.selectedLocale)"></select></p>
+			<p>Selected locale id: {{model.selectedLocale}}</p>
+			<p>Current locale id: {{$locale.id}}</p>
+			<p>A big number: {{1234567890 | number}}</p>
+			<p>The Epoch was on: {{0 | date}}</p>
+			<p>One million of the local currency: {{1000000 | currency}}</p>
+		</div>
+	</div>

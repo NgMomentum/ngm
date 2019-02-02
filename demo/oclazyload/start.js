@@ -7,6 +7,8 @@
 msos.provide("demo.oclazyload.start");
 msos.require("ng.util.oclazyload");		// We load ocLazyLoad via MSOS since we have it as a MSOS module,
 										// and it doesn't make any difference with it's operation...
+demo.oclazyload.start.version = new msos.set_version(18, 12, 7);
+
 
 msos.onload_functions.push(
 	function () {
@@ -16,7 +18,7 @@ msos.onload_functions.push(
 
 		angular.module(
 			'demo.oclazyload.start',
-			['ng', 'ng.ui.router', 'ng.sanitize', 'ng.util.oclazyload']
+			['ng', 'ng.ui.router', 'ng.util.oclazyload']
 		).config(
 			['$stateProvider', '$locationProvider', '$urlRouterProvider',
 			 function ($stateProvider, $locationProvider, $urlRouterProvider) {

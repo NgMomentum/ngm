@@ -7,6 +7,8 @@
 msos.provide("demo.simple.start");
 msos.require('ng.route');
 
+demo.simple.start.version = new msos.set_version(18, 12, 7);
+
 
 msos.onload_func_done.push(
     function () {

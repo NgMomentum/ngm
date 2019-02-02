@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+    <title>AngularJS-Translate via NgM</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../site.css">
+	<link rel='shortcut icon' href='../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../msos/base.uc.js"></script>
+	<script src="../config.js"></script>
+
+</head>
+<body>
+	<noscript>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<!-- Bootstrap #body (isolate compulation to the smallest practical amount of HTML) -->
+	<div id="body" class="ng-cloak container" ng-controller="demo.localization.start.ctrl">
+		<nav class="navbar navbar-default">
+			<div class="pull-right">
+                <div ng-translate-language-select></div>
+            </div>
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/">NgM Localization Demo</a>
+			</div>
+
+			<ul class="nav navbar-nav navbar-right">
+				<li ng-class="{active: currentPath === '/home'}">
+					<a href="#home"><i class="fa fa-home"></i> {{"views.index.Home" | translate}}</a>
+				</li>
+				<li ng-class="{active: currentPath === '/about'}">
+					<a href="#about"><i class="fa fa-user"></i> {{"views.index.About" | translate}}</a>
+				</li>
+				<li ng-class="{active: currentPath === '/contacts'}">
+					<a href="#contacts"><i class="fa fa-comment"></i> {{"views.index.Contact" | translate}}</a>
+				</li>
+			</ul>
+		</nav>
+
+        <div class="container">
+            <div class="pull-right">
+                <span class="glyphicon glyphicon-time"></span> {{currentTime | date:'medium'}}
+            </div>
+
+            <div data-ng-view></div>
+        </div>
+
+        <div class="footer">
+            <div class="container">
+                <p><span class="glyphicon glyphicon-heart"></span> {{"views.index.from the Yeoman team" | translate}}</p>
+            </div>
+        </div>
+
+	</div>
+
+	<script>
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.console.info('Page index.html loaded!');
+
+				msos.require("demo.localization.start");
+			}
+		);
+	</script>
+</body>
+</html>

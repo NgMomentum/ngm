@@ -8,392 +8,319 @@
 
 msos.provide("demo.start");
 msos.require("ng.bootstrap.ui.dropdown");
-msos.require("ng.material.core.theming");
+
+demo.start.css = new msos.loader();
+demo.start.css.load(msos.resource_url('demo', 'start.css'));
 
 if (msos.config.run_analytics) {
 	msos.require("ng.google.ga");
 }
 
-// Start by loading our demo.start specific stylesheet
-demo.start.css = new msos.loader();
-demo.start.css.load(msos.resource_url('demo', 'site.css'));
 
+(function () {
+	"use strict";
 
-msos.onload_functions.push(
-	function () {
-		"use strict";
+	var temp_sd = 'demo.start',
+		bootstrap_ctrls = [
+			{ page: 'bootstrap', desc: 'Overview'},
+			{ page: 'accordion', desc: 'Accordion'},
+			{ page: 'alert', desc: 'Alert'},
+			{ page: 'buttons', desc: 'Buttons'},
+			{ page: 'carousel', desc: 'Carousel'},
+			{ page: 'collapse', desc: 'Collapse'},
+			{ page: 'dateparser', desc: 'Dateparser'},
+			{ page: 'datepicker', desc: 'Datepicker'},
+			{ page: 'datepickerpopup', desc: 'Date Popup'},
+			{ page: 'dropdown', desc: 'Dropdown'},
+			{ page: 'modal', desc: 'Modal'},
+			{ page: 'pager', desc: 'Pager'},
+			{ page: 'pagination', desc: 'Pagination'},
+			{ page: 'popover', desc: 'Popover'},
+			{ page: 'position', desc: 'Position'},
+			{ page: 'progressbar', desc: 'Progressbar'},
+			{ page: 'rating', desc: 'Rating'},
+			{ page: 'tabs', desc: 'Tabs'},
+			{ page: 'timepicker', desc: 'Timepicker'},
+			{ page: 'tooltip', desc: 'Tooltip'},
+			{ page: 'typeahead', desc: 'Typeahead'}
+		],
+		material_ctrls = [
+			{ page: 'material', desc: 'Overview'},
+			{ page: 'autocomplete', desc: 'Autocomplete'},
+			{ page: 'bottomsheet', desc: 'Bottom Sheet'},
+			{ page: 'button', desc: 'Button'},
+			{ page: 'card', desc: 'Card'},
+			{ page: 'checkbox', desc: 'Checkbox'},
+			{ page: 'chips', desc: 'Chips'},
+			{ page: 'colors', desc: 'Colors'},
+			{ page: 'content', desc: 'Content'},
+			{ page: 'datepickermd', desc: 'Datepicker'},
+			{ page: 'dialogmd', desc: 'Dialog'},
+			{ page: 'divider', desc: 'Divider'},
+			{ page: 'fabspeeddial', desc: 'FAB Speeddial'},
+			{ page: 'fabtoolbar', desc: 'FAB Toolbar'},
+			{ page: 'gridlist', desc: 'Grid List'},
+			{ page: 'icon', desc: 'Icon'},
+			{ page: 'input', desc: 'Input'},
+			{ page: 'list', desc: 'List'},
+			{ page: 'menu', desc: 'Menu'},
+			{ page: 'menubar', desc: 'Menu Bar'},
+			{ page: 'navbar', desc: 'Nav Bar'},
+			{ page: 'panel', desc: 'Panel'},
+			{ page: 'progresscir', desc: 'Progress, Circular'},
+			{ page: 'progresslin', desc: 'Progress, Linear'},
+			{ page: 'radio', desc: 'Radio Button'},
+			{ page: 'select', desc: 'Select'},
+			{ page: 'sidenav', desc: 'Sidenav'},
+			{ page: 'slider', desc: 'Slider'},
+			{ page: 'subheader', desc: 'Subheader'},
+			{ page: 'swipe', desc: 'Swipe'},
+			{ page: 'switch', desc: 'Switch'},
+			{ page: 'tabsmd', desc: 'Tabs'},
+			{ page: 'toast', desc: 'Toast'},
+			{ page: 'toolbarmd', desc: 'Toolbar'},
+			{ page: 'tooltipmd', desc: 'Tooltip'},
+			{ page: 'truncate', desc: 'Truncate'},
+			{ page: 'repeater', desc: 'Virtual Repeat'},
+			{ page: 'whiteframe', desc: 'Whiteframe'}
+		],
+		widget_ctrls = [
+			{ page: 'widgets', desc: 'Overview'},
+			{ page: 'dynamicI18n', desc: 'Dynamic i18n'},
+			{ page: 'translate', desc: 'AngularJS Translate'},
+			{ page: 'localization', desc: 'Localization i18n'},
+			{ page: 'smarttable', desc: 'SmartTable'},
+			{ page: 'ngreacthello', desc: 'NgReact Hello'},
+			{ page: 'ngreact', desc: 'NgReact Demo'},
+			{ page: 'tictactoe', desc: 'NgReact TicTacToe'},
+			{ page: 'reacttodo', desc: 'React To-Do'},
+			{ page: 'localstorage', desc: 'Localstorage'},
+			{ page: 'masonry', desc: 'Masonry'},
+			{ page: 'editor', desc: 'Editor Demo'},
+			{ page: 'editor2', desc: 'Editor 2nd Demo'},
+			{ page: 'editor3', desc: 'Editor 3rd Demo'},
+			{ page: 'visualizer', desc: 'UI-Router Visualizer'},
+			{ page: 'uiroutercss', desc: 'UI-Router CSS'},
+			{ page: 'uiroutersticky', desc: 'UI-Router Sticky'},
+			{ page: 'uirouteradv', desc: 'UI-Router Full Demo'}
+		],
+		googlechart_ctrls = [
+			{ page: 'googlechart', desc: 'Overview'},
+			{ page: 'annotation', desc: 'Annotated Chart'},
+			{ page: 'multi', desc: 'Multi Chart'},
+			{ page: 'gauge', desc: 'Gauge Chart'},
+			{ page: 'generic', desc: 'Generic Chart'}
+		],
+		prefetch_dependent = ['tictactoe', 'ngreact', 'ngreacthello', 'reacttodo'];
 
-		var temp_sd = 'demo.start',
-			bootstrap_ctrls = [
-				'accordion', 'alert', 'buttons', 'carousel', 'collapse', 'datepicker', 'dateparser',
-				'datepickerpopup', 'dropdown', 'modal', 'pager', 'pagination', 'popover', 'position',
-				'progressbar', 'rating', 'tabs', 'timepicker', 'tooltip', 'typeahead', 'bootstrap'
-			],
-			material_ctrls = [
-				'autocomplete', 'bottomsheet', 'button', 'card', 'checkbox', 'chips', 'colors',
-				'content', 'datepickermd', 'dialogmd', 'divider', 'fabspeeddial', 'fabtoolbar',
-				'gridlist', 'icon', 'input', 'list', 'menu', 'menubar', 'navbar', 'panel',
-				'progresscir', 'progresslin', 'radio', 'select', 'sidenav', 'slider', 'subheader',
-				'swipe', 'switch', 'tabsmd', 'toast', 'toolbarmd', 'tooltipmd', 'truncate',
-				'repeater', 'whiteframe', 'material'
-			],
-			chartjs_ctrls = ['fat', 'annotation', 'gauge', 'chartjs'],
-			easyfb_ctrls = [
-				'activity', 'comments', 'easyfb', 'facepile', 'follow', 'like', 'login', 'messages',
-				'page', 'post', 'recommendations', 'send', 'share', 'video',
-				 
-			],
-			widget_ctrls = [
-				'widgets', 'culture', 'smarttable', 'ngreacttable', 'localstorage',
-				'editor', 'editor2', 'editor3', 'masonry', 'tictactoe', 'visualizer'
-			],
-			prefetch_dependent = ['tictactoe', 'ngreacttable'];
+	msos.console.debug(temp_sd + ' -> start.');
 
-		msos.console.debug(temp_sd + ' -> start.');
+	// We allow certain states to "demand" forward processing of typically "prefetched" scripts.
+	// Example: the above prefetch_dependent states require React.js and ReactDom.js be ready.
+	// Note: These states only apply to the first website invocation of them, as the initial state.
+	if (msos.prefetch_scripts.length) {
+		if (!msos.site.are_prefetched_ready(prefetch_dependent)) {
+			msos.script_loader(msos.prefetch_scripts);
+		}
+	}
 
-		function find_by_id(data_obj, id) {
-			var i = 0;
+	demo.start = angular.module(
+		'demo.start', [
+			'ng',
+			'ng.sanitize',
+			'ng.postloader',
+			'ng.ui.router',
+			'ng.bootstrap.ui',
+			'ng.bootstrap.ui.dropdown'	// required by first page outside ui-view (index.html or debug.html)
+		]
+	).config(
+		['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
 
-			for (i = 0; i < data_obj.length; i += 1) {
-				if (data_obj[i].id == id) { return data_obj[i]; }
+			msos.console.debug('demo.start - config -> start.');
+
+			function gen_routing_object(ui_name, ui_group) {
+				return {
+					url: '/' + ui_name,
+					templateUrl : msos.resource_url('demo', ui_group + '/tmpl/' + ui_name + '.html'),
+					lazyLoad: function lazyLoad($transition$) {
+						// Request specific module
+						msos.require('demo.' + ui_group +'.controllers.' + ui_name);
+
+						// Then, start AngularJS module registration process
+						return $transition$.injector().get('$postload').load();
+					}
+				};
 			}
 
-			return null;
+			$urlRouterProvider.otherwise('/home');
+
+			$stateProvider
+				.state(
+					'/',
+					{
+						url: "/home",
+						templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/home.html'),
+						controller: function demo_dumby_ctrl_slash() {
+							msos.console.debug('demo.start - config -> slash controller fired.');
+						}
+					}
+				).state(
+					'home',
+					{
+						url: "/home",
+						templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/home.html')
+					}
+				).state(
+					'bootstrap_menu',
+					{
+						url: '/bootstrap_menu',
+						templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/bootstrap_menu.html')
+					}
+				).state(
+					'widgets_menu',
+					{
+						url: '/widgets_menu',
+						templateUrl: msos.resource_url('demo', 'widgets/tmpl/widgets_menu.html')
+					}
+				).state(
+					'material_menu',
+					{
+						url: '/material_menu',
+						templateUrl: msos.resource_url('demo', 'material/tmpl/material_menu.html')
+					}
+				).state(
+					'googlechart_menu',
+					{
+						url: '/googlechart_menu',
+						templateUrl: msos.resource_url('demo', 'googlechart/tmpl/googlechart_menu.html')
+					}
+				);
+
+			// Angular-UI-Bootstrap examples
+			jQuery.each(
+				bootstrap_ctrls,
+				function (index, route) {
+					$stateProvider.state(
+						route.page,
+						gen_routing_object(route.page, 'bootstrap')
+					);
+				}
+			);
+
+			// Material Design examples
+			jQuery.each(
+				material_ctrls,
+				function (index, route) {
+					$stateProvider.state(
+						route.page,
+						gen_routing_object(route.page, 'material')
+					);
+				}
+			);
+
+			// Angular-Widgets examples
+			jQuery.each(
+				widget_ctrls,
+				function (index, route) {
+					$stateProvider.state(
+						route.page,
+						gen_routing_object(route.page, 'widgets')
+					);
+				}
+			);
+
+			// Angular-Widgets examples
+			jQuery.each(
+				googlechart_ctrls,
+				function (index, route) {
+					$stateProvider.state(
+						route.page,
+						gen_routing_object(route.page, 'googlechart')
+					);
+				}
+			);
+
+			msos.console.debug('demo.start - config ->  done!');
+		}]
+	).directive(
+		'bootstrapDropdown',
+		function () {
+			return {
+				restrict: 'E',
+				replace: true,
+				templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/bootstrap_dropdown.html')
+			};
 		}
+	).directive(
+		'materialDropdown',
+		function () {
+			return {
+				restrict: 'E',
+				replace: true, 
+				templateUrl: msos.resource_url('demo', 'material/tmpl/material_dropdown.html')
+			};
+		}
+	).directive(
+		'widgetsDropdown',
+		function () {
+			return {
+				restrict: 'E',
+				replace: true, 
+				templateUrl: msos.resource_url('demo', 'widgets/tmpl/widgets_dropdown.html')
+			};
+		}
+	).directive(
+		'googlechartDropdown',
+		function () {
+			return {
+				restrict: 'E',
+				replace: true, 
+				templateUrl: msos.resource_url('demo', 'googlechart/tmpl/googlechart_dropdown.html')
+			};
+		}
+	).directive(
+		'collapseMenu',
+		function () {
+			return {
+				restrict: 'E',
+				replace: true, 
+				templateUrl: msos.resource_url('demo', 'collapse_menu.html')
+			};
+		}
+	).controller(
+		'bootstrapDropdownCtrl',
+		['$scope', function ($scope) {
+			$scope.bootstrap_ctrls = bootstrap_ctrls;
+		}]
+	).controller(
+		'materialDropdownCtrl',
+		['$scope', function ($scope) {
+			$scope.material_ctrls = material_ctrls;
+		}]
+	).controller(
+		'widgetsDropdownCtrl',
+		['$scope', function ($scope) {
+			$scope.widget_ctrls = widget_ctrls;
+		}]
+	).controller(
+		'googlechartDropdownCtrl',
+		['$scope', function ($scope) {
+			$scope.googlechart_ctrls = googlechart_ctrls;
+		}]
+	);
 
-		demo.start = angular.module(
-			'demo.start', [
-				'ng.ui.router',
-				'ng.sanitize',
-				'ng.postloader',
-				'ng.bootstrap.ui',		// important to inject base UI-Bootstrap code
-				'ng.material.core',		// important to inject base AngularJS Material code
-				'ng.bootstrap.ui.dropdown'
-			]
-		).factory(
-			'$app_contacts',
-			['$http', function ($http) {
-				var path = msos.resource_url('demo', 'contacts/data.json'),
-					http_contacts = $http.get(path).then(
-						function (resp) {
-							return resp.data.contacts;
-						}
-					),
-					factory = {};
+	msos.console.debug(temp_sd + ' -> done!');
 
-				factory.all = function () {
-					return http_contacts;
-				};
+}());
 
-				factory.get = function (id) {
-					return http_contacts.then(
-						function () {
-							return demo.contacts.start.find(http_contacts, id);
-						}
-					);
-				};
-
-				return factory;
-			}]
-		);
-
-		demo.start.config(
-					['$stateProvider', '$urlRouterProvider',
-			function ($stateProvider,   $urlRouterProvider) {
-				var generic_chart_routing_obj;
-
-				msos.console.debug('demo.start.config -> start.');
-
-				function gen_routing_object(ui_name, ui_group) {
-					return {
-						url: '/' + ui_name,
-						templateUrl : msos.resource_url('demo', ui_group + '/tmpl/' + ui_name + '.html'),
-						resolve: {
-							load: ['$postload', function ($postload) {
-
-								var module_name = 'demo.' + ui_group +'.controllers.' + ui_name,
-									module_id = module_name.replace(/\./g, '_');
-
-								// If already loaded, just continue resolve
-								if (msos.registered_modules[module_id]) {
-									return true;
-								}
-
-								// Otherwise, request specific demo module
-								msos.require(module_name);
-
-								// Then, start AngularJS module registration process
-								return $postload.run_registration();
-							}]
-						}
-					};
-				}
-
-				$stateProvider
-					.state(
-						'contacts',
-						{
-							'abstract': true,	// active by children only
-							url: '/contacts',	// prepend '/contacts' onto the urls of all its children
-							templateUrl: msos.resource_url('demo', 'contacts/tmpl/contacts.html'),
-
-							resolve: {
-								$app_contacts: [
-									'$app_contacts',
-									function ($app_contacts) { return $app_contacts.all(); }
-								]
-							},
-
-							controller: [
-								'$scope', '$state', '$app_contacts',
-								function ($scope, $state, $app_contacts) {
-
-									function get_random_key(scope_contacts, key, currentKey) {
-										var randKey;
-
-										do {
-											randKey = scope_contacts[Math.floor(scope_contacts.length * Math.random())][key];
-										} while (randKey == currentKey);
-
-										return randKey;
-									}
-
-									$scope.contacts = $app_contacts;
-
-									$scope.goToRandom = function () {
-										var randId = get_random_key(
-												$scope.contacts,
-												"id",
-												$state.params.contactId
-											);
-
-										$state.go(
-											'contacts.detail',
-											{ contactId: randId }
-										);
-									};
-								}
-							]
-						}
-					).state(
-						'contacts.list',
-						{
-							url: '',	// url is '/contacts' (because '/contacts' + '')
-							templateUrl: msos.resource_url('demo', 'contacts/tmpl/list.html')	// inserted into this state's parent's template
-						}
-					).state(
-						'contacts.detail',
-						{
-							url: '/{contactId:[0-9]{1,4}}',
-							views: {
-								'': {
-									templateUrl: msos.resource_url('demo', 'contacts/tmpl/detail.html'),
-									controller: ['$scope', '$stateParams', function ($scope, $stateParams) {
-										$scope.contact = find_by_id($scope.contacts, $stateParams.contactId);
-									}]
-								},
-								'hint@': {
-									template: 'This is contacts.detail populating the "hint" ui-view'
-								},
-								'menuTip': {
-									templateProvider: ['$stateParams', function ($stateParams) {
-										// even though the global '$stateParams' has not been updated yet.
-										return '<hr><small class="muted">Contact ID: ' + $stateParams.contactId + '</small>';
-									}]
-								}
-							}
-						}
-					).state(		// Contacts > Detail > Item
-						'contacts.detail.item',
-						{
-							url: '/item/:itemId',		// as /contacts/{contactId}/item/:itemId
-							views: {
-								'': {
-									templateUrl: msos.resource_url('demo', 'contacts/tmpl/detail/item.html'),
-									controller: ['$scope', '$stateParams', '$state', function ($scope, $stateParams, $state) {
-										$scope.item = find_by_id($scope.contact.items, $stateParams.itemId);
-
-										$scope.edit = function () {
-											// '^' to go up, '.' to go down as contacts.detail.item.edit
-											$state.go('.edit', $stateParams);
-										};
-									}]
-								},
-								'hint@': {
-									template: ' This is contacts.detail.item overriding the "hint" ui-view'
-								}
-							}
-						}
-					).state(		// Contacts > Detail > Item > Edit => via $state.go (or transitionTo)
-						'contacts.detail.item.edit',
-						{
-							views: {
-								'@contacts.detail': {
-									templateUrl: msos.resource_url('demo', 'contacts/tmpl/detail/item/edit.html'),
-									controller: ['$scope', '$stateParams', '$state', function ($scope, $stateParams, $state) {
-										$scope.item = find_by_id($scope.contact.items, $stateParams.itemId);
-										$scope.done = function () {
-											// '^' means up one, '^.^' up twice, to the grandparent
-											$state.go('^', $stateParams);
-										};
-									}]
-								}
-							}
-						}
-					).state(
-						'home',
-						{
-							url: "/",
-							templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/home.html')
-						}
-					).state(
-						'router',
-						{
-							url: "/router",
-							templateUrl: msos.resource_url('demo', 'contacts/tmpl/router.html')
-						}
-					).state(
-						'about',
-						{
-							url: '/about',
-							templateUrl: msos.resource_url('demo', 'contacts/tmpl/about.html')
-						}
-					).state(
-						'bootstrap_menu',
-						{
-							url: '/bootstrap_menu',
-							templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/bootstrap_menu.html')
-						}
-					).state(
-						'widgets_menu',
-						{
-							url: '/widgets_menu',
-							templateUrl: msos.resource_url('demo', 'widgets/tmpl/widgets_menu.html')
-						}
-					).state(
-						'router_menu',
-						{
-							url: '/router_menu',
-							templateUrl: msos.resource_url('demo', 'contacts/tmpl/router_menu.html')
-						}
-					).state(
-						'material_menu',
-						{
-							url: '/material_menu',
-							templateUrl: msos.resource_url('demo', 'material/tmpl/material_menu.html')
-						}
-					);
-
-				// Angular-UI-Bootstrap examples
-				jQuery.each(
-					bootstrap_ctrls,
-					function (index, route) {
-						$stateProvider.state(
-							route,
-							gen_routing_object(route, 'bootstrap')
-						);
-					}
-				);
-
-				// Material Design examples
-				jQuery.each(
-					material_ctrls,
-					function (index, route) {
-						$stateProvider.state(
-							route,
-							gen_routing_object(route, 'material')
-						);
-					}
-				);
-
-				// Angular Controlled Google Chart examples
-				jQuery.each(
-					chartjs_ctrls,
-					function (index, route) {
-						$stateProvider.state(
-							route,
-							gen_routing_object(route, 'chartjs')
-						);
-					}
-				);
-
-				// Set up state <=> routing for Chartjs "generic" template page
-				generic_chart_routing_obj = gen_routing_object('generic', 'chartjs');
-				generic_chart_routing_obj.url += '/:chartType';
-
-				$stateProvider
-					.state(
-						'generic',
-						generic_chart_routing_obj
-					);
-
-				// Angular-EasyFb examples
-				jQuery.each(
-					easyfb_ctrls,
-					function (index, route) {
-						$stateProvider.state(
-							route,
-							gen_routing_object(route, 'easyfb')
-						);
-					}
-				);
-
-				// Angular-Widgets examples
-				jQuery.each(
-					widget_ctrls,
-					function (index, route) {
-						$stateProvider.state(
-							route,
-							gen_routing_object(route, 'widgets')
-						);
-					}
-				);
-
-				$urlRouterProvider
-					.when('/c?id', '/contacts/:id')
-					.when('/user/:id', '/contacts/:id')
-					.otherwise('/');
-
-				msos.console.debug('demo.start.config ->  done!');
-			}]
-		);
-
-		demo.start.run(
-			['$rootScope', '$state', '$stateParams', function ($rootScope,   $state,   $stateParams) {
-				var redirect_url = '';
-
-				msos.console.debug('demo.start.run -> called.');
-
-				// Special case pages requiring prefetch files (which aren't ready on initial page load)
-				redirect_url = msos.check_prefetch_dependent(prefetch_dependent, 'home');
-
-				if (redirect_url) {
-
-					if (msos.config.verbose) {
-						alert('demo.start.run -> page not ready, redirecting to: ' + redirect_url);
-					}
-
-					location.assign(redirect_url);
-				}
-
-				// Grab state output for diagnostic output display
-				$rootScope.diagnostic_state = $state;
-				$rootScope.diagnostic_stateParams = $stateParams;
-			}]
-		);
+msos.onload_func_done.push(
+	function () {
+		"use strict";
 
 		if (ng.google && ng.google.ga) {
 			// Add Google Analytics page transition tracking
 			demo.start.config(ng.google.ga);
 		}
-
-		msos.console.debug(temp_sd + ' -> done!');
-	}
-);
-
-msos.onload_func_done.push(
-	function demo_start_onload() {
-		"use strict";
 
 		angular.bootstrap('#body', ['demo.start']);
 	}

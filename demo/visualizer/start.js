@@ -8,9 +8,11 @@
 msos.provide("demo.visualizer.start");
 msos.require("ng.util.oclazyload");
 
+demo.visualizer.start.version = new msos.set_version(18, 12, 7);
+
 // Load the very large Visualizer file
 demo.visualizer.start.vis = new msos.loader();
-demo.visualizer.start.vis.load(msos.resource_url('ng', 'ui/router/visualizer.uc.js'));
+demo.visualizer.start.vis.load(msos.resource_url('ng', 'ui/router/visualizer/v600_msos.uc.js'));
 
 
 var HomeController = function () {
@@ -37,7 +39,7 @@ msos.onload_functions.push(
 			['$uiRouter', '$trace', function ($uiRouter, $trace) {
 
 				// Auto-collapse children in state visualizer
-				var Visualizer = window['ui-router-visualizer'].Visualizer,
+				var Visualizer = window['@uirouter/visualizer'].Visualizer,
 					registry = $uiRouter.stateRegistry;
 
 				registry.get('deepnest').$$state()._collapsed = true;
@@ -47,6 +49,8 @@ msos.onload_functions.push(
 
 				$uiRouter.plugin(Visualizer);
 
+				// Always include transition tracing.
+				// (msos.config.debug and msos.config.verbose include more)
 				$trace.enable('TRANSITION');
 
 			}]

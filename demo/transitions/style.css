@@ -1,18 +1,17 @@
 /* BASE STYLES
 ============================================================================= */
-html         { overflow-y:hidden; }
+
 .page        { 
 	bottom:0; 
-	padding-top:200px;
+	padding-top:100px;
 	position:absolute; 
 	text-align:center;
 	top:0;  
 	width:100%; 
 }
 
-.page h1 	{ font-size:60px; }
-.page a     { margin-top:50px; }
-#about      { color:#333; position:absolute; text-align:center; top:50px; width:100%; }
+.page a     { margin-top:10px; }
+#about      { color:#333; position:absolute; text-align:center; width:100%; }
 
 /* PAGES
 ============================================================================= */

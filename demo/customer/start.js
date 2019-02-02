@@ -46,7 +46,7 @@ demo.customer.start = angular.module(
 							msos.require('demo.customer.controllers.customers');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
 				}
@@ -62,7 +62,7 @@ demo.customer.start = angular.module(
 							msos.require('demo.customer.controllers.customerorders');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
 				}
@@ -78,7 +78,7 @@ demo.customer.start = angular.module(
 							msos.require('demo.customer.controllers.orders');
 
 							// Start AngularJS module registration process
-							return $postload.run_registration();
+							return $postload.load();
 						}]
 					}
 				}

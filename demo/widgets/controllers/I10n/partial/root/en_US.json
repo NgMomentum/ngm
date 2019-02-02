@@ -1,0 +1,13 @@
+{
+  "load" : {
+    "partial" : {
+      "root": {
+        "english": "English",
+        "german": "German",
+        "TITLE" : "How to use the partial loader?",
+        "HEADER" : "AngularJS Translate Partial Loader Demo",
+        "SUBHEADER" : "The content will be loaded dynamically."
+      }
+    }
+  }
+}

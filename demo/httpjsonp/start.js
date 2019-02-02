@@ -120,10 +120,10 @@ var MoviesListController = function () {
         }
 
         if ($stateParams.q && $stateParams.fetchAfter == 'true') {
-            $timeout(function () {
+            $timeout(function demo_httpjsonp_start_fetchAfter_to() {
 					$rootScope.mainScope.results = [];
 	            },
-				25,
+				125,
 				false
 			);
             $element[0].addEventListener(
@@ -149,10 +149,10 @@ var MoviesListController = function () {
 	
 				this.page++;
 				this.movieSearch.movieFetch(this.$stateParams.q, this.page).then(function(data) {
-					_this4.$timeout(function () {
+					_this4.$timeout(function demo_httpjsonp_start_results_to() {
 						_this4.$rootScope.mainScope.results = _this4.$rootScope.mainScope.results.concat(data);
 					},
-					0,
+					50,
 					false
 					);
 				});

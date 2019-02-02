@@ -24,19 +24,19 @@ angular.module(
 			.when(
 				'/',
 				{
-					templateUrl: msos.resource_url('demo', 'transitions/tmpl/page-home.html'),
+					templateUrl: msos.resource_url('demo', 'transitions/tmpl/home.html'),
 					controller: 'mainController'
 				}
 			).when(
 				'/about',
 				{
-					templateUrl: msos.resource_url('demo', 'transitions/tmpl/page-about.html'),
+					templateUrl: msos.resource_url('demo', 'transitions/tmpl/about.html'),
 					controller: 'aboutController'
 				}
 			).when(
 				'/contact',
 				{
-					templateUrl: msos.resource_url('demo', 'transitions/tmpl/page-contact.html'),
+					templateUrl: msos.resource_url('demo', 'transitions/tmpl/contact.html'),
 					controller: 'contactController'
 				}
 			);

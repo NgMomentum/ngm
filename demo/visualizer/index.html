@@ -12,13 +12,18 @@
 	<title>UI-Router Visualizer Demo</title>
 
 	<!-- NgMomentum initial page setup -->
-	<link rel="stylesheet" type="text/css" href="../../css/site.css">
+	<link rel="stylesheet" type="text/css" href="../site.css">
 	<link rel='shortcut icon' href='../../images/ngm.ico' />
 
 	<!-- NgMomentum scripts -->
 	<script src="../../msos/base.uc.js"></script>
 	<script src="../config.js"></script>
 
+    <style>
+        .active {
+            font-weight: bold
+        }
+    </style>
 </head>
 <body>
 
@@ -37,7 +42,7 @@
 		<button ui-sref="about" ui-sref-active="active">about</button>
 		<button ui-sref="deepnest" ui-sref-active="active">deepnest</button>
 
-		<div ui-view=""></div>
+		<div data-ui-view="">ui-view not populated (no state is activated)</div>
 
 	</div>
 

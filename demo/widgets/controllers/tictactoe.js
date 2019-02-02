@@ -3,48 +3,14 @@
     msos: false,
     demo: false,
     React: false,
-    createReactClass
+    createReactClass: false
 */
 
 msos.provide("demo.widgets.controllers.tictactoe");
 msos.require("ng.react");
 
-demo.widgets.controllers.tictactoe.version = new msos.set_version(18, 1, 16);
+demo.widgets.controllers.tictactoe.version = new msos.set_version(19, 1, 15);
 
-
-function _possibleConstructorReturn(self, call) {
-	"use strict";
-
-    if (!self) {
-        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return call && (typeof call === "object" || typeof call === "function") ? call : self;
-}
-
-function _inherits(subClass, superClass) {
-	"use strict";
-
-    if (typeof superClass !== "function" && superClass !== null) {
-        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-
-    subClass.prototype = Object.create(
-		superClass && superClass.prototype,
-		{
-			constructor: {
-				value: subClass,
-				enumerable: false,
-				writable: true,
-				configurable: true
-			}
-		}
-	);
-
-    if (superClass) {
-		Object.setPrototypeOf(subClass, superClass);
-    }
-}
 
 function calculateWinner(squares) {
 	"use strict";
@@ -111,10 +77,10 @@ angular.module(
 			function Board() {
 				msos._classCallCheck(this, Board);
 		
-				return _possibleConstructorReturn(this, _React$Component.apply(this, arguments));
+				return msos._constructorReturn(this, _React$Component.apply(this, arguments));
 			}
 
-			_inherits(Board, _React$Component);
+			msos._inherits(Board, _React$Component);
 
 			Board.prototype.renderSquare = function renderSquare(i) {
 				var _this2 = this;
@@ -167,7 +133,7 @@ angular.module(
 			function Game(props) {
 				msos._classCallCheck(this, Game);
 
-				var _this3 = _possibleConstructorReturn(this, _React$Component2.call(this, props));
+				var _this3 = msos._constructorReturn(this, _React$Component2.call(this, props));
 
 				_this3.state = {
 					history: [{
@@ -179,7 +145,7 @@ angular.module(
 				return _this3;
 			}
 
-			_inherits(Game, _React$Component2);
+			msos._inherits(Game, _React$Component2);
 
 			Game.prototype.handleClick = function handleClick(i) {
 				var history = this.state.history.slice(0, this.state.stepNumber + 1),
@@ -278,7 +244,7 @@ angular.module(
 
 		}(React.Component);
 
-		return 	createReactClass(
+		return createReactClass(
 			{
 				render: function () {
 					return React.createElement(Game, null);
