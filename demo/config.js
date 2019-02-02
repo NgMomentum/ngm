@@ -71,7 +71,7 @@ if (msos.config.debug_script) {
 	msos.prefetch_scripts = [
 		msos.resource_url('react', 'v1670.uc.js'),
 		msos.resource_url('react', 'v1670_dom.uc.js'),
-		msos.resource_url('react', 'prop_types/v1560.uc.js'),
+		msos.resource_url('react', 'prop_types/v1562.uc.js'),
 		msos.resource_url('react', 'create_react_class/v1563.uc.js'),
 	];
 
@@ -92,7 +92,7 @@ if (msos.config.debug_script) {
 	msos.prefetch_scripts = [
 		msos.resource_url('react', 'v1670.min.js'),
 		msos.resource_url('react', 'v1670_dom.min.js'),
-		msos.resource_url('react', 'prop_types/v1560.min.js'),
+		msos.resource_url('react', 'prop_types/v1562.min.js'),
 		msos.resource_url('react', 'create_react_class/v1563.min.js'),
 	];
 }
