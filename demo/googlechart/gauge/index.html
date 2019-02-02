@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="handheldfriendly" content="true" />
+	<meta name="mobileoptimized"  content="width" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Open source software for the mobile web!" />
+	<meta name="author" content="Dwight Vietzke" />
+
+	<title>NgM Google Gauge Chart</title>
+
+	<!-- NgMomentum initial page setup -->
+	<link rel="stylesheet" type="text/css" href="../../site.css">
+	<link rel='shortcut icon' href='../../../images/ngm.ico' />
+
+	<!-- NgMomentum scripts -->
+	<script src="../../../msos/base.uc.js"></script>
+	<script src="../../config.js"></script>
+
+</head>
+<body>
+
+	<noscript data-ng-ignore>
+		<h3 id="no_javascript">
+			<i class="fa fa-ban"></i> We're sorry, but this site requires JavaScript be enabled!
+		</h3>
+	</noscript>
+
+	<div class="ng-cloak container" ng-controller="demo.googlechart.controllers.gauge.ctrl">
+
+		<h2>NgMomentum - AngularJS Google Chart</h2>
+		<h3>Gauge Chart Demo</h3>
+
+		<div google-chart chart="chartObject" style="height:130px; width:100%;"></div>
+
+	</div>
+
+	<script data-ng-ignore>
+
+		msos.onload_func_pre.push(
+			function () {
+				"use strict";
+
+				msos.require("demo.googlechart.controllers.gauge");
+			}
+		);
+
+		msos.onload_func_done.push(
+			function () {
+				"use strict";
+
+				angular.bootstrap('body', ['demo.googlechart.controllers.gauge']);
+			}
+		);
+
+	</script>   
+
+</body>
+</html>
