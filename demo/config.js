@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					config.js
-//			Copyright©2012-2017 - OpenSiteMobile
+//			Copyright©2012-2019 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			https://ngmomentum.com & https://opensitemobile.com
@@ -10,17 +10,21 @@
 //			Email:  dwight_vietzke@yahoo.com
 
 /*
-	NgMomentum demo pages (base) configuration file
+	NgMomentum demo SPA's (base) configuration file
 */
 
 /*global
-	msos: dra,
-    _gaq: true,
-    ___gcfg: true
+	msos: false
 */
 
 msos.console.info('config -> start, (/ngm/demo/config.js file).');
 msos.console.time('config');
+
+
+// Set each SPA's SEO, ads, etc. parameters.
+//msos.config.run_ads = true;
+//msos.config.run_analytics = true;
+//maoa.cinfig.run_onerror = true;
 
 
 // --------------------------
@@ -63,6 +67,7 @@ if (msos.config.debug_script) {
 		msos.resource_url('ng', 'ui/router/v1020_msos.uc.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.uc.js'),
 		msos.resource_url('ng', 'material/v1110_msos.uc.js'),
+		msos.resource_url('vue', 'v266_msos.uc.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.uc.js')
 	];
@@ -72,7 +77,7 @@ if (msos.config.debug_script) {
 		msos.resource_url('react', 'v1670.uc.js'),
 		msos.resource_url('react', 'v1670_dom.uc.js'),
 		msos.resource_url('react', 'prop_types/v1562.uc.js'),
-		msos.resource_url('react', 'create_react_class/v1563.uc.js'),
+		msos.resource_url('react', 'create_react_class/v1563.uc.js')
 	];
 
 } else {
@@ -84,6 +89,7 @@ if (msos.config.debug_script) {
 		msos.resource_url('ng', 'ui/router/v1020_msos.min.js'),
 		msos.resource_url('ng', 'bootstrap/v250_msos.min.js'),
 		msos.resource_url('ng', 'material/v1110_msos.min.js'),
+		msos.resource_url('vue', 'v266_msos.min.js'),
 		msos.resource_url('demo', 'site.js'),
 		msos.resource_url('msos', 'core.min.js')
 	];
@@ -93,21 +99,16 @@ if (msos.config.debug_script) {
 		msos.resource_url('react', 'v1670.min.js'),
 		msos.resource_url('react', 'v1670_dom.min.js'),
 		msos.resource_url('react', 'prop_types/v1562.min.js'),
-		msos.resource_url('react', 'create_react_class/v1563.min.js'),
+		msos.resource_url('react', 'create_react_class/v1563.min.js')
 	];
 }
 
 
-// Google Analytics
-var _gaq = [],
-    ___gcfg;
-
-___gcfg = {};
-
-_gaq.push(['_setAccount', 'UA-24170958-1']);
-_gaq.push(['_trackPageview']);
-// Ref. 'msos.site.google_analytics' in site.uc.js -> site.min.js
-msos.config.google.analytics_domain = 'opensitemobile.com';
+// Google Web Dev application specific keys
+msos.config.google.adsense_client_key = 'ca-pub-0581487774111572';
+msos.config.google.analytics_domain = 'ngmomentum.com';		// Default in base.uc.js/base.min.js is -> document.domain
+msos.config.google.analytics_key = 'UA-135011380-1';
+msos.config.google.tag_management_key = 'GTM-KF99VPK';
 
 // Social website API access keys
 msos.config.oauth2 = {
@@ -157,6 +158,7 @@ msos.onload_func_post.push(
 		}
 	}
 );
+
 
 msos.console.info('config -> done!');
 msos.console.timeEnd('config');

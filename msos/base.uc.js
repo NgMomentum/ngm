@@ -3,7 +3,7 @@
 //			Copyright©2012-2019 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensitemobile.com
+//			https://ngmomentum.com & https://opensitemobile.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -2804,7 +2804,8 @@ var msos = {
 		ReactDOM: false,
 		createReactClass: false,
 		PropTypes: false,
-		hello: false
+		hello: false,
+		Vue: false
 	},
     require_attempts: 0,
 	require_deferred: 0,
@@ -2948,7 +2949,11 @@ msos.config = {
 	google: {
 		no_translate: {},
 		hide_tooltip: {},
-		maps_api_key: ''
+		maps_api_key: '',
+		adsense_client_key: '',
+		analytics_domain: document.domain,
+		analytics_key: '',
+		tag_management_key: ''
 	},
 
 	// Set full url in config.js file
@@ -4306,8 +4311,11 @@ msos.generate_url_name = function (url) {
 
 	parts = path.split('/');
 
-	// Remove first two "commom" elements and clean up for use as key
-	name = parts.slice(2).join(':');
+	if (parts.length < 2) {
+		msos.console.warn('msos.generate_url_name -> failed,\n     url: ' + url);
+	}
+
+	name = parts.slice(1).join(':');
 	name = name.replace(/[^0-9a-zA-Z]/g, '_');
 
 	return name;

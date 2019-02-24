@@ -1,6 +1,6 @@
 // Copyright Notice:
 //				    onerror.js
-//			Copyright©2011-2017 - OpenSiteMobile
+//			Copyright©2011-2019 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			http://opensite.mobi
@@ -18,47 +18,36 @@
 
 msos.provide("msos.onerror");
 
-msos.onerror.version = new msos.set_version(18, 11, 13);
+msos.onerror.version = new msos.set_version(19, 2, 20);
 
 
-msos.onerror.generate = function () {
-    "use strict";
+window.onerror = function (msg, url, line) {
+	"use strict";
 
-    var settings = {
-            url: msos.config.onerror_uri,
-            website: document.domain
-        },
-        on_success = function (data, status) {
-            msos.console.info('msos.onerror.generate -> sent, status: ' + status);
-        };
+	var temp_wo = 'msos.onerror -> ';
 
-    window.onerror = function (msg, url, line, col, er) {
+	msos.catch_js_error(msg, url, line);
 
-        msos.on_js_error(msg, url, line, col, er);
+	jQuery.ajax({
+		type: "GET",
+		cache: false,
+		url: msos.config.onerror_uri,
+		data: jQuery.param({
+			'message': msg,
+			'url': url,
+			'userAgent': navigator.userAgent,
+			'line': line,
+			'website': document.domain
+		}),
+		success: function () {
+			msos.console.info(temp_wo + 'logged to url: ' + msos.config.onerror_uri);
+		},
+		error: msos.ajax_error
+	});
 
-        jQuery.ajax({
-            type: "GET",
-            cache: false,
-            url: settings.url,
-            data: jQuery.param({
-                'message': msg,
-                'url': url,
-                'userAgent': navigator.userAgent,
-                'line': line,
-                'website': settings.website
-            }),
-            success: on_success,
-            error: msos.ajax_error
-        });
+	if (window.opener && window.opener.msos) {
+		window.opener.msos.console.error(temp_wo + 'called, child window.onerror -> for window: ' + window.name);
+	}
 
-        if (window.opener && window.opener.msos) {
-            window.opener.msos.console.error('child window.onerror -> ' + window.name + ': ' + msg);
-        }
-
-        return true;
-    };
+	return true;
 };
-
-// Add 'onerror' auto reporting after script loading, but before
-// browser interaction. We just want to report browser/user problems.
-msos.onload_func_start.push(msos.onerror.generate);

@@ -12,15 +12,12 @@ msos.require("ng.bootstrap.ui.dropdown");
 demo.start.css = new msos.loader();
 demo.start.css.load(msos.resource_url('demo', 'start.css'));
 
-if (msos.config.run_analytics) {
-	msos.require("ng.google.ga");
-}
-
 
 (function () {
 	"use strict";
 
 	var temp_sd = 'demo.start',
+		required_modules = [],
 		bootstrap_ctrls = [
 			{ page: 'bootstrap', desc: 'Overview'},
 			{ page: 'accordion', desc: 'Accordion'},
@@ -124,15 +121,27 @@ if (msos.config.run_analytics) {
 		}
 	}
 
+	required_modules = [
+		'ng',
+		'ng.sanitize',
+		'ng.postloader',
+		'ng.ui.router',
+		'ng.bootstrap.ui',
+		'ng.bootstrap.ui.dropdown'	// required by first page outside ui-view (index.html or debug.html),
+	];
+
+	// If these modules were added in site.js, then use (require) them.
+	if (ng.google && ng.google.adsense) {
+		required_modules.push('ng.google.adsense');
+	}
+
+	if (ng.google && ng.google.tagmanagement) {
+		required_modules.push('ng.google.tagmanagement');
+	}
+
 	demo.start = angular.module(
-		'demo.start', [
-			'ng',
-			'ng.sanitize',
-			'ng.postloader',
-			'ng.ui.router',
-			'ng.bootstrap.ui',
-			'ng.bootstrap.ui.dropdown'	// required by first page outside ui-view (index.html or debug.html)
-		]
+		'demo.start',
+		required_modules
 	).config(
 		['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
 
@@ -159,7 +168,7 @@ if (msos.config.run_analytics) {
 					'/',
 					{
 						url: "/home",
-						templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/home.html'),
+						templateUrl: msos.resource_url('demo', 'home.html'),
 						controller: function demo_dumby_ctrl_slash() {
 							msos.console.debug('demo.start - config -> slash controller fired.');
 						}
@@ -168,7 +177,7 @@ if (msos.config.run_analytics) {
 					'home',
 					{
 						url: "/home",
-						templateUrl: msos.resource_url('demo', 'bootstrap/tmpl/home.html')
+						templateUrl: msos.resource_url('demo', 'home.html')
 					}
 				).state(
 					'bootstrap_menu',
@@ -316,11 +325,6 @@ if (msos.config.run_analytics) {
 msos.onload_func_done.push(
 	function () {
 		"use strict";
-
-		if (ng.google && ng.google.ga) {
-			// Add Google Analytics page transition tracking
-			demo.start.config(ng.google.ga);
-		}
 
 		angular.bootstrap('#body', ['demo.start']);
 	}
