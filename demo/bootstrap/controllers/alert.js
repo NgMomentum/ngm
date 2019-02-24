@@ -46,3 +46,4 @@ angular.module(
     'demo.bootstrap.controllers.alert.ctrl',
     ['$scope', demo.bootstrap.controllers.alert.ctrl]
 );
+

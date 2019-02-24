@@ -1,9 +1,9 @@
 // Copyright Notice:
 //					core.js
-//			Copyright©2010-2017 - OpenSiteMobile
+//			Copyright©2010-2019 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
-//			http://opensitemobile.com
+//			https://ngmomentum.com & https://opensitemobile.com
 // ==========================================================================
 // Contact Information:
 //			Author: Dwight Vietzke
@@ -17,7 +17,7 @@
     _: false
 */
 
-msos.console.info('msos/core -> start, (/mobilesiteos/msos/core.uc.js file), ' + (new msos.set_version(18, 12, 15)));
+msos.console.info('msos/core -> start, (/mobilesiteos/msos/core.uc.js file), ' + (new msos.set_version(19, 2, 23)));
 msos.console.time('core');
 
 // *******************************************
@@ -835,12 +835,13 @@ msos.notify = {
 	}
 };
 
-msos.on_js_error = function (msg, url, line, col, er) {
+msos.catch_js_error = function (msg, url, line) {
 	"use strict";
 
 	var error_txt = 'Javascript Error!';
 
-	msos.console.error('msos.on_js_error -> fired, line: ' + line + ', url: ' + url + ', error: ' + msg, er);
+	// Must be a console error instead of msos.console.error
+	console.error('msos.catch_js_error -> called,\n     url: ' + url + ',\n     line: ' + line + ',\n     msg: ' + msg);
 
 	// Timing and availability of i18n common loading is a factor (so isolate)
 	if (msos.i18n && msos.i18n.common && msos.i18n.common.bundle) {
@@ -848,6 +849,7 @@ msos.on_js_error = function (msg, url, line, col, er) {
 	}
 
 	msos.notify.error(msg, error_txt);
+
 	return true;
 };
 
@@ -1299,7 +1301,7 @@ msos.run_onload = function () {
 // Add error notification
 // *******************************************
 
-window.onerror = msos.on_js_error;
+window.onerror = msos.catch_js_error;
 
 // *******************************************
 // Start main MobileSiteOS functions

@@ -35,7 +35,7 @@ msos.console.time('ng');
     function nullFormRenameControl(control, name) { control.$name = name; }
 
     function makeMap(items, lowercaseKeys) {
-        var obj = {},
+        var obj = Object.create(null),
             i;
 
         if (_.isArray(items)) {
@@ -355,11 +355,14 @@ msos.console.time('ng');
         SelectController,
         selectDirective,
         optionDirective,
-        voidElements = makeMap(
-            ['area', 'br', 'col', 'hr', 'img', 'wbr']
-        ),
+		unaryElements = makeMap(
+			[
+				'area', 'base', 'br', 'col', 'embed', 'frame', 'hr', 'img', 'input',
+				'isindex', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+			]
+		),
         optionalEndTagBlockElements = makeMap(
-            ['colgroup', 'dd', 'dt', 'li', 'p', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr']
+            ['colgroup', 'dd', 'dt', 'li', 'options', 'p', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'source']
         ),
         optionalEndTagInlineElements = makeMap(
             ['rp', 'rt']
@@ -395,11 +398,20 @@ msos.console.time('ng');
         ),
         svgElements = makeMap(
             [
-                'circle', 'defs', 'desc', 'ellipse', 'font-face', 'font-face-name', 'font-face-src',
-                'g', 'glyph', 'hkern', 'image', 'linearGradient', 'line', 'marker', 'metadata',
-                'missing-glyph', 'mpath', 'path', 'polygon', 'polyline', 'radialGradient', 'rect',
-                'stop', 'svg', 'switch', 'text', 'title', 'tspan'
-            ]
+                'svg', 'animate', 'circle', 'clippath', 'cursor', 'defs', 'desc', 'ellipse',
+				'filter', 'font-face', 'foreignObject', 'g', 'glyph', 'image', 'line',
+				'marker', 'mask', 'missing-glyph', 'path', 'pattern', 'polygon', 'polyline',
+				'rect', 'switch', 'symbol', 'text', 'textpath', 'tspan', 'use', 'view'
+            ],
+			true
+			
+        ),
+        svgSingleElements = makeMap(
+            [
+                'font-face-name', 'font-face-src', 'hkern', 'linearGradient',
+				'mpath', 'metadata', 'missing-glyph', 'radialGradient', 'stop', 'title'
+            ],
+			true
         ),
         mediaElements = makeMap(
             ['audio', 'canvas', 'fieldset', 'form', 'noscript', 'output', 'video']
@@ -409,7 +421,7 @@ msos.console.time('ng');
         ),
         validElements = _.extend(
             {},
-            voidElements,
+            unaryElements,
             blockElements,
             inlineElements,
             optionalEndTagElements
@@ -417,10 +429,13 @@ msos.console.time('ng');
         uriAttrs = makeMap(
             ['background', 'cite', 'href', 'longdesc', 'src', 'xlink:href', 'xml:base']
         ),
+		enumeratedAttrs = makeMap(
+			['contenteditable', 'draggable', 'spellcheck']
+		),
         htmlAttrs = makeMap(
             [
                 'abbr', 'align', 'alt', 'axis', 'bgcolor', 'border', 'cellpadding', 'cellspacing',
-                'class', 'clear', 'color', 'cols', 'colspan', 'compact', 'contenteditable', 'coords',
+                'class', 'clear', 'color', 'cols', 'colspan', 'compact', 'coords',
 				'dir', 'face', 'for', 'headers', 'height', 'hreflang', 'hspace', 'ismap', 'lang',
 				'language', 'nohref', 'nowrap', 'rel', 'rev', 'rows', 'rowspan', 'rules', 'scope',
 				'scrolling', 'shape', 'size', 'span', 'start', 'step', 'summary', 'tabindex', 'target',
@@ -440,29 +455,37 @@ msos.console.time('ng');
             ]
         ),
         svgAttrs = makeMap(
-            _.map(
-                [
-                    'accent-height', 'accumulate', 'additive', 'alphabetic', 'arabic-form', 'ascent',
-                    'baseProfile', 'bbox', 'begin', 'by', 'calcMode', 'cap-height', 'class', 'color', 'color-rendering',
-                    'content', 'cx', 'cy', 'd', 'dx', 'dy', 'descent', 'display', 'dur', 'end', 'fill', 'fill-rule',
-                    'font-family', 'font-size', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'from',
-                    'fx', 'fy', 'g1', 'g2', 'glyph-name', 'gradientUnits', 'hanging', 'height', 'horiz-adv-x',
-                    'horiz-origin-x', 'ideographic', 'k', 'keyPoints', 'keySplines', 'keyTimes', 'lang', 'marker-end',
-                    'marker-mid', 'marker-start', 'markerHeight', 'markerUnits', 'markerWidth', 'mathematical',
-                    'max', 'min', 'offset', 'opacity', 'orient', 'origin', 'overline-position', 'overline-thickness',
-                    'panose-1', 'path', 'pathLength', 'points', 'preserveAspectRatio', 'r', 'refX', 'refY', 'repeatCount',
-                    'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'rotate', 'rx', 'ry', 'slope', 'stemh',
-                    'stemv', 'stop-color', 'stop-opacity', 'strikethrough-position', 'strikethrough-thickness', 'stroke',
-                    'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit',
-                    'stroke-opacity', 'stroke-width', 'systemLanguage', 'target', 'text-anchor', 'to', 'transform', 'type',
-                    'u1', 'u2', 'underline-position', 'underline-thickness', 'unicode', 'unicode-range', 'units-per-em',
-                    'values', 'version', 'viewBox', 'visibility', 'width', 'widths', 'x', 'x-height', 'x1', 'x2',
-                    'xlink:actuate', 'xlink:arcrole', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base',
-                    'xml:lang', 'xml:space', 'xmlns', 'xmlns:xlink', 'y', 'y1', 'y2', 'zoomAndPan'
-                ],
-                lowercase
-            )
+			[
+				'accent-height', 'accumulate', 'additive', 'alphabetic', 'arabic-form', 'ascent',
+				'baseProfile', 'bbox', 'begin', 'by', 'calcMode', 'cap-height', 'class', 'color', 'color-rendering',
+				'content', 'cx', 'cy', 'd', 'dx', 'dy', 'descent', 'display', 'dur', 'end', 'fill', 'fill-rule',
+				'font-family', 'font-size', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'from',
+				'fx', 'fy', 'g1', 'g2', 'glyph-name', 'gradientUnits', 'hanging', 'height', 'horiz-adv-x',
+				'horiz-origin-x', 'ideographic', 'k', 'keyPoints', 'keySplines', 'keyTimes', 'lang', 'marker-end',
+				'marker-mid', 'marker-start', 'markerHeight', 'markerUnits', 'markerWidth', 'mathematical',
+				'max', 'min', 'offset', 'opacity', 'orient', 'origin', 'overline-position', 'overline-thickness',
+				'panose-1', 'path', 'pathLength', 'points', 'preserveAspectRatio', 'r', 'refX', 'refY', 'repeatCount',
+				'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'rotate', 'rx', 'ry', 'slope', 'stemh',
+				'stemv', 'stop-color', 'stop-opacity', 'strikethrough-position', 'strikethrough-thickness', 'stroke',
+				'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit',
+				'stroke-opacity', 'stroke-width', 'systemLanguage', 'target', 'text-anchor', 'to', 'transform', 'type',
+				'u1', 'u2', 'underline-position', 'underline-thickness', 'unicode', 'unicode-range', 'units-per-em',
+				'values', 'version', 'viewBox', 'visibility', 'width', 'widths', 'x', 'x-height', 'x1', 'x2',
+				'xlink:actuate', 'xlink:arcrole', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base',
+				'xml:lang', 'xml:space', 'xmlns', 'xmlns:xlink', 'y', 'y1', 'y2', 'zoomAndPan'
+			],
+			true
         ),
+		booleanAttrs = makeMap(
+			[
+				'allowfullscreen', 'async', 'autofocus', 'autoplay', 'checked', 'compact', 'controls', 'declare',
+				'default', 'defaultchecked', 'defaultmuted', 'defaultselected', 'defer', 'disabled',
+				'enabled', 'formnovalidate', 'hidden', 'indeterminate', 'inert', 'ismap', 'itemscope', 'loop', 'multiple',
+				'muted', 'nohref', 'noresize', 'noshade', 'novalidate', 'nowrap', 'open', 'pauseonexit', 'readonly',
+				'required', 'reversed', 'scoped', 'seamless', 'selected', 'sortable', 'translate',
+				'truespeed', 'typemustmatch', 'visible'
+			]
+		),
         validAttrs = _.extend(
             {},
             uriAttrs,
@@ -473,6 +496,8 @@ msos.console.time('ng');
         validStdAttrs = _.extend(
             {},
             validAttrs,
+			enumeratedAttrs,
+			booleanAttrs,
             {	// NgM valid Attrs: Some of these may need to move to "validAttrs", ref: id, placeholder, etc.
 				style: true,
 				id: true,
@@ -480,23 +505,18 @@ msos.console.time('ng');
 				on: true,
 				placeholder: true,
 				charset: true,
-				defer: true,
 				as: true,
 				nonce: true,
 				media: true,
-				multiple: true,
-				disabled: true,
-				autocomplete: true,
-				selected: true
+				autocomplete: true
 			}
         ),
         validStdHtml = _.extend(
             {},
             validElements,
-            svgElements,
             mediaElements,
             blockedElements,
-            {	// NgM valid Html: Some of these may need to move to "validStdHtml", ref: button ?
+            {	// NgM valid Html: Some of these may need to move to "validElements", ref: button ?
 				html: true,
 				body: true,
 				head: true,
@@ -508,7 +528,24 @@ msos.console.time('ng');
 			}
         ),
         customAttr = {},
-        customHtml = {};
+        customHtml = {},
+		allowedGlobals = makeMap(
+			[
+				'Infinity', 'undefined', 'NaN', 'isFinite', 'isNaN',
+				'parseFloat', 'parseInt', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent',
+				'Math', 'Number', 'Date', 'Array', 'Object', 'Boolean', 'String', 'RegExp', 'Map', 'Set', 'JSON', 'Intl',
+				'require'
+			]
+		),
+		acceptValue = makeMap(['input', 'textarea', 'option', 'select', 'progress']),
+		mustUseProp = function (tag, type, attr) {
+			return (
+				(attr === 'value' && acceptValue[tag]) && type !== 'button' ||
+				(attr === 'selected' && tag === 'option') ||
+				(attr === 'checked' && tag === 'input') ||
+				(attr === 'muted' && tag === 'video')
+			);
+		};
 
     window.angular = angular;
 
@@ -1314,19 +1351,15 @@ msos.console.time('ng');
 
         ErrorConstructor = ErrorConstructor || Error;
 
-		var url = msos.config.onerror_uri,
-			regex = url.replace('.', '\\.') + '[\\s\\S]*',
-			errRegExp = new RegExp(regex, 'g');
-
         return function () {
             var code = arguments[0] || 'missing code',
                 template = arguments[1] || 'missing template',
-                templateArgs = sliceArgs(arguments, 2).map(function (arg) {
-					return toDebugString(arg, minErrConfig.objectMaxDepth);
-				}),
-                paramPrefix = '?',
-				message = '',
-                i = 0;
+                templateArgs = sliceArgs(arguments, 2).map(
+					function (arg) {
+						return toDebugString(arg, minErrConfig.objectMaxDepth);
+					}
+				),
+				message = '';
 
             message += template.replace(
                 /\{\d+\}/g,
@@ -1334,20 +1367,14 @@ msos.console.time('ng');
                     var index = +match.slice(1, -1);
 
                     if (index < templateArgs.length) {
-						return templateArgs[index].replace(errRegExp, '');
+						return templateArgs[index];
 					}
 
                     return match;
                 }
             );
 
-            message += '\n     ' + url;
-
-            for (i = 0; i < templateArgs.length; i += 1, paramPrefix = '&') {
-                message += paramPrefix + 'p' + i + '=' + encodeURIComponent(templateArgs[i]);
-            }
-
-            message += '#' + (module ? module + '/' : '') + code;
+			message += '\n     ngm: ' + (module ? 'module -> ' + module + ', ' : '') + 'code -> ' + code;
 
             return new ErrorConstructor(message);
         };
@@ -8646,6 +8673,7 @@ msos.console.time('ng');
                     node_ng_attrs_array = [],
                     node_added_directives = {},
                     node_norm_name = '',
+					valid_std_html,
                     node_class_name,
                     node_attrs_map = node_attrs.$attr,
 					ngPrefixMatch,
@@ -8682,10 +8710,17 @@ msos.console.time('ng');
 
                         node_norm_name = directiveNormalize(node_name);
 
-                        if (!validStdHtml[node_norm_name]) { customHtml[node_norm_name] = true; }
+						valid_std_html = _.extend(
+							{},
+							validStdHtml,
+							svgElements,
+							svgSingleElements
+						);
+
+                        if (!valid_std_html[node_norm_name]) { customHtml[node_norm_name] = true; }
 
                         if (vc) {
-                            msos_debug(temp_cp + temp_cd + 'type element, ' + (validStdHtml[node_norm_name] ? '(std html)' : '(custom)') + ' name: ' + node_norm_name);
+                            msos_debug(temp_cp + temp_cd + 'type element, ' + (valid_std_html[node_norm_name] ? '(std html)' : '(custom)') + ' name: ' + node_norm_name);
                         }
 
                         node_attrs_array = node.attributes;
@@ -23397,14 +23432,22 @@ msos.console.time('ng');
             },
             '$$minErr': minErr,
             '$$csp': function () { return true; },   // Always true now (we default to use csp always)
+			'unaryElements': unaryElements,
             'blockElements': blockElements,
             'validElements': validElements,
+			'svgElements': svgElements,
+			'optionalEndTagBlockElements': optionalEndTagBlockElements,
+			'validStdHtml': validStdHtml,
             'snakeCase': snake_case,
             '$$encodeUriSegment': encodeUriSegment,
             '$$encodeUriQuery': encodeUriQuery,
             '$$lowercase': lowercase,
 			'$$stringify': stringify,
-			'$$uppercase': uppercase
+			'$$uppercase': uppercase,
+			'allowedGlobals': allowedGlobals,
+			'mustUseProp': mustUseProp,
+			'booleanAttrs': booleanAttrs,
+			'enumeratedAttrs': enumeratedAttrs
         });
 
         angularModule = setupModuleLoader(window);
@@ -24210,7 +24253,7 @@ msos.console.time('ng');
                 end: function (tag) {
                     tag = lowercase(tag);
 
-                    if (!ignoreCurrentElement && validElements[tag] === true && voidElements[tag] !== true) {
+                    if (!ignoreCurrentElement && validElements[tag] === true && unaryElements[tag] !== true) {
                         out('</');
                         out(tag);
                         out('>');
@@ -24255,7 +24298,7 @@ msos.console.time('ng');
 					}
 
 					addElementsTo(svgElements, elements.svgElements);
-					addElementsTo(voidElements, elements.htmlVoidElements);
+					addElementsTo(unaryElements, elements.htmlVoidElements);
 					addElementsTo(validElements, elements.htmlVoidElements);
 					addElementsTo(validElements, elements.htmlElements);
 				}

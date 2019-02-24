@@ -1,6 +1,6 @@
 // Copyright Notice:
 //					site.js
-//			Copyright©2012-2018 - OpenSiteMobile
+//			Copyright©2012-2019 - OpenSiteMobile
 //				All rights reserved
 // ==========================================================================
 //			https://ngmomentum.com and https://opensitemobile.com
@@ -11,20 +11,20 @@
 
 /*
 
-	Use 'site.js' to add site specific code for availability
+	Use 'site.js' to add site or domain specific code for availability
 	to many pages and apps. Note that here, as oppose to the 'config.js'
-	file, jQuery, Bootstrap, AngularJS, Backbone, etc. are now available for use.
+	file, jQuery, Bootstrap, AngularJS, Backbone, Vue, etc. are now available for use.
 
-	Also, add small jQuery plugin's here, (ie - jQuery FitText below).
+	Also, add small jQuery or other common site plugin's here.
 
-	OpenSiteMobile MobileSiteOS site specific code:
+	MobileSiteOS site specific code:
 
 	    Google Analytics,
 	    Social site calls, etc.
-	
+
 	Plus:
 
-	    Auto-Load Modules - based on dom elements
+	    Auto-Load Modules - based on dom elements, etc.
 */
 
 /*global
@@ -39,28 +39,7 @@ msos.console.info('site -> start, (/ngm/demo/site.js file).');
 msos.console.time('site');
 
 
-// --------------------------
-// Google Analytics Tracking Function
-// --------------------------
-
-msos.site.google_analytics = function () {
-    "use strict";
-
-    // Set to your website or remove if/else statment
-    if (document.domain === msos.config.google.analytics_domain) {
-
-		var url = ('https:' === document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js',
-			ga_loader = new msos.loader();
-
-		// Use our loader for better debugging
-		ga_loader.load(url, 'js');
-
-    } else {
-		msos.console.warn('msos.site.google_analytics -> please update msos.config.google.analytics_domain in config.js!');
-      }
-};
-
-// "window" and "document" website common setup code
+// Website common setup code, such as "window" and "document"
 (function () {
 	"use strict";
 
@@ -94,7 +73,7 @@ msos.site.google_analytics = function () {
 
 
 // --------------------------
-// Site Specific Code
+// Website Specific Code
 // --------------------------
 
 msos.site.auto_init = function () {
@@ -102,9 +81,7 @@ msos.site.auto_init = function () {
 
 	var temp_ai = 'msos.site.auto_init -> ',
 		cfg = msos.config,
-		req = msos.require,
-		bw_val = msos.config.storage.site_bdwd.value || '',
-		bdwidth = bw_val ? parseInt(bw_val, 10) : 0;
+		req = msos.require;
 
 	msos.console.debug(temp_ai + 'start.');
 
@@ -114,7 +91,7 @@ msos.site.auto_init = function () {
 	// Apple mobile OS
 	if (cfg.mobile && navigator.platform.match(/iPad|iPhone|iPod/i)) { req("msos.mbp.ios"); }
 
-	// Run MobileSiteOS sizing (alt. would be: use media queries instead)
+	// Run MobileSiteOS sizing (alt. would be: use media queries)
 	if (cfg.run_size) { req("msos.size"); }
 
     // Add auto window.onerror alerting
@@ -123,8 +100,11 @@ msos.site.auto_init = function () {
 	// Add debugging output (popup)
 	if (cfg.debug_output) { req("msos.debug"); }
 
-	// Or based on configuration settings
-	if (cfg.run_analytics && bdwidth > 150) { msos.site.google_analytics(); }
+	// Add Google Adsense ads
+	if (cfg.run_ads) { req("ng.google.adsense"); }
+
+	// Add Google Analytics and Tag Management
+	if (cfg.run_analytics) { req("ng.google.tagmanagement"); }
 
 	msos.console.debug(temp_ai + 'done!');
 };
